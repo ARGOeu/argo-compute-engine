@@ -10,29 +10,21 @@ define FirstTupleFromBag datafu.pig.bags.FirstTupleFromBag();
 %declare MONTH `echo $in_date | awk -F'-' '{print $2}'`
 %declare DAY `echo $in_date | awk -F'-' '{print $3}'`
 
-/*SET pig.exec.reducers.bytes.per.reducer 3000000;
 SET mapred.min.split.size 3000000;
 SET mapred.max.split.size 3000000;
-SET pig.noSplitCombination true;*/
+SET pig.noSplitCombination true;
 
 SET hcat.desired.partition.num.splits 9;
 
 SET io.sort.factor 100;
 SET mapred.job.shuffle.merge.percent 0.33;
 
-/*SET pig.tmpfilecompression true;
-SET pig.tmpfilecompression.codec gz;
-SET mapred.compress.map.output true;
-SET mapred.map.output.compression.codec org.apache.hadoop.io.compress.GzipCodec;*/
-
-/*SET pig.tmpfilecompression true
-SET pig.tmpfilecompression.codec lzo*/
-
 --- LOADING PHASE ---
+topology  = load 'topology.txt'      using PigStorage('\\u001') as (hostname:chararray, service_flavour:chararray, production:chararray, monitored:chararray, scope:chararray, site:chararray, NGI:chararray, infrastructure:chararray, certification_status:chararray, site_scope:chararray);
 
---- Get beakons (logs from previous day)
-beakons_r = LOAD 'row_data' USING org.apache.hcatalog.pig.HCatLoader();
-beakons = FILTER beakons_r BY year=='$YEAR' AND month=='$MONTH' AND day=='$PREV_DAY';
+--- Get beacons (logs from previous day)
+beacons_r = LOAD 'row_data' USING org.apache.hcatalog.pig.HCatLoader();
+beacons = FILTER beacons_r BY year=='$YEAR' AND month=='$MONTH' AND day=='$PREV_DAY';
 
 --- Get current logs
 current_logs_r = LOAD 'row_data' USING org.apache.hcatalog.pig.HCatLoader();
@@ -40,12 +32,8 @@ current_logs = FILTER current_logs_r BY year=='$YEAR' AND month=='$MONTH' AND da
 
 --- MAIN ALGORITHM ---
 
---- Merge current logs with beakons
-logs = UNION current_logs, beakons;
-
---- For each row we append as a new column the names of the corresponding POEM profiles
-appended_prof_logs = FOREACH logs 
-                        GENERATE *, FLATTEN(myudf.AppendPOEMname( (chararray)service_flavour, (chararray)vo)) as (profile_name);
+--- Merge current logs with beacons
+logs = UNION current_logs, beacons;
 
 --- Group rows so we can have for each hostname and flavor, the applied poem profile with reports
 profile_groups = GROUP appended_prof_logs BY (hostname, service_flavour, profile_name) PARALLEL 9;
@@ -65,9 +53,25 @@ timetables = FOREACH profiled_logs {
         GENERATE hostname, service_flavour, profile_name, vo, myudf.APPLY_PROFILES(timeline_s, profile_metrics, '$PREV_DATE') as timeline;
 };
 
---- Create a single file to save on HDFS
-merged = GROUP timetables ALL PARALLEL 1;
-merged_f = FOREACH merged GENERATE FLATTEN(timetables) as (hostname, service_flavour, profile_name, vo, timeline);
+--- Join profiles with log, so we have have for each log raw the possible applied profiles
+topologed_j = JOIN timetables BY (hostname, service_flavour), topology BY (hostname, service_flavour) USING 'replicated';
 
---- Store the results on Hive
-STORE merged_f INTO 'ar' USING org.apache.hcatalog.pig.HCatStorer('year=$YEAR, month=$MONTH, day=$DAY');
+topologed = FOREACH topologed_j
+                GENERATE timetables::hostname as hostname, timetables::service_flavour as service_flavour, 
+                         timetables::profile_name as profile_name, 
+                         timetables::vo as vo, timetables::timeline as timeline,
+                         topology::production as production, topology::monitored as monitored,
+                         topology::scope as scope, topology::site as site, topology::NGI as NGI,
+                         topology::infrastructure as infrastructure,
+                         topology::certification_status as certification_status, topology::site_scope as site_scope;
+
+topology_g = GROUP topologed BY (site, profile_name) PARALLEL 1;
+
+topology = FOREACH topology_g {
+        t = ORDER topologed BY service_flavour;
+        GENERATE group.site as site, group.profile_name as profile_name, myudf.AggrigateSiteAvailability(t) as result;
+};
+
+merged_f = FOREACH topology GENERATE site, profile_name, result.availability as availability, result.reliability as reliability;
+
+STORE merged_f INTO 'reports' USING org.apache.hcatalog.pig.HCatStorer('year=$YEAR, month=$MONTH, day=$DAY');
