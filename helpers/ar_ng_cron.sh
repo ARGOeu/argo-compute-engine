@@ -23,7 +23,6 @@ then
     hadoop fs -rm -skipTrash poem_profiles.txt
 fi
 
-# /groups/arstats/poem_sync/poem-sync
 hadoop fs -put /groups/arstats/poem_sync/poem_sync_$RUN_DATE_UNDER.out poem_profiles.txt
 
 ### run topology kai upload the topology with name: topology.txt (remove previews topology.txt)
@@ -34,7 +33,6 @@ then
     hadoop fs -rm -skipTrash topology.txt
 fi
 
-### groups/arstats/topology-sync/topology-sync
 hadoop fs -put /groups/arstats/topology-sync/sites_$RUN_DATE_UNDER.out topology.txt
 
 ### run downtimes kai upload the downtimes with name: downtimes.txt (remove previews downtimes.txt)
@@ -45,7 +43,7 @@ then
     hadoop fs -rm -skipTrash downtimes.txt
 fi
 
-### groups/arstats/downtimec/downtimes-sync
+python /groups/arstats/downtimec/downtime_sync.py -d $RUN_DATE
 hadoop fs -put /groups/arstats/downtime/downtimes_$RUN_DATE.out downtimes.txt
 
 ### run calculator.pig
