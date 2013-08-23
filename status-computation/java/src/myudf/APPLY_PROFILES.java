@@ -1,5 +1,8 @@
 package myudf;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,11 +34,11 @@ public class APPLY_PROFILES extends EvalFunc<String> {
     private Tuple point = null;
     private Iterator<Tuple> timeLineIt = null;
     
-    private Map<String, String> getBeakons() throws ExecException {
+    private Map<String, EntryPair<String, Integer>> getBeakons() throws ExecException {
         String metric, status, timeStamp;
         boolean sameDate = true;
         // Key: metric, Value: Time + "@" + Status
-        Map<String, String> beakons = new HashMap<String, String>();
+        Map<String, EntryPair<String, Integer>> beakons = new HashMap<String, EntryPair<String, Integer>>();
                 
         while (sameDate && this.timeLineIt.hasNext()) {
             Tuple t = this.timeLineIt.next();
@@ -52,7 +55,8 @@ public class APPLY_PROFILES extends EvalFunc<String> {
             // We need the latest report for each metric.
             // The input is sorted by date. We dont need to check timestamps.
             if (timeStamp.startsWith(this.prev_date)) {
-                beakons.put(metric, status);
+                EntryPair<String, Integer> e = new EntryPair<String, Integer>(status, Integer.valueOf(timeStamp.split("T")[1].split(":")[0]));
+                beakons.put(metric, e);
             } else {
                 this.point = t;
                 sameDate = false;
@@ -62,6 +66,24 @@ public class APPLY_PROFILES extends EvalFunc<String> {
         return beakons;
     }
     
+    private void addBeakon(String[] tmp_timelineTable, String status, Integer expire_hour) {
+        tmp_timelineTable[0] = status;
+
+        int g = 1;
+        while (g <= expire_hour && tmp_timelineTable[g] == null) {
+            tmp_timelineTable[g] = tmp_timelineTable[0];
+            g++;
+        }
+
+        if (g < 24 && tmp_timelineTable[g] == null) {
+            tmp_timelineTable[g] = "MISSING";
+        }
+
+        if (g == 24) {
+            tmp_timelineTable[g - 1] = "MISSING";
+        }
+    }
+
     private Map<String, List<EntryPair<Calendar, String>>> getDailyReports() throws ExecException {
         String metric, status, timeStamp;
         
@@ -122,10 +144,44 @@ public class APPLY_PROFILES extends EvalFunc<String> {
         }
     }
     
+    private Map<String, EntryPair<Integer, Integer>> downtimes = null;
+
+    private void getDowntimes() throws FileNotFoundException, IOException {
+        this.downtimes = new HashMap<String, EntryPair<Integer, Integer>>();
+
+        FileReader fr = new FileReader("./downtimes.txt");
+        BufferedReader d = new BufferedReader(fr);
+        String line = d.readLine();
+
+        String host, serviceFlavor;
+        EntryPair<Integer, Integer> period;
+        while (line != null) {
+            String[] tokens = line.split("\u0001");
+            host = tokens[0];
+            serviceFlavor = tokens[1];
+            period = new EntryPair<Integer, Integer>(Integer.parseInt(tokens[2].split("T")[1].split(":")[0]),
+                    (Integer.parseInt(tokens[3].split("T")[1].split(":")[0]) - 1));
+
+            this.downtimes.put(host + " " + serviceFlavor, period);
+            line = d.readLine();
+        }
+    }
+
+    private void addDowntimes(String[] tmp_timelineTable, String host, String flavor) {
+        String key = host + " " + flavor;
+        if (this.downtimes.containsKey(key)) {
+            EntryPair<Integer, Integer> p = this.downtimes.get(key);
+            for (int i = p.First; i <= p.Second; i++) {
+                tmp_timelineTable[i] = State.DOWNTIME.toString();
+            }
+        }
+    }
+    
     @Override
-    // Input: timeline: {(metric, status, time_stamp)},profile_metrics: {metric}, previous_date, host, flavor
+    // Input: timeline: {(metric, status, time_stamp)},profile_metrics: {metric}, previous_date, hostname, service_flavor
     public String exec(Tuple tuple) throws IOException {
         try {
+            String hostname, service_flavor;
             Tuple p_metrics;
             
             // Get timeline and profiles to two different stractures.
@@ -134,6 +190,8 @@ public class APPLY_PROFILES extends EvalFunc<String> {
                 this.point      = null;
                 p_metrics       = (Tuple) tuple.get(1);
                 this.prev_date  = (String) tuple.get(2);
+                hostname        = (String) tuple.get(3);
+                service_flavor  = (String) tuple.get(3);
             } catch (Exception e) {
                 throw new IOException("Expected input to be (DataBag, Tuple, String), but  got " + e);
             }
@@ -144,15 +202,22 @@ public class APPLY_PROFILES extends EvalFunc<String> {
                 this.profile.add((String) t);
             }
             
-            // Beakon map. Key: Metric, Value: status
-            Map<String,String> beakon_map = getBeakons();
+            if (this.profile.isEmpty()) {
+                throw new IOException("Prifile is empty!");
+            }
             
+            if (this.downtimes == null) {
+                getDowntimes();
+            }
+
+            // Beakon map. Key: Metric, Value: (status, hour)
+            Map<String, EntryPair<String, Integer>> beakon_map = getBeakons();
             
             // The input is order by timestamps. We are going from past
             // to future. e.g. 2013-06-03 --> 2013-06-05
             // input: timeline: {(metric, status, time_stamp)}            
             Map<String, List<EntryPair<Calendar, String>>> dailyReports = getDailyReports();
-                        
+
             // Initialize timelineTable.
             String[] timelineTable = new String[24];
             for (int i=0; i<timelineTable.length; i++) {
@@ -185,7 +250,9 @@ public class APPLY_PROFILES extends EvalFunc<String> {
                 // Add beakon.
                 if (tmp_timelineTable[0] != null) {
                 } else if (beakon_map.containsKey(k_metric)) {
-                    tmp_timelineTable[0] = beakon_map.get(k_metric);
+                    addBeakon(tmp_timelineTable, 
+                            beakon_map.get(k_metric).First, 
+                            beakon_map.get(k_metric).Second);                    
                 } else {
                     tmp_timelineTable[0] = "MISSING";
                 }
@@ -193,13 +260,18 @@ public class APPLY_PROFILES extends EvalFunc<String> {
                 // Make the integral to the tmp array.
                 makeIntegral(tmp_timelineTable);
                 
+                // Add downtime ranges.
+                addDowntimes(tmp_timelineTable, hostname, service_flavor);
+                
                 // Merge the inner timeTable with the global.
                 Utils.makeAND(tmp_timelineTable, timelineTable);
             }
             
             if (!profile.isEmpty()) {
                 for (int i=0; i<timelineTable.length; i++) {
-                    timelineTable[i] = "MISSING";
+                    if (!State.valueOf(timelineTable[i]).equals(State.valueOf("DOWNTIME"))) {
+                        timelineTable[i] = "MISSING";
+                    }
                 }
             }
             
@@ -210,5 +282,12 @@ public class APPLY_PROFILES extends EvalFunc<String> {
         } catch (ExecException ee) {
             throw ee;
         }
-    }    
+    }
+    
+    @Override
+    public List<String> getCacheFiles() {
+        List<String> list = new ArrayList<String>(1);
+        list.add("/user/root/downtimes.txt#downtimes.txt");
+        return list;
+    }
 }

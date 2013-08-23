@@ -20,7 +20,7 @@ SET io.sort.factor 100;
 SET mapred.job.shuffle.merge.percent 0.33;
 
 --- LOADING PHASE ---
-topology  = load 'topology.txt'      using PigStorage('\\u001') as (hostname:chararray, service_flavour:chararray, production:chararray, monitored:chararray, scope:chararray, site:chararray, NGI:chararray, infrastructure:chararray, certification_status:chararray, site_scope:chararray);
+topology  = load 'topology.txt' using PigStorage('\\u001') as (hostname:chararray, service_flavour:chararray, production:chararray, monitored:chararray, scope:chararray, site:chararray, ngi:chararray, infrastructure:chararray, certification_status:chararray, site_scope:chararray);
 
 --- Get beacons (logs from previous day)
 beacons_r = LOAD 'row_data' USING org.apache.hcatalog.pig.HCatLoader();
@@ -36,42 +36,55 @@ current_logs = FILTER current_logs_r BY year=='$YEAR' AND month=='$MONTH' AND da
 logs = UNION current_logs, beacons;
 
 --- Group rows so we can have for each hostname and flavor, the applied poem profile with reports
-profile_groups = GROUP appended_prof_logs BY (hostname, service_flavour, profile_name) PARALLEL 9;
+profile_groups = GROUP logs BY (hostname, service_flavour, profile) PARALLEL 9;
 
 --- After the grouping, we append the actual rules of the POEM profiles
 profiled_logs = FOREACH profile_groups 
         GENERATE group.hostname as hostname, group.service_flavour as service_flavour, 
-                 group.profile_name as profile_name, 
-                 FLATTEN(FirstTupleFromBag(appended_prof_logs.vo,null)) as vo, 
-                 appended_prof_logs.(metric, status, time_stamp) as timeline, 
-                 myudf.AppendPOEMrules(group.service_flavour, group.profile_name);
+                 group.profile as profile, 
+                 FLATTEN(FirstTupleFromBag(logs.vo,null)) as vo, 
+                 logs.(metric, status, time_stamp) as timeline, 
+                 myudf.AppendPOEMrules(group.service_flavour, group.profile);
 
 
 --- We calculate the timelines and create an integral of all reports
 timetables = FOREACH profiled_logs {
         timeline_s = ORDER timeline BY time_stamp;
-        GENERATE hostname, service_flavour, profile_name, vo, myudf.APPLY_PROFILES(timeline_s, profile_metrics, '$PREV_DATE') as timeline;
+        GENERATE hostname, service_flavour, profile, vo, myudf.APPLY_PROFILES(timeline_s, profile_metrics, '$PREV_DATE', hostname, service_flavour) as timeline;
 };
+
+timetables2 = FOREACH timetables GENERATE hostname, service_flavour, profile, vo, myudf.TimelineToPercentage(*) as timeline;
 
 --- Join profiles with log, so we have have for each log raw the possible applied profiles
 topologed_j = JOIN timetables BY (hostname, service_flavour), topology BY (hostname, service_flavour) USING 'replicated';
 
 topologed = FOREACH topologed_j
                 GENERATE timetables::hostname as hostname, timetables::service_flavour as service_flavour, 
-                         timetables::profile_name as profile_name, 
+                         timetables::profile as profile, 
                          timetables::vo as vo, timetables::timeline as timeline,
                          topology::production as production, topology::monitored as monitored,
-                         topology::scope as scope, topology::site as site, topology::NGI as NGI,
+                         topology::scope as scope, topology::site as site, topology::ngi as ngi,
                          topology::infrastructure as infrastructure,
                          topology::certification_status as certification_status, topology::site_scope as site_scope;
 
-topology_g = GROUP topologed BY (site, profile_name) PARALLEL 1;
+topology_g = GROUP topologed BY (site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 1;
 
 topology = FOREACH topology_g {
         t = ORDER topologed BY service_flavour;
-        GENERATE group.site as site, group.profile_name as profile_name, myudf.AggrigateSiteAvailability(t) as result;
+        GENERATE group.site as site, group.profile as profile,
+            group.production as production, group.monitored as monitored, group.scope as scope, 
+            group.ngi as ngi, group.infrastructure as infrastructure, 
+            group.certification_status as certification_status, group.site_scope as site_scope,
+            myudf.AggrigateSiteAvailability(t) as result;
 };
 
-merged_f = FOREACH topology GENERATE site, profile_name, result.availability as availability, result.reliability as reliability;
+merged_f = FOREACH topology 
+                GENERATE site, profile, 
+                    production, monitored, scope, 
+                    ngi, infrastructure, certification_status, site_scope,
+                    result.availability as availability, result.reliability as reliability;
 
-STORE merged_f INTO 'reports' USING org.apache.hcatalog.pig.HCatStorer('year=$YEAR, month=$MONTH, day=$DAY');
+STORE merged_f INTO 'sitereports' USING org.apache.hcatalog.pig.HCatStorer('year=$YEAR, month=$MONTH, day=$DAY');
+STORE timetables2 INTO 'apireports' USING org.apache.hcatalog.pig.HCatStorer('year=$YEAR, month=$MONTH, day=$DAY');
+
+

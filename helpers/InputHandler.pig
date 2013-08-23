@@ -11,7 +11,6 @@ SET pig.tmpfilecompression.codec lzo
 */
 
 --- Get logs from root folder on HDFS ---
-logs = LOAD 'consumer_log_$in_date.txt' USING PigStorage('\\u001') as (time_stamp:chararray, metric:chararray, service_flavour:chararray, hostname:chararray, status:chararray, vo:chararray);
-
+logs = LOAD 'prefilter-$in_date.out' USING PigStorage('\\u001') as (time_stamp:chararray, metric:chararray, service_flavour:chararray, hostname:chararray, status:chararray, vo:chararray, vofqan:chararray, profile:chararray);
 --- Load new logs into Hive database ---
 STORE logs INTO 'row_data' USING org.apache.hcatalog.pig.HCatStorer('year=$YEAR, month=$MONTH, day=$DAY');

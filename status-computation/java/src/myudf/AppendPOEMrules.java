@@ -26,6 +26,7 @@ public class AppendPOEMrules extends EvalFunc<Tuple> {
     
     private Map<String, ArrayList<String>> map = null;
     
+    // SAM_Server, NGI, Profile, ServiceFlavour, Metric, Vo, VoFqan
     private void initDB() throws FileNotFoundException, IOException {
         this.map = new HashMap<String, ArrayList<String>>();
         FileReader fr = new FileReader("./poem_profiles.txt");
@@ -37,8 +38,8 @@ public class AppendPOEMrules extends EvalFunc<Tuple> {
             // Input:
             //  [0]:profile_name, [1]:service_flavor, [2] metric
 
-            String key = tokens[0] + " " + tokens[1];
-            String metric = tokens[2];
+            String key = tokens[2] + " " + tokens[3];
+            String metric = tokens[4];
 
             if (this.map.containsKey(key)) {
                 this.map.get(key).add(metric);
@@ -89,7 +90,7 @@ public class AppendPOEMrules extends EvalFunc<Tuple> {
     public List<String> getCacheFiles() {
         List<String> list = new ArrayList<String>(1);
         list.add("/user/root/poem_profiles.txt#poem_profiles.txt");
-//        list.add("/root/profiles.txt#profiles.txt");
+//        list.add("/root/profiles.txt#poem_profiles.txt");
         return list;
     }
     
@@ -121,8 +122,6 @@ public class AppendPOEMrules extends EvalFunc<Tuple> {
         try {
             Schema.FieldSchema profile_metricFs = new Schema.FieldSchema("profile_metric", DataType.CHARARRAY);
             Schema p_metricS = new Schema(profile_metricFs);
-
-            Schema.FieldSchema p_metricsFs;
 
             return new Schema(new Schema.FieldSchema("profile_metrics", p_metricS, DataType.TUPLE));
         } catch (FrontendException ex) {
