@@ -26,7 +26,7 @@ import utils.Utils;
  *
  * @author Anastasis Andronidis <anastasis90@yahoo.gr>
  */
-public class AggrigateSiteAvailability extends EvalFunc<Tuple> {
+public class AggregateSiteAvailability extends EvalFunc<Tuple> {
     
     private TupleFactory mTupleFactory = TupleFactory.getInstance();
     

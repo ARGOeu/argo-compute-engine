@@ -23,11 +23,11 @@ SET mapred.job.shuffle.merge.percent 0.33;
 topology  = load 'topology.txt' using PigStorage('\\u001') as (hostname:chararray, service_flavour:chararray, production:chararray, monitored:chararray, scope:chararray, site:chararray, ngi:chararray, infrastructure:chararray, certification_status:chararray, site_scope:chararray);
 
 --- Get beacons (logs from previous day)
-beacons_r = LOAD 'row_data' USING org.apache.hcatalog.pig.HCatLoader();
+beacons_r = LOAD 'raw_data' USING org.apache.hcatalog.pig.HCatLoader();
 beacons = FILTER beacons_r BY year=='$YEAR' AND month=='$MONTH' AND day=='$PREV_DAY';
 
 --- Get current logs
-current_logs_r = LOAD 'row_data' USING org.apache.hcatalog.pig.HCatLoader();
+current_logs_r = LOAD 'raw_data' USING org.apache.hcatalog.pig.HCatLoader();
 current_logs = FILTER current_logs_r BY year=='$YEAR' AND month=='$MONTH' AND day=='$DAY';
 
 --- MAIN ALGORITHM ---
@@ -75,7 +75,7 @@ topology = FOREACH topology_g {
             group.production as production, group.monitored as monitored, group.scope as scope, 
             group.ngi as ngi, group.infrastructure as infrastructure, 
             group.certification_status as certification_status, group.site_scope as site_scope,
-            myudf.AggrigateSiteAvailability(t) as result;
+            myudf.AggregateSiteAvailability(t) as result;
 };
 
 merged_f = FOREACH topology 
