@@ -6,10 +6,6 @@
 SET mapred.min.split.size 3000000000;
 SET mapred.max.split.size 3000000000;
 
-/*SET pig.tmpfilecompression true
-SET pig.tmpfilecompression.codec lzo
-*/
-
 --- Get logs from root folder on HDFS ---
 logs = LOAD 'prefilter-$in_date.out' USING PigStorage('\\u001') as (time_stamp:chararray, metric:chararray, service_flavour:chararray, hostname:chararray, status:chararray, vo:chararray, vofqan:chararray, profile:chararray);
 --- Load new logs into Hive database ---

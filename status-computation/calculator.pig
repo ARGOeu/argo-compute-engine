@@ -1,5 +1,5 @@
-register MyUDF.jar
-register /usr/lib/pig/datafu-0.0.4-cdh4.3.0.jar
+register /usr/lib/ar-compute/MyUDF.jar
+register /usr/lib/pig/datafu-0.0.4-cdh4.3.1.jar
 
 define FirstTupleFromBag datafu.pig.bags.FirstTupleFromBag();
 

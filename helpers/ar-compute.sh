@@ -15,7 +15,7 @@ hadoop fs -put /var/lib/ar-sync/prefilter_${RUN_DATE_UNDER}.out
 
 ### use pig importer to get data from hdfs to database
 ### processed data will reside under /user/hive/warehouse/raw_data on hdfs
-pig -useHCatalog -param in_date=${RUN_DATE_UNDER} -f /usr/libexec/ar-compute/InputHandler.pig
+pig -useHCatalog -param in_date=${RUN_DATE_UNDER} -f /usr/libexec/ar-compute/pig/InputHandler.pig
 
 ### remove prefilter_ file from hdfs
 hadoop fs -rm -skipTrash prefilter-${RUN_DATE_UNDER}.out
@@ -56,7 +56,13 @@ fi
 hadoop fs -put /var/lib/ar-sync/downtimes_${RUN_DATE}.out downtimes.txt
 
 ### run calculator.pig
-pig -useHCatalog -param in_date=$RUN_DATE -f /usr/libexec/ar-compute/calculator.pig
+pig -useHCatalog -param in_date=$RUN_DATE -f /usr/libexec/ar-compute/pig/calculator.pig
+
+### if everything worked out copy results back onto hard drive
+if [ $? -eq 0 ]
+then
+    hadoop fs -get /user/hive/warehouse/reports/year=$YEAR/month=$MONTH/day=$DAY/part-r-00000 /var/lib/ar-compute/results-${RUN_DATE}.out
+fi
 
 ### send mail
 ### feature commented by pkoro pn 29-Aug. Will be implemented on okeanos later on
