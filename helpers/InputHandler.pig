@@ -1,7 +1,7 @@
---- Input: e.g. in_date = 2013-05-29
-%declare YEAR `echo $in_date | awk -F'-' '{print $1}'`
-%declare MONTH `echo $in_date | awk -F'-' '{print $2}'`
-%declare DAY `echo $in_date | awk -F'-' '{print $3}'`
+--- Input: e.g. in_date = 2013_05_29
+%declare YEAR `echo $in_date | awk -F'_' '{print $1}'`
+%declare MONTH `echo $in_date | awk -F'_' '{print $2}'`
+%declare DAY `echo $in_date | awk -F'_' '{print $3}'`
 
 SET mapred.min.split.size 3000000000;
 SET mapred.max.split.size 3000000000;
