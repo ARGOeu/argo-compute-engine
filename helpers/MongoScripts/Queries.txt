@@ -1,0 +1,11 @@
+# get the weighted average
+db.sites.aggregate( { $group : { _id : "$n", averageAvail : { $avg : { $multiply : ["$a", "$r"]}}, averageReal : { $avg : "$r" } } } );
+
+# get range of dates in database
+db.sites.aggregate({ $group : {"_id" : "all" , "max" : { "$max" : "$dt" } , "min" : { "$min" : "$dt"}}})
+
+# get sites grouped by NGI and profile
+db.sites.aggregate( { $group : { _id : { ngi: "$n", profile: "$p" }, averageAvail : { $avg : "$a"}, averageReal : { $avg : "$r" } } } );
+
+# get sites grouped by site and profile for 1 month
+db.sites.aggregate( { $group : { _id : { month: { $substr :["$dt",0,6] }, site: "$s", profile: "$p" }, averageAvail : { $avg : "$a"}, averageReal : { $avg : "$r" } } } )["result"];
