@@ -203,7 +203,7 @@ public class APPLY_PROFILES extends EvalFunc<String> {
             }
             
             if (this.profile.isEmpty()) {
-                throw new IOException("Prifile is empty!");
+                throw new IOException("Profile is empty!");
             }
             
             if (this.downtimes == null) {

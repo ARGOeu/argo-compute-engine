@@ -1,5 +1,8 @@
 package myudf;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import static utils.State.OK;
 import static utils.State.WARNING;
 import static utils.State.UNKNOWN;
@@ -9,7 +12,11 @@ import static utils.State.DOWNTIME;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.pig.EvalFunc;
@@ -31,7 +38,28 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
     private TupleFactory mTupleFactory = TupleFactory.getInstance();
     
     private String[] output_table = null;
-    private String[] or_table = null;
+    private List<String[]> ultimate_kickass_table = new ArrayList<String[]>(20);
+    
+    private Map<String, Integer> highLevelProfiles = null;
+    
+    private void getHighLevelProfiles() throws FileNotFoundException, IOException {
+        this.highLevelProfiles = new HashMap<String, Integer>();
+        
+        FileReader fr = new FileReader("./highlevelprofiles.txt");
+        BufferedReader d = new BufferedReader(fr);
+        String line = d.readLine();
+        
+        String service;
+        Integer group;
+        String[] tokens;
+        while (line != null) {
+            tokens  = line.split(" ");
+            service = tokens[0];
+            group   = Integer.parseInt(tokens[1]);
+            
+            this.highLevelProfiles.put(service, group);
+        }
+    }
     
     private static double round(double unrounded, int precision, int roundingMode) {
         try {
@@ -85,48 +113,39 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
     public Tuple exec(Tuple tuple) throws IOException {
         DataBag in = (DataBag) tuple.get(0);
         
-        String service_flavor;
-        String[] timeline;
-        String prev_service_flavor = "";
-        
-        output_table = null;
-        or_table    = null;
-        Iterator<Tuple> iterator = in.iterator();
-        
-        // Take the first tuple
-        if (iterator.hasNext()) {
-            Tuple t = iterator.next();
-            prev_service_flavor  = (String) t.get(1);
-            this.or_table        = ((String) t.get(4)).substring(1, ((String)t.get(4)).length() - 1).split(", ");
-            
+        if (this.highLevelProfiles == null) {
+            getHighLevelProfiles();
         }
         
+        Tuple t;
+        String service_flavor;
+        String[] timeline, tmp;
+        
+        Iterator<Tuple> iterator = in.iterator();
+        
         while (iterator.hasNext()) {
-            Tuple t = iterator.next();
+            t = iterator.next();
             service_flavor = (String) t.get(1);
             timeline       = ((String) t.get(4)).substring(1, ((String)t.get(4)).length() - 1).split(", ");
             
-            if (prev_service_flavor.equals(service_flavor)) {
-                Utils.makeOR(timeline, this.or_table);
+            int i = this.highLevelProfiles.get(service_flavor);
+            
+            if (this.ultimate_kickass_table.get(i) != null) {
+                tmp = this.ultimate_kickass_table.get(i);
+                Utils.makeOR(timeline, tmp);
             } else {
-                if (this.or_table != null) {
-                    if (this.output_table == null) {
-                        this.output_table = this.or_table;
-                    } else {
-                        Utils.makeAND(this.or_table, this.output_table);
-                    }
-                }
-                this.or_table = timeline;
-                prev_service_flavor = service_flavor;
+                this.ultimate_kickass_table.set(i, timeline);
             }
         }
         
-        if (this.output_table == null) {
-            this.output_table = this.or_table;
-        } else {
-            Utils.makeAND(this.or_table, this.output_table);
-        }
+        // We get the first table, we dont care about the first iteration
+        // because we do an AND with self.
+        this.output_table = this.ultimate_kickass_table.get(0);
         
+        for (String[] tb : this.ultimate_kickass_table) {
+            Utils.makeAND(tb, this.output_table);
+        }
+
         return getReport();
     }
     
@@ -149,5 +168,12 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         }
 
         return null;
+    }
+    
+    @Override
+    public List<String> getCacheFiles() {
+        List<String> list = new ArrayList<String>(1);
+        list.add("/user/root/highlevelprofiles.txt#highlevelprofiles.txt");
+        return list;
     }
 }
