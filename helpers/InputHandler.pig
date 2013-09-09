@@ -3,8 +3,10 @@
 %declare MONTH `echo $in_date | awk -F'_' '{print $2}'`
 %declare DAY `echo $in_date | awk -F'_' '{print $3}'`
 
+/*
 SET mapred.min.split.size 3000000000;
 SET mapred.max.split.size 3000000000;
+*/
 
 --- Get logs from root folder on HDFS ---
 logs = LOAD 'prefilter-$in_date.out' USING PigStorage('\\u001') as (time_stamp:chararray, metric:chararray, service_flavour:chararray, hostname:chararray, status:chararray, vo:chararray, vofqan:chararray, profile:chararray);
