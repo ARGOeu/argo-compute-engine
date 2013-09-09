@@ -1,8 +1,6 @@
 package myudf;
 
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import static utils.State.OK;
 import static utils.State.WARNING;
 import static utils.State.UNKNOWN;
@@ -44,21 +42,29 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
     
     private void getHighLevelProfiles() throws FileNotFoundException, IOException {
         this.highLevelProfiles = new HashMap<String, Integer>();
+//        
+//        FileReader fr = new FileReader("./highlevelprofiles.txt");
+//        BufferedReader d = new BufferedReader(fr);
+//        String line = d.readLine();
+//        
+//        String service;
+//        Integer group;
+//        String[] tokens;
+//        while (line != null) {
+//            tokens  = line.split(" ");
+//            service = tokens[0];
+//            group   = Integer.parseInt(tokens[1]);
+//            
+//            this.highLevelProfiles.put(service, group);
+//        }
         
-        FileReader fr = new FileReader("./highlevelprofiles.txt");
-        BufferedReader d = new BufferedReader(fr);
-        String line = d.readLine();
-        
-        String service;
-        Integer group;
-        String[] tokens;
-        while (line != null) {
-            tokens  = line.split(" ");
-            service = tokens[0];
-            group   = Integer.parseInt(tokens[1]);
-            
-            this.highLevelProfiles.put(service, group);
-        }
+        this.highLevelProfiles.put("CREAM-CE", 1);
+        this.highLevelProfiles.put("ARC-CE", 1);
+        this.highLevelProfiles.put("GRAM5", 1);
+        this.highLevelProfiles.put("unicore6.TargetSystemFactory", 1);
+        this.highLevelProfiles.put("SRM", 2);
+        this.highLevelProfiles.put("SRMv2", 2);
+        this.highLevelProfiles.put("Site-BDII", 3);
     }
     
     private static double round(double unrounded, int precision, int roundingMode) {
@@ -170,10 +176,10 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         return null;
     }
     
-    @Override
-    public List<String> getCacheFiles() {
-        List<String> list = new ArrayList<String>(1);
-        list.add("/user/root/highlevelprofiles.txt#highlevelprofiles.txt");
-        return list;
-    }
+//    @Override
+//    public List<String> getCacheFiles() {
+//        List<String> list = new ArrayList<String>(1);
+//        list.add("/user/root/highlevelprofiles.txt#highlevelprofiles.txt");
+//        return list;
+//    }
 }
