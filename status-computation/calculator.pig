@@ -24,11 +24,11 @@ topology  = load 'topology.txt' using PigStorage('\\u001') as (hostname:chararra
 
 --- Get beacons (logs from previous day)
 beacons_r = LOAD 'raw_data' USING org.apache.hcatalog.pig.HCatLoader();
-beacons = FILTER beacons_r BY year=='$YEAR' AND month=='$MONTH' AND day=='$PREV_DAY';
+beacons = FILTER beacons_r BY year=='$YEAR' AND month=='$MONTH' AND day=='$PREV_DAY' AND profile=='ROC_CRITICAL';
 
 --- Get current logs
 current_logs_r = LOAD 'raw_data' USING org.apache.hcatalog.pig.HCatLoader();
-current_logs = FILTER current_logs_r BY year=='$YEAR' AND month=='$MONTH' AND day=='$DAY';
+current_logs = FILTER current_logs_r BY year=='$YEAR' AND month=='$MONTH' AND day=='$DAY' AND profile=='ROC_CRITICAL';
 
 --- MAIN ALGORITHM ---
 
