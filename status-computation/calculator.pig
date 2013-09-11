@@ -1,4 +1,4 @@
-register /usr/lib/ar-compute/MyUDF.jar
+register /usr/libexec/ar-compute/MyUDF.jar
 register /usr/lib/pig/datafu-0.0.4-cdh4.3.1.jar
 
 define FirstTupleFromBag datafu.pig.bags.FirstTupleFromBag();
@@ -10,11 +10,11 @@ define FirstTupleFromBag datafu.pig.bags.FirstTupleFromBag();
 %declare MONTH `echo $in_date | awk -F'-' '{print $2}'`
 %declare DAY `echo $in_date | awk -F'-' '{print $3}'`
 
-SET mapred.min.split.size 3000000;
-SET mapred.max.split.size 3000000;
-SET pig.noSplitCombination true;
+--- SET mapred.min.split.size 3000000;
+--- SET mapred.max.split.size 3000000;
+--- SET pig.noSplitCombination true;
 
-SET hcat.desired.partition.num.splits 9;
+--- SET hcat.desired.partition.num.splits 9;
 
 SET io.sort.factor 100;
 SET mapred.job.shuffle.merge.percent 0.33;
@@ -36,7 +36,7 @@ current_logs = FILTER current_logs_r BY year=='$YEAR' AND month=='$MONTH' AND da
 logs = UNION current_logs, beacons;
 
 --- Group rows so we can have for each hostname and flavor, the applied poem profile with reports
-profile_groups = GROUP logs BY (hostname, service_flavour, profile) PARALLEL 9;
+profile_groups = GROUP logs BY (hostname, service_flavour, profile);
 
 --- After the grouping, we append the actual rules of the POEM profiles
 profiled_logs = FOREACH profile_groups 
@@ -67,7 +67,7 @@ topologed = FOREACH topologed_j
                          topology::infrastructure as infrastructure,
                          topology::certification_status as certification_status, topology::site_scope as site_scope;
 
-topology_g = GROUP topologed BY (site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 1;
+topology_g = GROUP topologed BY (site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope);
 
 topology = FOREACH topology_g {
         t = ORDER topologed BY service_flavour;
