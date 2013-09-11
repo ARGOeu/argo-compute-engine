@@ -8,4 +8,4 @@ db.sites.aggregate({ $group : {"_id" : "all" , "max" : { "$max" : "$dt" } , "min
 db.sites.aggregate( { $group : { _id : { ngi: "$n", profile: "$p" }, averageAvail : { $avg : "$a"}, averageReal : { $avg : "$r" } } } );
 
 # get sites grouped by site and profile for 1 month
-db.sites.aggregate( { $group : { _id : { month: { $substr :["$dt",0,6] }, site: "$s", profile: "$p" }, averageAvail : { $avg : "$a"}, averageReal : { $avg : "$r" } } } )["result"];
+db.sites.aggregate( { $match : { dt : { $gte : 20130000, $lte : 20140000 } } }, { $group : { _id : { month: { $substr :["$dt",0,6] }, site: "$s", profile: "$p" }, averageAvail : { $avg : "$a"}, averageReal : { $avg : "$r" } } } );

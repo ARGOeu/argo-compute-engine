@@ -16,6 +16,7 @@ def addLogToDB(batch, input, date_int):
             hostname: 0,
             vo: 0,
             profile: 0,
+            namespace: 0,
             timeline: 0
            }
     for line in input:
