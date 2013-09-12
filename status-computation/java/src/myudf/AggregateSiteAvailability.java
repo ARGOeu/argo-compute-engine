@@ -10,10 +10,8 @@ import static utils.State.DOWNTIME;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,9 +34,11 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
     private TupleFactory mTupleFactory = TupleFactory.getInstance();
     
     private String[] output_table = null;
-    private List<String[]> ultimate_kickass_table = new ArrayList<String[]>(20);
+    private Map<Integer, String[]> ultimate_kickass_table;
     
     private Map<String, Integer> highLevelProfiles = null;
+    
+    private Integer nGroups = 3;
     
     private void getHighLevelProfiles() throws FileNotFoundException, IOException {
         this.highLevelProfiles = new HashMap<String, Integer>();
@@ -91,10 +91,10 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
                     UP++;
                     break;                
                 case CRITICAL:
+                case MISSING:
                     DOWN++;
                     break;
                 case UNKNOWN:
-                case MISSING:
                     UNKNOWN++;
                     break;
                 case DOWNTIME:
@@ -117,6 +117,7 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
     
     @Override
     public Tuple exec(Tuple tuple) throws IOException {
+//        String server = (String) tuple.get(0);
         DataBag in = (DataBag) tuple.get(0);
         
         if (this.highLevelProfiles == null) {
@@ -127,30 +128,45 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         String service_flavor;
         String[] timeline, tmp;
         
+        ultimate_kickass_table = new HashMap<Integer, String[]>();
+        
         Iterator<Tuple> iterator = in.iterator();
         
+//        System.out.println("Server: " + server);
         while (iterator.hasNext()) {
             t = iterator.next();
             service_flavor = (String) t.get(1);
             timeline       = ((String) t.get(4)).substring(1, ((String)t.get(4)).length() - 1).split(", ");
             
-            int i = this.highLevelProfiles.get(service_flavor);
+            Integer i = this.highLevelProfiles.get(service_flavor);
+//            System.out.println(service_flavor);
+//            System.out.println("Timeline: " + Arrays.toString(timeline));
+//            System.out.println(i);
             
-            if (this.ultimate_kickass_table.get(i) != null) {
+            if (this.ultimate_kickass_table.containsKey(i)) {
                 tmp = this.ultimate_kickass_table.get(i);
                 Utils.makeOR(timeline, tmp);
             } else {
-                this.ultimate_kickass_table.set(i, timeline);
-            }
+                this.ultimate_kickass_table.put(i, timeline);
+            }           
         }
         
         // We get the first table, we dont care about the first iteration
         // because we do an AND with self.
-        this.output_table = this.ultimate_kickass_table.get(0);
-        
-        for (String[] tb : this.ultimate_kickass_table) {
-            Utils.makeAND(tb, this.output_table);
+//        System.out.println(this.ultimate_kickass_table.values().size());
+
+        if (this.ultimate_kickass_table.size() < this.nGroups) {
+            this.output_table = new String[24];
+            Utils.makeMiss(this.output_table);
+        } else {
+            this.output_table = this.ultimate_kickass_table.values().iterator().next();
+            for (String[] tb : this.ultimate_kickass_table.values()) {
+//                System.out.println("INNER: " + Arrays.toString(tb));
+                Utils.makeAND(tb, this.output_table);
+            }
+//            System.out.println("OUTER: " + Arrays.toString(this.output_table));
         }
+        
 
         return getReport();
     }

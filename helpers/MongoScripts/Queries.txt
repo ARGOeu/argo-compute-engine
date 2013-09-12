@@ -9,3 +9,13 @@ db.sites.aggregate( { $group : { _id : { ngi: "$n", profile: "$p" }, averageAvai
 
 # get sites grouped by site and profile for 1 month
 db.sites.aggregate( { $match : { dt : { $gte : 20130000, $lte : 20140000 } } }, { $group : { _id : { month: { $substr :["$dt",0,6] }, site: "$s", profile: "$p" }, averageAvail : { $avg : "$a"}, averageReal : { $avg : "$r" } } } );
+
+# for testing
+# get site average
+db.sites.aggregate([{"$match" : { "dt" : { "$gte" : 20130801, "$lte" : 20130831}, "p" : { "$in" : ["ch.cern.sam.ROC_CRITICAL"]} } },{ "$group" : { "_id" : { "dt" : { "$substr" : ["$dt",0,6] }, "i" : "$i", "sc" : "$sc", "ss" : "$ss", "n" : "$n", "pr" : "$pr", "m" : "$m" ,"cs" : "$cs", "ns" : "$ns" ,"s" : "$s", "p" : "$p" }, "a" : { "$avg" : "$a"}, "r" : { "$avg" : "$r" } } }])
+
+# per day for a site
+db.sites.find({"s":"GR-01-AUTH"}, {"dt":1,"a":1, "r":1})
+
+# site timeline for a specific day
+db.timelines.find({"h" : {"$in" : ["sbdii.grid.auth.gr", "cream01.grid.auth.gr", "se01.grid.auth.gr"]}, "d" : 20130823}, {"h":1, "tm":1} )

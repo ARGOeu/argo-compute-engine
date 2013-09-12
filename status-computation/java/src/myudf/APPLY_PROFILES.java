@@ -191,7 +191,7 @@ public class APPLY_PROFILES extends EvalFunc<String> {
                 p_metrics       = (Tuple) tuple.get(1);
                 this.prev_date  = (String) tuple.get(2);
                 hostname        = (String) tuple.get(3);
-                service_flavor  = (String) tuple.get(3);
+                service_flavor  = (String) tuple.get(4);
             } catch (Exception e) {
                 throw new IOException("Expected input to be (DataBag, Tuple, String), but  got " + e);
             }
@@ -269,7 +269,8 @@ public class APPLY_PROFILES extends EvalFunc<String> {
             
             if (!profile.isEmpty()) {
                 for (int i=0; i<timelineTable.length; i++) {
-                    if (!State.valueOf(timelineTable[i]).equals(State.valueOf("DOWNTIME"))) {
+                    if (!(State.valueOf(timelineTable[i]).equals(State.valueOf("DOWNTIME")) ||
+                            State.valueOf(timelineTable[i]).equals(State.valueOf("CRITICAL")))) {
                         timelineTable[i] = "MISSING";
                     }
                 }

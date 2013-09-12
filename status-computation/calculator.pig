@@ -5,10 +5,12 @@ define FirstTupleFromBag datafu.pig.bags.FirstTupleFromBag();
 
 --- e.g. in_date = 2013-05-29, PREV_DATE = 2013-05-28
 %declare PREV_DATE `date --date=@$(( $(date --date=$in_date +%s) - 86400 )) +'%Y-%m-%d'`
-%declare PREV_DAY `date --date=@$(( $(date --date=$in_date +%s) - 86400 )) +'%d'`
-%declare YEAR `echo $in_date | awk -F'-' '{print $1}'`
-%declare MONTH `echo $in_date | awk -F'-' '{print $2}'`
 %declare DAY `echo $in_date | awk -F'-' '{print $3}'`
+%declare PREV_DAY `date --date=@$(( $(date --date=$in_date +%s) - 86400 )) +'%d'`
+%declare MONTH `echo $in_date | awk -F'-' '{print $2}'`
+%declare PREV_MONTH `date --date=@$(( $(date --date=$in_date +%s) - 86400 )) +'%m'`
+%declare YEAR `echo $in_date | awk -F'-' '{print $1}'
+%declare PREV_YEAR `date --date=@$(( $(date --date=$in_date +%s) - 86400 )) +'%Y'`
 
 --- SET mapred.min.split.size 3000000;
 --- SET mapred.max.split.size 3000000;
@@ -20,15 +22,15 @@ SET io.sort.factor 100;
 SET mapred.job.shuffle.merge.percent 0.33;
 
 --- LOADING PHASE ---
-topology  = load 'topology.txt' using PigStorage('\\u001') as (hostname:chararray, service_flavour:chararray, production:chararray, monitored:chararray, scope:chararray, site:chararray, ngi:chararray, infrastructure:chararray, certification_status:chararray, site_scope:chararray);
+topology  = load 'topology_range.txt' using PigStorage('\\u001') as (hostname:chararray, service_flavour:chararray, production:chararray, monitored:chararray, scope:chararray, site:chararray, ngi:chararray, infrastructure:chararray, certification_status:chararray, site_scope:chararray);
 
 --- Get beacons (logs from previous day)
 beacons_r = LOAD 'raw_data' USING org.apache.hcatalog.pig.HCatLoader();
-beacons = FILTER beacons_r BY year=='$YEAR' AND month=='$MONTH' AND day=='$PREV_DAY' AND profile=='ROC_CRITICAL';
+beacons = FILTER beacons_r BY year=='$PREV_YEAR' AND month=='$PREV_MONTH' AND day=='$PREV_DAY' AND profile=='ch.cern.sam.ROC_CRITICAL';
 
 --- Get current logs
 current_logs_r = LOAD 'raw_data' USING org.apache.hcatalog.pig.HCatLoader();
-current_logs = FILTER current_logs_r BY year=='$YEAR' AND month=='$MONTH' AND day=='$DAY' AND profile=='ROC_CRITICAL';
+current_logs = FILTER current_logs_r BY year=='$YEAR' AND month=='$MONTH' AND day=='$DAY' AND profile=='ch.cern.sam.ROC_CRITICAL';
 
 --- MAIN ALGORITHM ---
 
@@ -86,5 +88,3 @@ merged_f = FOREACH topology
 
 STORE merged_f INTO 'sitereports' USING org.apache.hcatalog.pig.HCatStorer('year=$YEAR, month=$MONTH, day=$DAY');
 STORE timetables2 INTO 'apireports' USING org.apache.hcatalog.pig.HCatStorer('year=$YEAR, month=$MONTH, day=$DAY');
-
-

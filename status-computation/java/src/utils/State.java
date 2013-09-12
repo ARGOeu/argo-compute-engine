@@ -9,7 +9,7 @@ public enum State {
     OK,
     WARNING,
     UNKNOWN,
-    CRITICAL,
     MISSING,
+    CRITICAL,
     DOWNTIME;
 }
