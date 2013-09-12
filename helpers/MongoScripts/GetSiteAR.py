@@ -23,6 +23,7 @@ def addLogToDB(batch, input, dtnow):
     mainhash = {
             datename: 0,
             site: 0,
+            namespace: 0,
             profile: 0,
             production: 0,
             monitored: 0,
@@ -41,7 +42,8 @@ def addLogToDB(batch, input, dtnow):
         items = line.rstrip().split('\001',11)
 	mainhash[datename]             = dtnow
 	mainhash[site]                 = items[0]
-	mainhash[profile]              = items[1]
+        mainhash[namespace] = items[1][0:items[1].rindex('.')]
+        mainhash[profile] = items[1][items[1].rindex('.')+1:]
 	mainhash[production]           = items[2]
 	mainhash[monitored]            = items[3]
 	mainhash[scope]                = items[4]
@@ -76,6 +78,7 @@ datename             = "dt";
 site                 = "s";
 profile              = "p";
 production           = "pr";
+namespace            = "ns";
 monitored            = "m";
 scope                = "sc";
 ngi                  = "n";

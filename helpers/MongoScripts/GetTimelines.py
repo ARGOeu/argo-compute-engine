@@ -8,6 +8,9 @@ from time import strftime
 from dateutil import parser
 import subprocess, sys, os, getopt
 
+def removeDateFromDB(rdate):
+    collection.remove({datetim: rdate})
+
 def addLogToDB(batch, input, date_int):
     array = []
     mainhash = {
@@ -16,7 +19,6 @@ def addLogToDB(batch, input, date_int):
             hostname: 0,
             vo: 0,
             profile: 0,
-            namespace: 0,
             timeline: 0
            }
     for line in input:
@@ -66,8 +68,9 @@ for single_date in daterange(start_date, end_date):
     date = d.split("-")
     subprocess.call(['hadoop', 'fs', '-get', '/user/hive/warehouse/apireports/year=' + date[0] + '/month=' + date[1] + '/day=' + date[2] + '/part-r-*'])
     os.system('cat part-r-* > apiinput')
-    input = open('apiinput', "r")
-    addLogToDB(batch, input, int("".join(date)))
     os.system('rm -f part-r-*')
+    input = open('apiinput', "r")
+    removeDateFromDB(int("".join(date)));
+    addLogToDB(batch, input, int("".join(date)))
 
 os.system('rm -f apiinput')
