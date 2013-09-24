@@ -160,7 +160,7 @@ public class APPLY_PROFILES extends EvalFunc<String> {
             host = tokens[0];
             serviceFlavor = tokens[1];
             period = new EntryPair<Integer, Integer>(Integer.parseInt(tokens[2].split("T")[1].split(":")[0]),
-                    (Integer.parseInt(tokens[3].split("T")[1].split(":")[0]) - 1));
+                    (Integer.parseInt(tokens[3].split("T")[1].split(":")[0])));
 
             this.downtimes.put(host + " " + serviceFlavor, period);
             line = d.readLine();
@@ -228,25 +228,31 @@ public class APPLY_PROFILES extends EvalFunc<String> {
             // and start building the timeline.
             for (String k_metric : dailyReports.keySet()) {
                 String[] tmp_timelineTable = new String[24];
-                
+
                 profile.remove(k_metric);
 
                 List<EntryPair<Calendar, String>> metricReports = dailyReports.get(k_metric);
-                
+
                 Calendar time_stamp;
                 String status;
                 for (EntryPair<Calendar, String> e : metricReports) {
                     time_stamp = e.First;
                     status = e.Second;
                     int hour = time_stamp.get(Calendar.HOUR_OF_DAY);
-                    
+
                     if (tmp_timelineTable[hour] == null) {
                         tmp_timelineTable[hour] = status;
                     } else if (State.valueOf(tmp_timelineTable[hour]).compareTo(State.valueOf(status)) < 0) {
                         tmp_timelineTable[hour] = status;
+                    // If we have 2 reports in the same quantum of time (e.g. 01:10 CRITICAL and 01:40 OK) we
+                    // need to continiu the next hour with the last state (e.g. in our case we must do 02:00 OK).
+                    } else if (State.valueOf(tmp_timelineTable[hour]).compareTo(State.valueOf(status)) > 0) {
+                        if (hour < 23) {
+                            tmp_timelineTable[hour+1] = status;
+                        }
                     }
                 }
-                
+
                 // Add beakon.
                 if (tmp_timelineTable[0] != null) {
                 } else if (beakon_map.containsKey(k_metric)) {
@@ -256,17 +262,17 @@ public class APPLY_PROFILES extends EvalFunc<String> {
                 } else {
                     tmp_timelineTable[0] = "MISSING";
                 }
-                
+
                 // Make the integral to the tmp array.
                 makeIntegral(tmp_timelineTable);
-                
+
                 // Add downtime ranges.
                 addDowntimes(tmp_timelineTable, hostname, service_flavor);
-                
+
                 // Merge the inner timeTable with the global.
                 Utils.makeAND(tmp_timelineTable, timelineTable);
             }
-            
+
             if (!profile.isEmpty()) {
                 for (int i=0; i<timelineTable.length; i++) {
                     if (!(State.valueOf(timelineTable[i]).equals(State.valueOf("DOWNTIME")) ||

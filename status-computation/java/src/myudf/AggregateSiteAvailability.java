@@ -59,10 +59,10 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
 //        }
         
         this.highLevelProfiles.put("CREAM-CE", 1);
-        this.highLevelProfiles.put("ARC-CE", 1);
-        this.highLevelProfiles.put("GRAM5", 1);
+        this.highLevelProfiles.put("ARC-CE"  , 1);
+        this.highLevelProfiles.put("GRAM5"   , 1);
         this.highLevelProfiles.put("unicore6.TargetSystemFactory", 1);
-        this.highLevelProfiles.put("SRM", 2);
+        this.highLevelProfiles.put("SRM"  , 2);
         this.highLevelProfiles.put("SRMv2", 2);
         this.highLevelProfiles.put("Site-BDII", 3);
     }
@@ -73,7 +73,8 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
             BigDecimal rounded = bd.setScale(precision, roundingMode);
             return rounded.doubleValue();
         } catch (NumberFormatException e) {
-            return 0;
+            // I sould check for 3/0 cases.
+            return -1;
         }
         
     }
@@ -91,9 +92,9 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
                     UP++;
                     break;                
                 case CRITICAL:
-                case MISSING:
                     DOWN++;
                     break;
+                case MISSING:
                 case UNKNOWN:
                     UNKNOWN++;
                     break;
@@ -117,7 +118,6 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
     
     @Override
     public Tuple exec(Tuple tuple) throws IOException {
-//        String server = (String) tuple.get(0);
         DataBag in = (DataBag) tuple.get(0);
         
         if (this.highLevelProfiles == null) {
@@ -132,16 +132,12 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         
         Iterator<Tuple> iterator = in.iterator();
         
-//        System.out.println("Server: " + server);
         while (iterator.hasNext()) {
             t = iterator.next();
             service_flavor = (String) t.get(1);
             timeline       = ((String) t.get(4)).substring(1, ((String)t.get(4)).length() - 1).split(", ");
             
             Integer i = this.highLevelProfiles.get(service_flavor);
-//            System.out.println(service_flavor);
-//            System.out.println("Timeline: " + Arrays.toString(timeline));
-//            System.out.println(i);
             
             if (this.ultimate_kickass_table.containsKey(i)) {
                 tmp = this.ultimate_kickass_table.get(i);
@@ -153,18 +149,15 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         
         // We get the first table, we dont care about the first iteration
         // because we do an AND with self.
-//        System.out.println(this.ultimate_kickass_table.values().size());
-
-        if (this.ultimate_kickass_table.size() < this.nGroups) {
-            this.output_table = new String[24];
-            Utils.makeMiss(this.output_table);
+        if (this.ultimate_kickass_table.size() > this.nGroups) {
+//            this.output_table = new String[24];
+//            Utils.makeMiss(this.output_table);
+            throw new UnsupportedOperationException("A site has more flavors than expected. Something is terribly wrong!");
         } else {
             this.output_table = this.ultimate_kickass_table.values().iterator().next();
             for (String[] tb : this.ultimate_kickass_table.values()) {
-//                System.out.println("INNER: " + Arrays.toString(tb));
                 Utils.makeAND(tb, this.output_table);
             }
-//            System.out.println("OUTER: " + Arrays.toString(this.output_table));
         }
         
 
