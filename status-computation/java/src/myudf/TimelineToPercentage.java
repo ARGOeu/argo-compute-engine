@@ -51,7 +51,7 @@ public class TimelineToPercentage extends EvalFunc<String> {
 
     @Override
     public String exec(Tuple t) throws IOException {        
-        String time_table = (String) t.get(4);
+        String time_table = (String) t.get(5);
 
         String[] tb = time_table.split("\\[")[1].split("\\]")[0].split(", ");
         
