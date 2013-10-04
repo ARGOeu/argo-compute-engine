@@ -305,13 +305,14 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
                 }
 
                 // Add beakon.
-                if (tmp_timelineTable[0] != null) {
-                } else if (beakon_map.containsKey(k_metric)) {
-                    addBeakon(tmp_timelineTable, 
-                            beakon_map.get(k_metric).getKey(), 
-                            beakon_map.get(k_metric).getValue());                    
-                } else {
-                    tmp_timelineTable[0] = "MISSING";
+                if (tmp_timelineTable[0] == null) {
+                    if (beakon_map.containsKey(k_metric)) {
+                        addBeakon(tmp_timelineTable,
+                                beakon_map.get(k_metric).getKey(),
+                                beakon_map.get(k_metric).getValue());
+                    } else {
+                        tmp_timelineTable[0] = "MISSING";
+                    }
                 }
 
                 // Make the integral to the tmp array.
@@ -326,8 +327,7 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
 
             if (!this.profile.isEmpty()) {
                 for (int i=0; i<timelineTable.length; i++) {
-                    if (!(State.valueOf(timelineTable[i]).equals(State.valueOf("DOWNTIME")) ||
-                            State.valueOf(timelineTable[i]).equals(State.valueOf("CRITICAL")))) {
+                    if (State.valueOf(timelineTable[i]).compareTo(State.valueOf("MISSING")) < 0) {
                         timelineTable[i] = "MISSING";
                     }
                 }
@@ -349,7 +349,7 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
     public Schema outputSchema(Schema input) {
 
         // Construct our output schema, which is:
-        // (OK: INTEGER, WARNING: INTEGER, UNKNOWN: INTEGER, CRITICAL: INTEGER, MISSING: INTEGER)        
+        // (OK: INTEGER, WARNING: INTEGER, UNKNOWN: INTEGER, CRITICAL: INTEGER, MISSING: INTEGER)
         try {
             Schema.FieldSchema date     = new Schema.FieldSchema("date",     DataType.CHARARRAY);
             Schema.FieldSchema timeline = new Schema.FieldSchema("timeline", DataType.CHARARRAY);
