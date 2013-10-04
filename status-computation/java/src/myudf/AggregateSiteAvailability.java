@@ -11,7 +11,6 @@ import static utils.State.DOWNTIME;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,8 +72,9 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
             BigDecimal rounded = bd.setScale(precision, roundingMode);
             return rounded.doubleValue();
         } catch (NumberFormatException e) {
-            // I sould check for 3/0 cases.
+            // I sould check for 3/0 cases.???
             return -1;
+            // return 0;
         }
         
     }
@@ -113,29 +113,30 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         //             = UP period / (Total period – UNKNOWN period – ScheduledDowntime)
         t.append(round(((UP/24.0)/(1.0 - (UNKNOWN/24.0) - (DOWNTIME/24.0)))*100, 3, BigDecimal.ROUND_HALF_UP));
         
+        t.append(round(UP/24.0,       5, BigDecimal.ROUND_HALF_UP));
+        t.append(round(UNKNOWN/24.0,  5, BigDecimal.ROUND_HALF_UP));
+        t.append(round(DOWNTIME/24.0, 5, BigDecimal.ROUND_HALF_UP));
         return t;
     }
     
     @Override
     public Tuple exec(Tuple tuple) throws IOException {
+        String site = null;
         DataBag in = (DataBag) tuple.get(0);
         
         if (this.highLevelProfiles == null) {
             getHighLevelProfiles();
         }
         
-        Tuple t;
         String service_flavor;
         String[] timeline, tmp;
         
         ultimate_kickass_table = new HashMap<Integer, String[]>();
         
-        Iterator<Tuple> iterator = in.iterator();
-        
-        while (iterator.hasNext()) {
-            t = iterator.next();
-            service_flavor = (String) t.get(1);
-            timeline       = ((String) t.get(4)).substring(1, ((String)t.get(4)).length() - 1).split(", ");
+        for (Tuple t : in) {
+            site=(String) t.get(9);
+            service_flavor = (String) t.get(2);
+            timeline       = ((String) t.get(5)).substring(1, ((String)t.get(5)).length() - 1).split(", ");
             
             Integer i = this.highLevelProfiles.get(service_flavor);
             
@@ -160,7 +161,6 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
             }
         }
         
-
         return getReport();
     }
     
@@ -170,16 +170,22 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         // Construct our output schema, which is:
         // (OK: INTEGER, WARNING: INTEGER, UNKNOWN: INTEGER, CRITICAL: INTEGER, MISSING: INTEGER)        
         try {
-            Schema.FieldSchema availA = new Schema.FieldSchema("availability", DataType.DOUBLE);
-            Schema.FieldSchema availR  = new Schema.FieldSchema("reliability", DataType.DOUBLE);
+            Schema.FieldSchema availA   = new Schema.FieldSchema("availability", DataType.DOUBLE);
+            Schema.FieldSchema availR   = new Schema.FieldSchema("reliability",  DataType.DOUBLE);
+            Schema.FieldSchema up       = new Schema.FieldSchema("up",           DataType.DOUBLE);
+            Schema.FieldSchema unknown  = new Schema.FieldSchema("unknown",      DataType.DOUBLE);
+            Schema.FieldSchema down     = new Schema.FieldSchema("downtime",     DataType.DOUBLE);
             
             Schema p_metricS = new Schema();
             p_metricS.add(availA);
             p_metricS.add(availR);
+            p_metricS.add(up);
+            p_metricS.add(unknown);
+            p_metricS.add(down);
             
             return new Schema(new Schema.FieldSchema("Availability_Report", p_metricS, DataType.TUPLE));
         } catch (FrontendException ex) {
-            Logger.getLogger(AppendPOEMrules.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AggregateSiteAvailability.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return null;
