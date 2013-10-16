@@ -37,7 +37,8 @@ import utils.Utils;
  * @author Anastasis Andronidis <anastasis90@yahoo.gr>
  */
 public class APPLY_PROFILES extends EvalFunc<Tuple> {
-    private int quontum = 24;
+
+    private int quantum = 288;
     private TupleFactory mTupleFactory = TupleFactory.getInstance();
     private String prev_date = null;
     private Set<String> profile = new HashSet<String>();
@@ -66,7 +67,8 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
             // We need the latest report for each metric.
             // The input is sorted by date. We dont need to check timestamps.
             if (timeStamp.startsWith(this.prev_date)) {
-                Entry<String, Integer> e = new SimpleEntry<String, Integer>(status, Integer.valueOf(timeStamp.split("T")[1].split(":")[0]));
+                int inMinutes = Integer.valueOf(timeStamp.split("T")[1].split(":")[0]) * 60 + Integer.valueOf(timeStamp.split("T")[1].split(":")[1]);
+                Entry<String, Integer> e = new SimpleEntry<String, Integer>(status, inMinutes);
                 beakons.put(metric, e);
             } else {
                 this.point = t;
@@ -77,20 +79,22 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
         return beakons;
     }
     
-    private void addBeakon(String[] tmp_timelineTable, String status, Integer expire_hour) {
+    private void addBeakon(String[] tmp_timelineTable, String status, Integer expire_minutes) {
         tmp_timelineTable[0] = status;
+        
+        int timeGroup = expire_minutes / (24 * 60 / this.quantum);
 
         int g = 1;
-        while (g <= expire_hour && tmp_timelineTable[g] == null) {
+        while (g <= timeGroup && tmp_timelineTable[g] == null) {
             tmp_timelineTable[g] = tmp_timelineTable[0];
             g++;
         }
 
-        if (g < this.quontum && tmp_timelineTable[g] == null) {
+        if (g < this.quantum && tmp_timelineTable[g] == null) {
             tmp_timelineTable[g] = "MISSING";
         }
 
-        if (g == this.quontum) {
+        if (g == this.quantum) {
             tmp_timelineTable[g - 1] = "MISSING";
         }
     }
@@ -174,8 +178,16 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
             if (tokens.length > 2) {
                 host = tokens[0];
                 serviceFlavor = tokens[1];
-                period = new SimpleEntry<Integer, Integer>(Integer.parseInt(tokens[2].split("T")[1].split(":")[0]),
-                        (Integer.parseInt(tokens[3].split("T")[1].split(":")[0])));
+                
+                int hour    = Integer.parseInt(tokens[2].split("T")[1].split(":")[0]);
+                int minutes = Integer.parseInt(tokens[2].split("T")[1].split(":")[1]);
+                int timeGroupStart = (hour * 60 + minutes) / (24 * 60 / this.quantum);
+                
+                hour    = Integer.parseInt(tokens[3].split("T")[1].split(":")[0]);
+                minutes = Integer.parseInt(tokens[3].split("T")[1].split(":")[1]);
+                int timeGroupEnd   = (hour * 60 + minutes) / (24 * 60 / this.quantum);
+                
+                period = new SimpleEntry<Integer, Integer>(timeGroupStart, timeGroupEnd);
 
                 this.downtimes.put(host + " " + serviceFlavor, period);
             }
@@ -268,7 +280,7 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
             Map<String, List<Entry<Calendar, String>>> dailyReports = getDailyReports();
 
             // Initialize timelineTable.
-            String[] timelineTable = new String[quontum];
+            String[] timelineTable = new String[quantum];
             for (int i=0; i<timelineTable.length; i++) {
                 timelineTable[i] = "OK";
             }
@@ -276,7 +288,7 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
             // For each metric, we will take the timestamps 
             // and start building the timeline.
             for (String k_metric : dailyReports.keySet()) {
-                String[] tmp_timelineTable = new String[quontum];
+                String[] tmp_timelineTable = new String[quantum];
 
                 this.profile.remove(k_metric);
 
@@ -289,7 +301,7 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
                     status = e.getValue();
                     int hour    = time_stamp.get(Calendar.HOUR_OF_DAY);
                     int minutes = time_stamp.get(Calendar.MINUTE);
-                    int timeGroup  = (hour*60 +  minutes) / (24*60/this.quontum);
+                    int timeGroup  = (hour*60 +  minutes) / (24*60/this.quantum);
 
                     if (tmp_timelineTable[timeGroup] == null) {
                         tmp_timelineTable[timeGroup] = status;
@@ -298,7 +310,7 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
                     // If we have 2 reports in the same quantum of time (e.g. 01:10 CRITICAL and 01:40 OK) we
                     // need to continiu the next hour with the last state (e.g. in our case we must do 02:00 OK).
                     } else if (State.valueOf(tmp_timelineTable[timeGroup]).compareTo(State.valueOf(status)) > 0) {
-                        if (timeGroup < this.quontum-1) {
+                        if (timeGroup < this.quantum-1) {
                             tmp_timelineTable[timeGroup+1] = status;
                         }
                     }
@@ -334,7 +346,7 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
             }
             
             // OUTPUT SECTION
-            // Schema: timeline: (date(e.g. 20130823), (quontum*"OK"))
+            // Schema: timeline: (date(e.g. 20130823), (quantum*"OK"))
             Tuple t = mTupleFactory.newTuple();
             t.append(calculationDate);
             t.append(Arrays.toString(timelineTable));

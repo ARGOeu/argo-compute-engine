@@ -30,6 +30,7 @@ import utils.Utils;
  */
 public class AggregateSiteAvailability extends EvalFunc<Tuple> {
     
+    private double quantum = 288.0;
     private TupleFactory mTupleFactory = TupleFactory.getInstance();
     
     private String[] output_table = null;
@@ -65,23 +66,10 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         this.highLevelProfiles.put("SRMv2", 2);
         this.highLevelProfiles.put("Site-BDII", 3);
     }
-    
-    private static double round(double unrounded, int precision, int roundingMode) {
-        try {
-            BigDecimal bd = new BigDecimal(unrounded);
-            BigDecimal rounded = bd.setScale(precision, roundingMode);
-            return rounded.doubleValue();
-        } catch (NumberFormatException e) {
-            // I sould check for 3/0 cases.???
-            return -1;
-            // return 0;
-        }
         
-    }
-    
     private Tuple getReport() {
-        int UP, UNKNOWN, DOWN, DOWNTIME;
-        UP = UNKNOWN = DOWN = DOWNTIME = 0;
+        int UP, UNKNOWN, DOWNTIME;
+        UP = UNKNOWN = DOWNTIME = 0;
         
         for (String s : this.output_table) {
             State st = State.valueOf(s);
@@ -92,7 +80,6 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
                     UP++;
                     break;                
                 case CRITICAL:
-                    DOWN++;
                     break;
                 case MISSING:
                 case UNKNOWN:
@@ -107,21 +94,20 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         Tuple t = mTupleFactory.newTuple();
         
         // Availability = UP period / KNOWN period = UP period / (Total period – UNKNOWN period)
-        t.append(round(((UP/24.0)/(1.0 - (UNKNOWN/24.0)))*100, 3, BigDecimal.ROUND_HALF_UP));
+        t.append(Utils.round(((UP/this.quantum)/(1.0 - (UNKNOWN/this.quantum)))*100, 3, BigDecimal.ROUND_HALF_UP));
         
         // Reliability = UP period / (KNOWN period – Scheduled Downtime)
         //             = UP period / (Total period – UNKNOWN period – ScheduledDowntime)
-        t.append(round(((UP/24.0)/(1.0 - (UNKNOWN/24.0) - (DOWNTIME/24.0)))*100, 3, BigDecimal.ROUND_HALF_UP));
+        t.append(Utils.round(((UP/this.quantum)/(1.0 - (UNKNOWN/this.quantum) - (DOWNTIME/this.quantum)))*100, 3, BigDecimal.ROUND_HALF_UP));
         
-        t.append(round(UP/24.0,       5, BigDecimal.ROUND_HALF_UP));
-        t.append(round(UNKNOWN/24.0,  5, BigDecimal.ROUND_HALF_UP));
-        t.append(round(DOWNTIME/24.0, 5, BigDecimal.ROUND_HALF_UP));
+        t.append(Utils.round(UP/this.quantum,       5, BigDecimal.ROUND_HALF_UP));
+        t.append(Utils.round(UNKNOWN/this.quantum,  5, BigDecimal.ROUND_HALF_UP));
+        t.append(Utils.round(DOWNTIME/this.quantum, 5, BigDecimal.ROUND_HALF_UP));
         return t;
     }
     
     @Override
     public Tuple exec(Tuple tuple) throws IOException {
-        String site = null;
         DataBag in = (DataBag) tuple.get(0);
         
         if (this.highLevelProfiles == null) {
@@ -134,9 +120,8 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         ultimate_kickass_table = new HashMap<Integer, String[]>();
         
         for (Tuple t : in) {
-            site=(String) t.get(9);
-            service_flavor = (String) t.get(2);
-            timeline       = ((String) t.get(5)).substring(1, ((String)t.get(5)).length() - 1).split(", ");
+            service_flavor = (String) t.get(5);
+            timeline       = ((String) t.get(3)).substring(1, ((String)t.get(3)).length() - 1).split(", ");
             
             Integer i = this.highLevelProfiles.get(service_flavor);
             
@@ -190,11 +175,5 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
 
         return null;
     }
-    
-//    @Override
-//    public List<String> getCacheFiles() {
-//        List<String> list = new ArrayList<String>(1);
-//        list.add("/user/root/highlevelprofiles.txt#highlevelprofiles.txt");
-//        return list;
-//    }
+
 }

@@ -1,6 +1,7 @@
 package utils;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
 /**
  *
@@ -29,4 +30,18 @@ public class Utils {
             }
         }
     }
+    
+    public static double round(double unrounded, int precision, int roundingMode) {
+        try {
+            BigDecimal bd = new BigDecimal(unrounded);
+            BigDecimal rounded = bd.setScale(precision, roundingMode);
+            return rounded.doubleValue();
+        } catch (NumberFormatException e) {
+            // I sould check for 3/0 cases.???
+            return -1;
+            // return 0;
+        }
+
+    }
+
 }
