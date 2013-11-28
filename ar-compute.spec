@@ -1,11 +1,11 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
 Version: 1.0.16
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
-BuildArch: noarch
+BuildArch: x86_64
 Source0:   %{name}-%{version}.tar.gz
 BuildRequires: maven2
 Requires: hive
@@ -53,9 +53,10 @@ mvn clean
 #%attr(0755,root,root) /etc/cron.d/ar-cron.sh
 %attr(0750,root,root) /var/lib/ar-compute
 %attr(0750,root,root) /var/log/ar-compute
+%attr(0755,root,root) /etc/cron.daily/ar-input
 
 %changelog
-* Thu Nov 28 2013 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.0.16-1%{?dist}
+* Thu Nov 28 2013 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.0.16-2%{?dist}
 - Added cronjob for input files
 * Mon Sep 9 2013 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.0.0-2%{?dist}
 - Minor rearrangements of paths
