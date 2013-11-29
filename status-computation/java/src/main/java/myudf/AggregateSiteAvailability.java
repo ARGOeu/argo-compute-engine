@@ -1,5 +1,7 @@
 package myudf;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import static utils.State.OK;
 import static utils.State.WARNING;
@@ -9,11 +11,16 @@ import static utils.State.MISSING;
 import static utils.State.DOWNTIME;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
@@ -34,11 +41,41 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
     private TupleFactory mTupleFactory = TupleFactory.getInstance();
     
     private String[] output_table = null;
-    private Map<Integer, String[]> ultimate_kickass_table;
+    private Map<Integer, String[]> ultimate_kickass_table = null;
     
     private Map<String, Integer> highLevelProfiles = null;
     
     private Integer nGroups = 3;
+    private Map<String, List<Integer>> hlps = null;
+    
+    private void initHLPs(final String hlp) throws FileNotFoundException, IOException {
+        this.hlps = new HashMap<String, List<Integer>>();
+
+        byte[] decodedBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(hlp);
+        BufferedReader in = new BufferedReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(decodedBytes))));
+
+        String input = in.readLine();
+
+        StringTokenizer tokenizer = new StringTokenizer(input, "\\|");
+
+        while (tokenizer.hasMoreTokens()) {
+            String[] tokens = tokenizer.nextToken().split("\u0001");
+            // Input:
+            //  [0]:hlpName, [1]:serviceFlavor, [2] groupID
+            if (tokens.length > 2) {
+                String key = tokens[0] + " " + tokens[1];
+                Integer groupid = Integer.parseInt(tokens[2]);
+
+                if (this.hlps.containsKey(key)) {
+                    this.hlps.get(key).add(groupid);
+                } else {
+                    ArrayList<Integer> groupids = new ArrayList<Integer>();
+                    groupids.add(groupid);
+                    this.hlps.put(key, groupids);
+                }
+            }
+        }
+    }
     
     private void getHighLevelProfiles() throws FileNotFoundException, IOException {
         this.highLevelProfiles = new HashMap<String, Integer>();
@@ -129,8 +166,13 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
                 tmp = this.ultimate_kickass_table.get(i);
                 Utils.makeOR(timeline, tmp);
             } else {
-                this.ultimate_kickass_table.put(i, timeline);
-            }           
+                if (i!=null) {
+                    this.ultimate_kickass_table.put(i, timeline);
+                } else {
+                    String msg = "Encounterd: " + service_flavor;
+                    Logger.getLogger(AggregateSiteAvailability.class.getName()).log(Level.INFO, msg);
+                }
+            }
         }
         
         // We get the first table, we dont care about the first iteration
@@ -138,7 +180,7 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         if (this.ultimate_kickass_table.size() > this.nGroups) {
 //            this.output_table = new String[24];
 //            Utils.makeMiss(this.output_table);
-            throw new UnsupportedOperationException("A site has more flavors than expected. Something is terribly wrong!");
+            throw new UnsupportedOperationException("A site has more flavors than expected. Something is terribly wrong! " + this.ultimate_kickass_table.keySet());
         } else {
             this.output_table = this.ultimate_kickass_table.values().iterator().next();
             for (String[] tb : this.ultimate_kickass_table.values()) {

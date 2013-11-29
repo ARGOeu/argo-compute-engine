@@ -8,7 +8,6 @@ import java.io.InputStreamReader;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -20,7 +19,6 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
-import javax.xml.bind.DatatypeConverter;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.DataBag;
@@ -36,29 +34,28 @@ import utils.Utils;
  *
  * @author Anastasis Andronidis <anastasis90@yahoo.gr>
  */
-public class APPLY_PROFILES extends EvalFunc<Tuple> {
+public class ApplyProfiles extends EvalFunc<Tuple> {
 
     private int quantum = 288;
     private TupleFactory mTupleFactory = TupleFactory.getInstance();
     private String prev_date = null;
     private Set<String> profile = new HashSet<String>();
-    
     private Tuple point = null;
     private Iterator<Tuple> timeLineIt = null;
-    
-    private Map<String, Entry<String, Integer>> getBeakons() throws ExecException {
+
+    private Map<String, Entry<State, Integer>> getBeakons() throws ExecException {
         String metric, status, timeStamp;
         boolean sameDate = true;
         // Key: metric, Value: Time + "@" + Status
-        Map<String, Entry<String, Integer>> beakons = new HashMap<String, Entry<String, Integer>>();
-                
+        Map<String, Entry<State, Integer>> beakons = new HashMap<String, Entry<State, Integer>>();
+
         while (sameDate && this.timeLineIt.hasNext()) {
             Tuple t = this.timeLineIt.next();
 
-            metric    = (String) t.get(0);
-            status    = (String) t.get(1);
+            metric = (String) t.get(0);
+            status = (String) t.get(1);
             timeStamp = (String) t.get(2);
-            
+
             if (!this.profile.contains(metric)) {
                 continue;
             }
@@ -68,20 +65,20 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
             // The input is sorted by date. We dont need to check timestamps.
             if (timeStamp.startsWith(this.prev_date)) {
                 int inMinutes = Integer.valueOf(timeStamp.split("T")[1].split(":")[0]) * 60 + Integer.valueOf(timeStamp.split("T")[1].split(":")[1]);
-                Entry<String, Integer> e = new SimpleEntry<String, Integer>(status, inMinutes);
+                Entry<State, Integer> e = new SimpleEntry<State, Integer>(State.valueOf(status), inMinutes);
                 beakons.put(metric, e);
             } else {
                 this.point = t;
                 sameDate = false;
             }
         }
-        
+
         return beakons;
     }
-    
-    private void addBeakon(String[] tmp_timelineTable, String status, Integer expire_minutes) {
+
+    private void addBeakon(State[] tmp_timelineTable, State status, Integer expire_minutes) {
         tmp_timelineTable[0] = status;
-        
+
         int timeGroup = expire_minutes / (24 * 60 / this.quantum);
 
         int g = 1;
@@ -91,65 +88,64 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
         }
 
         if (g < this.quantum && tmp_timelineTable[g] == null) {
-            tmp_timelineTable[g] = "MISSING";
+            tmp_timelineTable[g] = State.MISSING;
         }
 
         if (g == this.quantum) {
-            tmp_timelineTable[g - 1] = "MISSING";
+            tmp_timelineTable[g - 1] = State.MISSING;
         }
     }
 
-    private Map<String, List<Entry<Calendar, String>>> getDailyReports() throws ExecException {
+    private Map<String, List<Entry<String, State>>> getDailyReports() throws ExecException {
         String metric, status, timeStamp;
-        
+
         // metric -> sortedmap(time -> status)
-        Map<String, List<Entry<Calendar, String>>> groupOfMetrics = new HashMap<String, List<Entry<Calendar, String>>>();
-        
-        if (this.point!=null) {
-            metric    = (String) this.point.get(0);
-            status    = (String) this.point.get(1);
+        Map<String, List<Entry<String, State>>> groupOfMetrics = new HashMap<String, List<Entry<String, State>>>();
+
+        if (this.point != null) {
+            metric = (String) this.point.get(0);
+            status = (String) this.point.get(1);
             timeStamp = (String) this.point.get(2);
-            
+
             if (this.profile.contains(metric)) {
-                Entry<Calendar, String> e = new SimpleEntry<Calendar, String>(DatatypeConverter.parseDateTime(timeStamp), status);
-                ArrayList<Entry<Calendar, String>> l = new ArrayList<Entry<Calendar, String>>(50);
+                Entry<String, State> e = new SimpleEntry<String, State>(timeStamp.substring(11, 16), State.valueOf(status));
+                ArrayList<Entry<String, State>> l = new ArrayList<Entry<String, State>>(50);
                 l.add(e);
                 groupOfMetrics.put(metric, l);
-            } 
-            
+            }
+
             this.point = null;
         }
-        
+
         while (this.timeLineIt.hasNext()) {
             Tuple t = this.timeLineIt.next();
-            
-            metric    = (String) t.get(0);
-            status    = (String) t.get(1);
+
+            metric = (String) t.get(0);
+            status = (String) t.get(1);
             timeStamp = (String) t.get(2);
-            
+
             if (!this.profile.contains(metric)) {
                 continue;
             }
-            
+
             // If we are in the same day.
             if (groupOfMetrics.containsKey(metric)) {
                 groupOfMetrics.get(metric).add(
-                        new SimpleEntry<Calendar, String>
-                            (DatatypeConverter.parseDateTime(timeStamp), status));
+                        new SimpleEntry<String, State>(timeStamp.substring(11, 16), State.valueOf(status)));
             } else {
-                Entry<Calendar, String> e = new SimpleEntry<Calendar, String>(DatatypeConverter.parseDateTime(timeStamp), status);
-                ArrayList<Entry<Calendar, String>> l = new ArrayList<Entry<Calendar, String>>(50);
+                Entry<String, State> e = new SimpleEntry<String, State>(timeStamp.substring(11, 16), State.valueOf(status));
+                ArrayList<Entry<String, State>> l = new ArrayList<Entry<String, State>>(50);
                 l.add(e);
                 groupOfMetrics.put(metric, l);
             }
         }
-       
+
         return groupOfMetrics;
     }
-    
-    private void makeIntegral(String[] points) throws IOException {
-        String integral_status = points[0];
-        
+
+    private void makeIntegral(State[] points) throws IOException {
+        State integral_status = points[0];
+
         for (int i = 1; i < points.length; i++) {
             if (points[i] == null) {
                 points[i] = integral_status;
@@ -158,12 +154,11 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
             }
         }
     }
-    
     private Map<String, Entry<Integer, Integer>> downtimes = null;
 
     private void getDowntimes(final String downtimes) throws FileNotFoundException, IOException {
         this.downtimes = new HashMap<String, Entry<Integer, Integer>>();
-        
+
         byte[] decodedBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(downtimes);
         BufferedReader in = new BufferedReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(decodedBytes))));
 
@@ -178,15 +173,15 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
             if (tokens.length > 2) {
                 host = tokens[0];
                 serviceFlavor = tokens[1];
-                
-                int hour    = Integer.parseInt(tokens[2].split("T")[1].split(":")[0]);
-                int minutes = Integer.parseInt(tokens[2].split("T")[1].split(":")[1]);
+
+                int hour = Integer.parseInt(tokens[2].split("T", 2)[1].split(":")[0]);
+                int minutes = Integer.parseInt(tokens[2].split("T", 2)[1].split(":")[1]);
                 int timeGroupStart = (hour * 60 + minutes) / (24 * 60 / this.quantum);
-                
-                hour    = Integer.parseInt(tokens[3].split("T")[1].split(":")[0]);
-                minutes = Integer.parseInt(tokens[3].split("T")[1].split(":")[1]);
-                int timeGroupEnd   = (hour * 60 + minutes) / (24 * 60 / this.quantum);
-                
+
+                hour = Integer.parseInt(tokens[3].split("T", 2)[1].split(":")[0]);
+                minutes = Integer.parseInt(tokens[3].split("T", 2)[1].split(":")[1]);
+                int timeGroupEnd = (hour * 60 + minutes) / (24 * 60 / this.quantum);
+
                 period = new SimpleEntry<Integer, Integer>(timeGroupStart, timeGroupEnd);
 
                 this.downtimes.put(host + " " + serviceFlavor, period);
@@ -194,19 +189,17 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
         }
     }
 
-    private void addDowntimes(String[] tmp_timelineTable, String host, String flavor) {
+    private void addDowntimes(State[] tmp_timelineTable, String host, String flavor) {
         String key = host + " " + flavor;
         if (this.downtimes.containsKey(key)) {
             Entry<Integer, Integer> p = this.downtimes.get(key);
             for (int i = p.getKey(); i <= p.getValue(); i++) {
-                tmp_timelineTable[i] = State.DOWNTIME.toString();
+                tmp_timelineTable[i] = State.DOWNTIME;
             }
         }
     }
-    
     private Map<String, ArrayList<String>> poems = null;
 
-    // SAM_Server, NGI, Profile, ServiceFlavour, Metric, Vo, VoFqan
     private void initPOEMs(final String poems) throws FileNotFoundException, IOException {
         this.poems = new HashMap<String, ArrayList<String>>();
 
@@ -235,7 +228,7 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
             }
         }
     }
-    
+
     @Override
     // Input: timeline: {(metric, status, time_stamp)},profile_metrics: {metric}, previous_date, hostname, service_flavor
     public Tuple exec(Tuple tuple) throws IOException {
@@ -246,12 +239,12 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
             // Get timeline and profiles to two different stractures.
             try {
                 this.timeLineIt = ((DataBag) tuple.get(0)).iterator();
-                this.point      = null;
-                pprofile        = (String) tuple.get(1);
-                this.prev_date  = (String) tuple.get(2);
-                hostname        = (String) tuple.get(3);
-                service_flavor  = (String) tuple.get(4);
-                calculationDate = ((String) tuple.get(5)).replaceAll("-| ", "");
+                this.point = null;
+                pprofile = (String) tuple.get(1);
+                this.prev_date = (String) tuple.get(2);
+                hostname = (String) tuple.get(3);
+                service_flavor = (String) tuple.get(4);
+                calculationDate = (String) tuple.get(5);
                 if (this.downtimes == null) {
                     getDowntimes((String) tuple.get(6));
                 }
@@ -259,59 +252,61 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
                     initPOEMs((String) tuple.get(7));
                 }
             } catch (Exception e) {
-                throw new IOException("There is a problem with the input in APPLY_PROFILES: " + e);
+                throw new IOException("There is a problem with the input in AppyProfiles: " + e);
             }
-            
+
             // Read the profile.
             this.profile.clear();
             this.profile.addAll(this.poems.get(pprofile + " " + service_flavor));
-            
+
             if (this.profile.isEmpty()) {
                 throw new IOException("Profile is empty!");
             }
-            
+
             // Beakon poems. Key: Metric, Value: (status, hour)
-            Map<String, Entry<String, Integer>> beakon_map = getBeakons();
-            
+            Map<String, Entry<State, Integer>> beakon_map = getBeakons();
+
             // The input is order by timestamps. We are going from past
             // to future. e.g. 2013-06-03 --> 2013-06-05
             // input: timeline: {(metric, status, time_stamp)}
             // Daily poems: Key: Metric, Value: (List(timestamp, status))
-            Map<String, List<Entry<Calendar, String>>> dailyReports = getDailyReports();
+            Map<String, List<Entry<String, State>>> dailyReports = getDailyReports();
 
             // Initialize timelineTable.
-            String[] timelineTable = new String[quantum];
-            for (int i=0; i<timelineTable.length; i++) {
-                timelineTable[i] = "OK";
+            State[] timelineTable = new State[quantum];
+            for (int i = 0; i < timelineTable.length; i++) {
+                timelineTable[i] = State.OK;
             }
-            
+
             // For each metric, we will take the timestamps 
             // and start building the timeline.
             for (String k_metric : dailyReports.keySet()) {
-                String[] tmp_timelineTable = new String[quantum];
+                State[] tmp_timelineTable = new State[quantum];
 
                 this.profile.remove(k_metric);
 
-                List<Entry<Calendar, String>> metricReports = dailyReports.get(k_metric);
+                List<Entry<String, State>> metricReports = dailyReports.get(k_metric);
 
-                Calendar time_stamp;
-                String status;
-                for (Entry<Calendar, String> e : metricReports) {
+                String time_stamp;
+                State status;
+                for (Entry<String, State> e : metricReports) {
                     time_stamp = e.getKey();
                     status = e.getValue();
-                    int hour    = time_stamp.get(Calendar.HOUR_OF_DAY);
-                    int minutes = time_stamp.get(Calendar.MINUTE);
-                    int timeGroup  = (hour*60 +  minutes) / (24*60/this.quantum);
+
+                    int hour = Integer.parseInt(time_stamp.substring(0, 2));
+                    int minutes = Integer.parseInt(time_stamp.substring(3, 5));
+
+                    int timeGroup = (hour * 60 + minutes) / (24 * 60 / this.quantum);
 
                     if (tmp_timelineTable[timeGroup] == null) {
                         tmp_timelineTable[timeGroup] = status;
-                    } else if (State.valueOf(tmp_timelineTable[timeGroup]).compareTo(State.valueOf(status)) < 0) {
+                    } else if (tmp_timelineTable[timeGroup].ordinal() < status.ordinal()) {
                         tmp_timelineTable[timeGroup] = status;
-                    // If we have 2 reports in the same quantum of time (e.g. 01:10 CRITICAL and 01:40 OK) we
-                    // need to continiu the next hour with the last state (e.g. in our case we must do 02:00 OK).
-                    } else if (State.valueOf(tmp_timelineTable[timeGroup]).compareTo(State.valueOf(status)) > 0) {
-                        if (timeGroup < this.quantum-1) {
-                            tmp_timelineTable[timeGroup+1] = status;
+                        // If we have 2 reports in the same quantum of time (e.g. 01:10 CRITICAL and 01:40 OK) we
+                        // need to continue the next hour with the last state (e.g. in our case we must do 02:00 OK).
+                    } else if (tmp_timelineTable[timeGroup].ordinal() > status.ordinal()) {
+                        if (timeGroup < this.quantum - 1) {
+                            tmp_timelineTable[timeGroup + 1] = status;
                         }
                     }
                 }
@@ -323,7 +318,7 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
                                 beakon_map.get(k_metric).getKey(),
                                 beakon_map.get(k_metric).getValue());
                     } else {
-                        tmp_timelineTable[0] = "MISSING";
+                        tmp_timelineTable[0] = State.MISSING;
                     }
                 }
 
@@ -338,32 +333,32 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
             }
 
             if (!this.profile.isEmpty()) {
-                for (int i=0; i<timelineTable.length; i++) {
-                    if (State.valueOf(timelineTable[i]).compareTo(State.valueOf("MISSING")) < 0) {
-                        timelineTable[i] = "MISSING";
+                for (int i = 0; i < timelineTable.length; i++) {
+                    if (timelineTable[i].ordinal() < State.MISSING.ordinal()) {
+                        timelineTable[i] = State.MISSING;
                     }
                 }
             }
-            
+
             // OUTPUT SECTION
             // Schema: timeline: (date(e.g. 20130823), (quantum*"OK"))
             Tuple t = mTupleFactory.newTuple();
             t.append(calculationDate);
             t.append(Arrays.toString(timelineTable));
-            
+
             return t;
         } catch (ExecException ee) {
             throw ee;
         }
     }
-    
+
     @Override
     public Schema outputSchema(Schema input) {
 
         // Construct our output schema, which is:
         // (OK: INTEGER, WARNING: INTEGER, UNKNOWN: INTEGER, CRITICAL: INTEGER, MISSING: INTEGER)
         try {
-            Schema.FieldSchema date     = new Schema.FieldSchema("date",     DataType.CHARARRAY);
+            Schema.FieldSchema date = new Schema.FieldSchema("date", DataType.CHARARRAY);
             Schema.FieldSchema timeline = new Schema.FieldSchema("timeline", DataType.CHARARRAY);
 
             Schema tuple = new Schema();
@@ -372,7 +367,7 @@ public class APPLY_PROFILES extends EvalFunc<Tuple> {
 
             return new Schema(new Schema.FieldSchema("date_timeline", tuple, DataType.TUPLE));
         } catch (FrontendException ex) {
-            Logger.getLogger(APPLY_PROFILES.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ApplyProfiles.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return null;

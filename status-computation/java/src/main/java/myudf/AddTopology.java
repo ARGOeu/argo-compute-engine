@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package myudf;
 
 import java.io.BufferedReader;
@@ -12,6 +8,8 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.DataType;
@@ -63,6 +61,13 @@ public class AddTopology extends EvalFunc<Tuple> {
         
         Tuple out = mTupleFactory.newTuple(8);
         String[] s = this.topology.get(key);
+        
+        if (s==null) {
+            String msg = "Coundn't find secord with hostname + service_flavour: " + key;
+            Logger.getLogger(AddTopology.class.getName()).log(Level.WARNING, msg);
+            return out;
+        }
+        
         for (int i=0; i<s.length; i++){
             out.set(i, s[i]);
         }
