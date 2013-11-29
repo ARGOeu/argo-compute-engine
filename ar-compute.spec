@@ -32,7 +32,6 @@ install --directory %{buildroot}/var/log/ar-compute
 install --directory %{buildroot}/etc/cron.daily
 
 install --mode 755 helpers/ar-compute.sh %{buildroot}/usr/libexec/ar-compute
-install --mode 644 helpers/InputHandler.pig %{buildroot}/usr/libexec/ar-compute/pig
 install --mode 644 status-computation/calculator.pig %{buildroot}/usr/libexec/ar-compute/pig
 install --mode 644 status-computation/java/target/MyUDF-1.0.jar %{buildroot}/usr/libexec/ar-compute/MyUDF.jar
 ### %{__rm} -rf status-computation/java
@@ -47,7 +46,6 @@ mvn clean
 %files
 %defattr(0644,root,root)
 %attr(0755,root,root) /usr/libexec/ar-compute/ar-compute.sh
-%attr(0755,root,root) /usr/libexec/ar-compute/pig/InputHandler.pig
 %attr(0755,root,root) /usr/libexec/ar-compute/pig/calculator.pig
 %attr(0755,root,root) /usr/libexec/ar-compute/MyUDF.jar
 #%attr(0755,root,root) /etc/cron.d/ar-cron.sh
