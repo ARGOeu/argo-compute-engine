@@ -22,9 +22,10 @@ until [ "$currentdate" == "$loopenddate" ]; do
   echo "Prepare topology for $RUN_DATE"
   cat sites_$RUN_DATE_UNDER.out | sort -u > sites_$RUN_DATE_UNDER.out.clean
   cat sites_$RUN_DATE_UNDER.out.clean | sed 's/\x01/ /g' | grep " SRM " | sed 's/ SRM / SRMv2 /g' | sed 's/ /\x01/g' >> sites_$RUN_DATE_UNDER.out.clean
-  cat sites_$RUN_DATE_UNDER.out.clean | awk 'BEGIN {ORS="|"; RS="\r\n"} {print $0}' | gzip -c | base64 | awk 'BEGIN {ORS=""} {print $0}'` > sites_$RUN_DATE_UNDER.zip
+  cat sites_$RUN_DATE_UNDER.out.clean | awk 'BEGIN {ORS="|"; RS="\r\n"} {print $0}' | gzip -c | base64 | awk 'BEGIN {ORS=""} {print $0}' > sites_$RUN_DATE_UNDER.zip
   rm -f sites_$RUN_DATE_UNDER.out.clean
-  split -b 30092 sites_$RUN_DATE_UNDER.zip sites_$RUN_DATE_UNDER
+  split -b 30092 sites_$RUN_DATE_UNDER.zip sites_$RUN_DATE_UNDER.
+  rm -f sites_$RUN_DATE_UNDER.zip
   
 
   ### prepare downtimes
@@ -36,11 +37,11 @@ until [ "$currentdate" == "$loopenddate" ]; do
   rm -f downtimes_cache_$RUN_DATE.out
 
   ### run calculator.pig
-  pig -useHCatalog -param in_date=$RUN_DATE -param downtimes_file=downtimes_$RUN_DATE.zip -param poem_file=poem_sync_$RUN_DATE_UNDER.out.clean -param topology_file1=sites_$RUN_DATE_UNDERaa -param topology_file2=sites_$RUN_DATE_UNDERab -param topology_file3=sites_$RUN_DATE_UNDERac -f /usr/libexec/ar-compute/pig/calculator.pig
+  pig -useHCatalog -param in_date=$RUN_DATE -param downtimes_file=downtimes_$RUN_DATE.zip -param poem_file=poem_sync_$RUN_DATE_UNDER.out.clean -param topology_file1=sites_$RUN_DATE_UNDER.aa -param topology_file2=sites_$RUN_DATE_UNDER.ab -param topology_file3=sites_$RUN_DATE_UNDER.ac -f /usr/libexec/ar-compute/pig/calculator.pig
 
   rm -f poem_sync_$RUN_DATE_UNDER.out.clean
   rm -f downtimes_$RUN_DATE.zip
-  rm -f sites_$RUN_DATE_UNDERaa sites_$RUN_DATE_UNDERab sites_$RUN_DATE_UNDERac
+  rm -f sites_$RUN_DATE_UNDER.aa sites_$RUN_DATE_UNDER.ab sites_$RUN_DATE_UNDER.ac
   
   currentdate=$(/bin/date --date "$currentdate 1 day" +%Y-%m-%d)
   
