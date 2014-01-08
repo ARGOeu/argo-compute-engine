@@ -8,8 +8,6 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.DataType;
@@ -22,7 +20,7 @@ import org.apache.pig.impl.logicalLayer.schema.Schema;
  * @author Anastasis Andronidis <anastasis90@yahoo.gr>
  */
 public class AddTopology extends EvalFunc<Tuple> {
-    private TupleFactory mTupleFactory = TupleFactory.getInstance();
+    private final TupleFactory mTupleFactory = TupleFactory.getInstance();
     private Map<String, String[]> topology = null;
 
     private void initTopology(final String topology) throws FileNotFoundException, IOException {
@@ -50,7 +48,6 @@ public class AddTopology extends EvalFunc<Tuple> {
             }
         }
     }
-
     @Override
     public Tuple exec(Tuple tuple) throws IOException {
         if (this.topology == null) {
@@ -61,16 +58,10 @@ public class AddTopology extends EvalFunc<Tuple> {
         
         Tuple out = mTupleFactory.newTuple(8);
         String[] s = this.topology.get(key);
-        
-        if (s==null) {
-            String msg = "Coundn't find secord with hostname + service_flavour: " + key;
-            Logger.getLogger(AddTopology.class.getName()).log(Level.WARNING, msg);
-            return out;
-        }
-        
         for (int i=0; i<s.length; i++){
             out.set(i, s[i]);
         }
+        
         return out;
     }
     

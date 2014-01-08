@@ -36,10 +36,11 @@ import utils.Utils;
  */
 public class ApplyProfiles extends EvalFunc<Tuple> {
 
-    private int quantum = 288;
-    private TupleFactory mTupleFactory = TupleFactory.getInstance();
+    private final int quantum = 288;
+    private final TupleFactory mTupleFactory = TupleFactory.getInstance();
     private String prev_date = null;
     private Set<String> profile = new HashSet<String>();
+
     private Tuple point = null;
     private Iterator<Tuple> timeLineIt = null;
 
@@ -154,6 +155,7 @@ public class ApplyProfiles extends EvalFunc<Tuple> {
             }
         }
     }
+
     private Map<String, Entry<Integer, Integer>> downtimes = null;
 
     private void getDowntimes(final String downtimes) throws FileNotFoundException, IOException {
@@ -198,6 +200,7 @@ public class ApplyProfiles extends EvalFunc<Tuple> {
             }
         }
     }
+
     private Map<String, ArrayList<String>> poems = null;
 
     private void initPOEMs(final String poems) throws FileNotFoundException, IOException {

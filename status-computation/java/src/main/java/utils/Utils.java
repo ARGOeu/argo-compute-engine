@@ -9,23 +9,15 @@ import java.math.BigDecimal;
  */
 public class Utils {
 
-    public static void makeMiss(String[] t) {
+    public static void makeMiss(State[] t) {
         for (int i = 0; i < t.length; i++) {
-            t[i] = "MISSING";
+            t[i] = State.MISSING;
         }
     }
 
-    public static void makeOR(String[] table1, String[] table2) throws IOException {
+    public static void makeOR(State[] table1, State[] table2) throws IOException {
         for (int i = 0; i < table1.length; i++) {
-            if (State.valueOf(table1[i]).compareTo(State.valueOf(table2[i])) < 0) {
-                table2[i] = table1[i];
-            }
-        }
-    }
-
-    public static void makeAND(String[] table1, String[] table2) throws IOException {
-        for (int i = 0; i < table1.length; i++) {
-            if (State.valueOf(table1[i]).compareTo(State.valueOf(table2[i])) > 0) {
+            if (table1[i].ordinal() < table2[i].ordinal()) {
                 table2[i] = table1[i];
             }
         }

@@ -12,8 +12,10 @@ import static utils.State.DOWNTIME;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import org.apache.pig.EvalFunc;
+import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
@@ -37,15 +40,16 @@ import utils.Utils;
  */
 public class AggregateSiteAvailability extends EvalFunc<Tuple> {
     
-    private double quantum = 288.0;
-    private TupleFactory mTupleFactory = TupleFactory.getInstance();
+    private final double quantum = 288.0;
+    private final TupleFactory mTupleFactory = TupleFactory.getInstance();
+    private Map<String, String> weights = null;
     
-    private String[] output_table = null;
-    private Map<Integer, String[]> ultimate_kickass_table = null;
+    private State[] output_table = null;
+    private Map<Integer, State[]> ultimate_kickass_table = null;
     
     private Map<String, Integer> highLevelProfiles = null;
     
-    private Integer nGroups = 3;
+    private final Integer nGroups = 3;
     private Map<String, List<Integer>> hlps = null;
     
     private void initHLPs(final String hlp) throws FileNotFoundException, IOException {
@@ -76,7 +80,31 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
             }
         }
     }
-    
+
+    private void initWeights(final String weights) throws FileNotFoundException, IOException {
+
+        this.weights = new HashMap<String, String>();
+
+        byte[] decodedBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(weights);
+        BufferedReader in = new BufferedReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(decodedBytes))));
+
+        String input = in.readLine();
+
+        StringTokenizer tokenizer = new StringTokenizer(input, "\\|");
+
+        String host, w;
+        while (tokenizer.hasMoreTokens()) {
+            // (hostname, weight)
+            String[] tokens = tokenizer.nextToken().split("\u0001", 2);
+            if (tokens.length > 1) {
+                host = tokens[0];
+                w = tokens[1];
+
+                this.weights.put(host, w);
+            }
+        }
+    }
+
     private void getHighLevelProfiles() throws FileNotFoundException, IOException {
         this.highLevelProfiles = new HashMap<String, Integer>();
 //        
@@ -104,14 +132,12 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         this.highLevelProfiles.put("Site-BDII", 3);
     }
         
-    private Tuple getReport() {
+    private Tuple getReport() throws ExecException {
         int UP, UNKNOWN, DOWNTIME;
         UP = UNKNOWN = DOWNTIME = 0;
         
-        for (String s : this.output_table) {
-            State st = State.valueOf(s);
-            
-            switch (st) {
+        for (State s : this.output_table) {
+            switch (s) {
                 case OK:
                 case WARNING:
                     UP++;
@@ -128,46 +154,68 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
             }            
         }
         
-        Tuple t = mTupleFactory.newTuple();
+        Tuple t = mTupleFactory.newTuple(6);
         
         // Availability = UP period / KNOWN period = UP period / (Total period – UNKNOWN period)
-        t.append(Utils.round(((UP/this.quantum)/(1.0 - (UNKNOWN/this.quantum)))*100, 3, BigDecimal.ROUND_HALF_UP));
+        t.set(0, Utils.round(((UP/this.quantum)/(1.0 - (UNKNOWN/this.quantum)))*100, 3, BigDecimal.ROUND_HALF_UP));
         
         // Reliability = UP period / (KNOWN period – Scheduled Downtime)
         //             = UP period / (Total period – UNKNOWN period – ScheduledDowntime)
-        t.append(Utils.round(((UP/this.quantum)/(1.0 - (UNKNOWN/this.quantum) - (DOWNTIME/this.quantum)))*100, 3, BigDecimal.ROUND_HALF_UP));
+        t.set(1, Utils.round(((UP/this.quantum)/(1.0 - (UNKNOWN/this.quantum) - (DOWNTIME/this.quantum)))*100, 3, BigDecimal.ROUND_HALF_UP));
         
-        t.append(Utils.round(UP/this.quantum,       5, BigDecimal.ROUND_HALF_UP));
-        t.append(Utils.round(UNKNOWN/this.quantum,  5, BigDecimal.ROUND_HALF_UP));
-        t.append(Utils.round(DOWNTIME/this.quantum, 5, BigDecimal.ROUND_HALF_UP));
+        t.set(2, Utils.round(UP/this.quantum,       5, BigDecimal.ROUND_HALF_UP));
+        t.set(3, Utils.round(UNKNOWN/this.quantum,  5, BigDecimal.ROUND_HALF_UP));
+        t.set(4, Utils.round(DOWNTIME/this.quantum, 5, BigDecimal.ROUND_HALF_UP));
         return t;
     }
     
     @Override
     public Tuple exec(Tuple tuple) throws IOException {
+        
         DataBag in = (DataBag) tuple.get(0);
         
+        if (this.weights == null) {
+            this.initWeights((String) tuple.get(2));
+        }
+
         if (this.highLevelProfiles == null) {
             getHighLevelProfiles();
         }
         
         String service_flavor;
-        String[] timeline, tmp;
+        State[] timeline, tmp;
+        timeline = tmp = null;
         
-        ultimate_kickass_table = new HashMap<Integer, String[]>();
+        ultimate_kickass_table = new HashMap<Integer, State[]>();
         
         for (Tuple t : in) {
             service_flavor = (String) t.get(5);
-            timeline       = ((String) t.get(3)).substring(1, ((String)t.get(3)).length() - 1).split(", ");
+            String [] tmpa = ((String) t.get(3)).substring(1, ((String)t.get(3)).length() - 1).split(", ");
             
-            Integer i = this.highLevelProfiles.get(service_flavor);
+            timeline = new State[tmpa.length];
             
-            if (this.ultimate_kickass_table.containsKey(i)) {
-                tmp = this.ultimate_kickass_table.get(i);
+            for (int i = 0; i<tmpa.length; i++) {
+                timeline[i] = State.valueOf(tmpa[i]);
+            }
+
+            // Future: serialize objects
+//            try {
+//                byte[] data = javax.xml.bind.DatatypeConverter.parseBase64Binary((String) t.get(3));
+//                ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
+//                timeline = (State[]) ois.readObject();
+//                ois.close();
+//            } catch (Exception ex) {
+//                Logger.getLogger(AggregateSiteAvailability.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+
+            Integer group_id = this.highLevelProfiles.get(service_flavor);
+            
+            if (this.ultimate_kickass_table.containsKey(group_id)) {
+                tmp = this.ultimate_kickass_table.get(group_id);
                 Utils.makeOR(timeline, tmp);
             } else {
-                if (i!=null) {
-                    this.ultimate_kickass_table.put(i, timeline);
+                if (group_id!=null) {
+                    this.ultimate_kickass_table.put(group_id, timeline);
                 } else {
                     String msg = "Encounterd: " + service_flavor;
                     Logger.getLogger(AggregateSiteAvailability.class.getName()).log(Level.INFO, msg);
@@ -178,17 +226,24 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         // We get the first table, we dont care about the first iteration
         // because we do an AND with self.
         if (this.ultimate_kickass_table.size() > this.nGroups) {
-//            this.output_table = new String[24];
-//            Utils.makeMiss(this.output_table);
+            // this.output_table = new String[24];
+            // Utils.makeMiss(this.output_table);
             throw new UnsupportedOperationException("A site has more flavors than expected. Something is terribly wrong! " + this.ultimate_kickass_table.keySet());
         } else {
             this.output_table = this.ultimate_kickass_table.values().iterator().next();
-            for (String[] tb : this.ultimate_kickass_table.values()) {
+            for (State[] tb : this.ultimate_kickass_table.values()) {
                 Utils.makeAND(tb, this.output_table);
             }
         }
         
-        return getReport();
+        String w = this.weights.get((String) tuple.get(3));
+        if (w == null) {
+            w = "1";
+        }
+        
+        Tuple t = getReport();
+        t.set(5, w);
+        return t;
     }
     
     @Override
@@ -202,13 +257,15 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
             Schema.FieldSchema up       = new Schema.FieldSchema("up",           DataType.DOUBLE);
             Schema.FieldSchema unknown  = new Schema.FieldSchema("unknown",      DataType.DOUBLE);
             Schema.FieldSchema down     = new Schema.FieldSchema("downtime",     DataType.DOUBLE);
-            
+            Schema.FieldSchema weight   = new Schema.FieldSchema("weight",       DataType.CHARARRAY);
+
             Schema p_metricS = new Schema();
             p_metricS.add(availA);
             p_metricS.add(availR);
             p_metricS.add(up);
             p_metricS.add(unknown);
             p_metricS.add(down);
+            p_metricS.add(weight);
             
             return new Schema(new Schema.FieldSchema("Availability_Report", p_metricS, DataType.TUPLE));
         } catch (FrontendException ex) {

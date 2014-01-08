@@ -1,5 +1,5 @@
 register /usr/libexec/ar-compute/MyUDF.jar
-register /usr/lib/pig/datafu-0.0.4-cdh4.3.1.jar
+register /usr/lib/pig/datafu-0.0.4-cdh4.5.0.jar
 
 define FirstTupleFromBag datafu.pig.bags.FirstTupleFromBag();
 define ApplyProfiles     myudf.ApplyProfiles();
@@ -16,6 +16,7 @@ define AddTopology       myudf.AddTopology();
 %declare TOPOLOGY2  `cat $topology_file2`
 %declare TOPOLOGY3  `cat $topology_file3`
 %declare POEMS      `cat $poem_file`
+%declare WEIGHTS    `cat $weights_file`
 %declare HLP        `echo ""` --- `cat $hlp` --- high level profile.
 
 ---SET mapred.min.split.size 3000000;
@@ -75,8 +76,8 @@ topology = FOREACH topology_g {
             group.production as production, group.monitored as monitored, group.scope as scope,
             group.ngi as ngi, group.infrastructure as infrastructure,
             group.certification_status as certification_status, group.site_scope as site_scope,
-            FLATTEN(myudf.AggregateSiteAvailability(t, '$HLP')) as (availability, reliability, up, unknown, downtime);
+            FLATTEN(myudf.AggregateSiteAvailability(t, '$HLP', '$WEIGHTS', group.site)) as (availability, reliability, up, unknown, downtime, weight);
 };
 
 STORE topology    INTO 'sitereports' USING org.apache.hcatalog.pig.HCatStorer();
-STORE timetables2 INTO 'apireports'  USING org.apache.hcatalog.pig.HCatStorer();
+/*STORE timetables2 INTO 'apireports'  USING org.apache.hcatalog.pig.HCatStorer();*/
