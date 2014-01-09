@@ -12,10 +12,8 @@ import static utils.State.DOWNTIME;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -230,9 +228,14 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
             // Utils.makeMiss(this.output_table);
             throw new UnsupportedOperationException("A site has more flavors than expected. Something is terribly wrong! " + this.ultimate_kickass_table.keySet());
         } else {
-            this.output_table = this.ultimate_kickass_table.values().iterator().next();
-            for (State[] tb : this.ultimate_kickass_table.values()) {
-                Utils.makeAND(tb, this.output_table);
+            if (this.ultimate_kickass_table.values().size() > 0) {
+                this.output_table = this.ultimate_kickass_table.values().iterator().next();
+                for (State[] tb : this.ultimate_kickass_table.values()) {
+                    Utils.makeAND(tb, this.output_table);
+                }
+            } else {
+                this.output_table = new State[(int)this.quantum];
+                Utils.makeMiss(this.output_table);
             }
         }
         
