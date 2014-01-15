@@ -1,5 +1,8 @@
-register /usr/libexec/ar-compute/MyUDF.jar
-register /usr/lib/pig/datafu-0.0.4-cdh4.5.0.jar
+REGISTER /usr/libexec/ar-compute/MyUDF.jar
+REGISTER /usr/lib/pig/datafu-0.0.4-cdh4.5.0.jar
+REGISTER /usr/libexec/ar-compute/lib/mongo-2.11.3.jar        -- mongodb java driver  
+REGISTER /usr/libexec/ar-compute/lib/mongo-hadoop-core.jar   -- mongo-hadoop core lib
+REGISTER /usr/libexec/ar-compute/lib/mongo-hadoop-pig.jar    -- mongo-hadoop pig lib
 
 define FirstTupleFromBag datafu.pig.bags.FirstTupleFromBag();
 define ApplyProfiles     myudf.ApplyProfiles();
@@ -30,6 +33,8 @@ define AddTopology       myudf.AddTopology();
 %declare HLP        `echo ""` --- `cat $hlp` --- high level profile.
 
 SET mapred.child.java.opts -Xmx2048m
+SET mapred.map.tasks.speculative.execution false
+SET mapred.reduce.tasks.speculative.execution false
 
 ---SET mapred.min.split.size 3000000;
 ---SET mapred.max.split.size 3000000;
@@ -85,8 +90,5 @@ topology = FOREACH topology_g {
             FLATTEN(myudf.AggregateSiteAvailability(t, '$HLP', '$WEIGHTS', group.site)) as (availability, reliability, up, unknown, downtime, weight);
 };
 
-top = FOREACH topology GENERATE $1 .. ;
-tim = FOREACH timetables2 GENERATE $1 .. ;
-
-STORE top INTO '$OUT1' USING PigStorage('\\u001');
-STORE tim INTO '$OUT2' USING PigStorage('\\u001');
+STORE topology    INTO 'mongodb://$mongoServer/demo.yield_aggregated' USING com.mongodb.hadoop.pig.MongoInsertStorage('', '' );
+STORE timetables2 INTO 'mongodb://$mongoServer/demo.yield_aggregated' USING com.mongodb.hadoop.pig.MongoInsertStorage('', '' );
