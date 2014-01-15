@@ -1,8 +1,8 @@
 REGISTER /usr/libexec/ar-compute/MyUDF.jar
 REGISTER /usr/lib/pig/datafu-0.0.4-cdh4.5.0.jar
-REGISTER /usr/libexec/ar-compute/lib/mongo-2.11.3.jar        -- mongodb java driver  
-REGISTER /usr/libexec/ar-compute/lib/mongo-hadoop-core.jar   -- mongo-hadoop core lib
-REGISTER /usr/libexec/ar-compute/lib/mongo-hadoop-pig.jar    -- mongo-hadoop pig lib
+REGISTER /usr/libexec/ar-compute/lib/mongo-java-driver-2.11.3.jar   -- mongodb java driver  
+REGISTER /usr/libexec/ar-compute/lib/mongo-hadoop-core.jar          -- mongo-hadoop core lib
+REGISTER /usr/libexec/ar-compute/lib/mongo-hadoop-pig.jar           -- mongo-hadoop pig lib
 
 define FirstTupleFromBag datafu.pig.bags.FirstTupleFromBag();
 define ApplyProfiles     myudf.ApplyProfiles();
@@ -90,5 +90,8 @@ topology = FOREACH topology_g {
             FLATTEN(myudf.AggregateSiteAvailability(t, '$HLP', '$WEIGHTS', group.site)) as (availability, reliability, up, unknown, downtime, weight);
 };
 
-STORE topology    INTO 'mongodb://$mongoServer/demo.yield_aggregated' USING com.mongodb.hadoop.pig.MongoInsertStorage('', '' );
-STORE timetables2 INTO 'mongodb://$mongoServer/demo.yield_aggregated' USING com.mongodb.hadoop.pig.MongoInsertStorage('', '' );
+top_marked = FOREACH topology GENERATE dates as dt, site as s, profile as p, production as pr, monitored as m, scope as sc, ngi as n, infrastructure as i, certification_status as cs, site_scope as ss, availability as a, reliability as r, up as up, unknown as u, downtime as d, weight as hs;
+tim_marked = FOREACH timetables2 GENERATE dates as d, hostname as h, service_flavour as sf, profile as p, vo as vo, timeline as tm;
+
+STORE topology    INTO 'mongodb://$mongoServer/AR.sites'     USING com.mongodb.hadoop.pig.MongoInsertStorage();
+STORE timetables2 INTO 'mongodb://$mongoServer/AR.timelines' USING com.mongodb.hadoop.pig.MongoInsertStorage();
