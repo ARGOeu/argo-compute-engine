@@ -11,7 +11,6 @@ do
 
   PARTITIONDATE=`echo $RUN_DATE | sed 's/-//g'`
 
- #<---- Commenting out this column of lines for re-running without re-generating raw_data table on hadoop --pkoro
  ### run prefilter  (Input: date e.g. 2013-07-05) (Output: /var/lib/ar-sync/prefilter_%Y_%m_%d.out)
  /usr/libexec/ar-sync/prefilter -d $RUN_DATE
 

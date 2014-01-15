@@ -14,6 +14,7 @@ Requires: hcatalog
 Requires: pig
 Requires: pig-udf-datafu
 Requires: java-1.6.0-openjdk
+Conflicts: ar-local-compute
 
 %description
 Installs the core A/R Compute Engine
