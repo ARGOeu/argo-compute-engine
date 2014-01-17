@@ -1,8 +1,8 @@
 REGISTER /usr/libexec/ar-compute/MyUDF.jar
 REGISTER /usr/lib/pig/datafu-0.0.4-cdh4.5.0.jar
-REGISTER /usr/libexec/ar-compute/lib/mongo-java-driver-2.11.3.jar   -- mongodb java driver  
-REGISTER /usr/libexec/ar-compute/lib/mongo-hadoop-core.jar          -- mongo-hadoop core lib
-REGISTER /usr/libexec/ar-compute/lib/mongo-hadoop-pig.jar           -- mongo-hadoop pig lib
+REGISTER /usr/libexec/ar-local-compute/lib/mongo-java-driver-2.11.3.jar   -- mongodb java driver  
+REGISTER /usr/libexec/ar-local-compute/lib/mongo-hadoop-core.jar          -- mongo-hadoop core lib
+REGISTER /usr/libexec/ar-local-compute/lib/mongo-hadoop-pig.jar           -- mongo-hadoop pig lib
 
 define FirstTupleFromBag datafu.pig.bags.FirstTupleFromBag();
 define ApplyProfiles     myudf.ApplyProfiles();
