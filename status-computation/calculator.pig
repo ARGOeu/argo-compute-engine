@@ -80,4 +80,4 @@ topology = FOREACH topology_g {
 };
 
 STORE topology    INTO 'sitereports' USING org.apache.hcatalog.pig.HCatStorer();
-/*STORE timetables2 INTO 'apireports'  USING org.apache.hcatalog.pig.HCatStorer();*/
+STORE timetables2 INTO 'apireports'  USING org.apache.hcatalog.pig.HCatStorer();
