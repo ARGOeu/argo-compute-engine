@@ -25,3 +25,18 @@ db.timelines.find({"h" : {"$in" : ["sbdii.grid.auth.gr", "cream01.grid.auth.gr",
 
 # availability computation
 db.sites.aggregate([ {"$group" : { "_id" : { "dt" : { "$substr" : ["$dt",0,6] }, "i" : "$i", "sc" : "$sc", "ss" : "$ss", "n" : "$n", "pr" : "$pr", "m" : "$m" ,"cs" : "$cs", "ns" : "$ns" ,"s" : "$s", "p" : "$p" }, "avgup" : {$avg: "$up"}, "avgu" : {$avg : "$u"}}},  {$project:{"_id":1, "avgup":1, "avgus":{$subtract:[1.00005,"$avgu"]}}}, {$project : {"_id" : 1,"avgup":1, "avgus":1, "a" : {$divide : ["$avgup", "$avgus" ]}}}])
+
+# 2014/02/06 Site monthly computation:
+db.sites.aggregate([ 
+	{ $match: { s:"LSG-HUB", i: "Production", cs: "Certified", pr: "Y", m: "Y", dt: { $gte: 20131201, $lte: 20131231 }, p: { $in: [ "ROC_CRITICAL" ] } } }, 
+	{ $group: { _id: { i: "$i", m: "$m", ns: "$ns", s: "$s", dt: { $substr: [ "$dt", 0, 6 ] }, sc: "$sc", ss: "$ss", n: "$n", pr: "$pr", cs: "$cs", p: "$p" }, 
+							avgup: { $avg: "$up" }, 
+							avgu: { $avg: "$u" }, 
+							avgd: { $avg: "$d" } } }, 
+	{ $project: { sc: "$_id.sc", ss: "$_id.ss", pr: "$_id.pr", cs: "$_id.cs", p: "$_id.p", i: "$_id.i", m: "$_id.m", 
+								a: { $multiply: [ { $divide: [ "$avgup", { $subtract: [ 1.00000001, "$avgu" ] } ] }, 100 ] }, 
+								dt: "$_id.dt", n: "$_id.n", avgd: 1, 
+								r: { $multiply: [ { $divide: [ "$avgup", { $subtract: [ { $subtract: [ 1.00000001, "$avgu" ] }, "$avgd" ] } ] }, 100 ] }, 
+								ns: "$_id.ns", s: "$_id.s", avgup: 1, avgu: 1 } }, 
+	{ $sort: { ns: 1, p: 1, n: 1, c: 1, dt: 1 } } 
+])
