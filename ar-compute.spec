@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.0.16
-Release: 4%{?dist}
+Version: 1.1.0
+Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -55,6 +55,8 @@ mvn clean
 %attr(0755,root,root) /etc/cron.daily/ar-compute
 
 %changelog
+* Thu Feb 06 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.1.0-1%{?dist}
+- Fixed issue in pig comments
 * Mon Dec 02 2013 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.0.16-4%{?dist}
 - Updated cronjob
 * Fri Nov 29 2013 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.0.16-3%{?dist}

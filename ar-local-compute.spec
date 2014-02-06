@@ -1,7 +1,7 @@
 Name: ar-local-compute
 Summary: A/R Comp Engine local scripts
-Version: 1.0.18
-Release: 3%{?dist}
+Version: 1.1.0
+Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -56,6 +56,8 @@ mvn clean
 %attr(0755,root,root) /etc/cron.daily/ar-local-compute
 
 %changelog
+* Thu Feb 06 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.1.0-1%{?dist}
+- Fixed issue in pig comments
 * Tue Jan 14 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.0.18-3%{?dist}
 - Connection with MongoDB
 * Tue Jan 14 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.0.18-1%{?dist}
