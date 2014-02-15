@@ -39,6 +39,9 @@ do
  /usr/libexec/ar-sync/prefilter -d $RUN_DATE
 
  hive -e "LOAD DATA LOCAL INPATH \"/var/lib/ar-sync/prefilter_${RUN_DATE_UNDER}.out\" OVERWRITE INTO TABLE raw_data PARTITION (dates=${PARTITIONDATE})"
+
+ # Remove prefiltered file from filesystem after it's been transferred on hdfs
+ /bin/rm -f /var/lib/ar-sync/prefilter_${RUN_DATE_UNDER}.out
   
  currentdate=$(/bin/date --date "$currentdate 1 day" +%Y-%m-%d)
 
