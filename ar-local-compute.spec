@@ -7,7 +7,6 @@ Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
 BuildArch: x86_64
 Source0:   %{name}-%{version}.tar.gz
-BuildRequires: maven2
 Requires: ar-sync
 Requires: hive
 Requires: hbase
