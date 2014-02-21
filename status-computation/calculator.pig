@@ -23,9 +23,7 @@
 --- Framework Programme (contract # INFSO-RI-261323) 
 
 register /usr/libexec/ar-compute/MyUDF.jar
-/*register /usr/lib/pig/datafu-0.0.4-cdh4.5.0.jar*/
 
-/*define FirstTupleFromBag datafu.pig.bags.FirstTupleFromBag();*/
 define ApplyProfiles     myudf.ApplyProfiles();
 define AddTopology       myudf.AddTopology();
 
@@ -76,8 +74,8 @@ profile_groups = GROUP logs BY (hostname, service_flavour, profile) PARALLEL 4;
 --- After the grouping, we append the actual rules of the POEM profiles
 profiled_logs = FOREACH profile_groups
         GENERATE group.hostname as hostname, group.service_flavour as service_flavour, 
-                 group.profile as profile, 
-                 FLATTEN(FirstTupleFromBag(logs.vo,null)) as vo, 
+                 group.profile as profile,
+								 logs.vo as vo,
                  logs.(metric, status, time_stamp) as timeline;
 
 
@@ -89,7 +87,7 @@ timetables = FOREACH profiled_logs {
 };
 
 --- Join topology with logs, so we have have for each log raw all topology information
-topologed = FOREACH timetables GENERATE date, profile, vo, timeline, hostname, service_flavour, 
+topologed = FOREACH timetables GENERATE date, profile, timeline, hostname, service_flavour, 
                     FLATTEN(AddTopology(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3'));
 
 topology_g = GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 2;
@@ -107,9 +105,13 @@ sites = FOREACH topology_g {
 service_status = FOREACH timetables GENERATE date as dates, hostname, service_flavour, profile, vo, myudf.TimelineToPercentage(*) as timeline;
 
 --- VO calculation
-vo_g = GROUP timetables BY (vo, profile, date) PARALLEL 4;
+vo_s = FOREACH timetables {
+		vos = DISTINCT vo;
+		GENERATE hostname, service_flavour, profile, date, FLATTEN(vos) as vo, timeline;
+}
+vo_g = GROUP vo_s BY (vo, profile, date) PARALLEL 4;
 vo = FOREACH vo_g GENERATE group.vo as vo, group.profile as profile, group.date as dates,
-						 FLATTEN(myudf.VOAvailability(timetables)) as (availability, reliability, up, unknown, downtime);
+						 FLATTEN(myudf.VOAvailability(vo_s)) as (availability, reliability, up, unknown, downtime);
 
 STORE sites          INTO 'sitereports' USING org.apache.hcatalog.pig.HCatStorer();
 STORE service_status INTO 'apireports'  USING org.apache.hcatalog.pig.HCatStorer();

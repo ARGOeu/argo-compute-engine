@@ -23,12 +23,10 @@
 --- Framework Programme (contract # INFSO-RI-261323) 
 
 REGISTER /usr/libexec/ar-compute/MyUDF.jar
-REGISTER /usr/lib/pig/datafu-0.0.4-cdh4.5.0.jar
 REGISTER /usr/libexec/ar-local-compute/lib/mongo-java-driver-2.11.3.jar   -- mongodb java driver  
 REGISTER /usr/libexec/ar-local-compute/lib/mongo-hadoop-core.jar          -- mongo-hadoop core lib
 REGISTER /usr/libexec/ar-local-compute/lib/mongo-hadoop-pig.jar           -- mongo-hadoop pig lib
 
-define FirstTupleFromBag datafu.pig.bags.FirstTupleFromBag();
 define ApplyProfiles     myudf.ApplyProfiles();
 define AddTopology       myudf.AddTopology();
 
@@ -85,16 +83,18 @@ logs = UNION current_logs, beacons;
 profile_groups = GROUP logs BY (hostname, service_flavour, profile) PARALLEL 1;
 
 --- After the grouping, we append the actual rules of the POEM profiles
-profiled_logs = FOREACH profile_groups 
+profiled_logs = FOREACH profile_groups
         GENERATE group.hostname as hostname, group.service_flavour as service_flavour, 
-                 group.profile as profile, 
-                 FLATTEN(FirstTupleFromBag(logs.vo,null)) as vo, 
+                 group.profile as profile,
+								 logs.vo as vo,
                  logs.(metric, status, time_stamp) as timeline;
+
 
 --- We calculate the timelines and create an integral of all reports
 timetables = FOREACH profiled_logs {
         timeline_s = ORDER timeline BY time_stamp;
-        GENERATE hostname, service_flavour, profile, vo, FLATTEN(ApplyProfiles(timeline_s, profile, '$PREV_DATE', hostname, service_flavour, '$CUR_DATE', '$DOWNTIMES', '$POEMS')) as (date, timeline);
+        GENERATE hostname, service_flavour, profile, vo,
+								 FLATTEN(ApplyProfiles(timeline_s, profile, '$PREV_DATE', hostname, service_flavour, '$CUR_DATE', '$DOWNTIMES', '$POEMS')) as (date, timeline);
 };
 
 --- Join topology with logs, so we have have for each log raw all topology information
@@ -118,9 +118,13 @@ service_status = FOREACH timetables GENERATE date as dates, hostname, service_fl
 service_status_shrink = FOREACH service_status GENERATE dates as d, hostname as h, service_flavour as sf, profile as p, vo as vo, timeline as tm;
 
 --- VO calculation
-vo_g = GROUP timetables BY (vo, profile, date);
+vo_s = FOREACH timetables {
+		vos = DISTINCT vo;
+		GENERATE hostname, service_flavour, profile, date, FLATTEN(vos) as vo, timeline;
+}
+vo_g = GROUP vo_s BY (vo, profile, date) PARALLEL 4;
 vo = FOREACH vo_g GENERATE group.vo as vo, group.profile as profile, group.date as dates,
-						 FLATTEN(myudf.VOAvailability(timetables)) as (availability, reliability, up, unknown, downtime);
+						 FLATTEN(myudf.VOAvailability(vo_s)) as (availability, reliability, up, unknown, downtime);
 vo_shrink = FOREACH vo GENERATE dates as d, vo as v, profile as p, availability as a, reliability as r, up as up, unknown as u, downtime as d;
 
 STORE sites_shrink          INTO 'mongodb://$mongoServer/AR.sites'     USING com.mongodb.hadoop.pig.MongoInsertStorage();
