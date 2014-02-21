@@ -102,7 +102,7 @@ topologed = FOREACH timetables GENERATE date, profile, vo, timeline, hostname, s
 
 topology_g = GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 1;
 
-topology = FOREACH topology_g {
+sites = FOREACH topology_g {
         t = ORDER topologed BY service_flavour;
         GENERATE group.date as dates, group.site as site, group.profile as profile,
             group.production as production, group.monitored as monitored, group.scope as scope,
@@ -111,11 +111,18 @@ topology = FOREACH topology_g {
             FLATTEN(myudf.AggregateSiteAvailability(t, '$HLP', '$WEIGHTS', group.site)) as (availability, reliability, up, unknown, downtime, weight);
 };
 
-top_marked = FOREACH topology GENERATE dates as dt, site as s, profile as p, production as pr, monitored as m, scope as sc, ngi as n, infrastructure as i, certification_status as cs, site_scope as ss, availability as a, reliability as r, up as up, unknown as u, downtime as d, weight as hs;
+sites_shrink = FOREACH sites GENERATE dates as dt, site as s, profile as p, production as pr, monitored as m, scope as sc, ngi as n, infrastructure as i, certification_status as cs, site_scope as ss, availability as a, reliability as r, up as up, unknown as u, downtime as d, weight as hs;
 
 --- Status computation for services
-ss = FOREACH timetables GENERATE date as dates, hostname, service_flavour, profile, vo, myudf.TimelineToPercentage(*) as timeline;
-service_status = FOREACH ss GENERATE dates as d, hostname as h, service_flavour as sf, profile as p, vo as vo, timeline as tm;
+service_status = FOREACH timetables GENERATE date as dates, hostname, service_flavour, profile, vo, myudf.TimelineToPercentage(*) as timeline;
+service_status_shrink = FOREACH service_status GENERATE dates as d, hostname as h, service_flavour as sf, profile as p, vo as vo, timeline as tm;
 
-STORE topology       INTO 'mongodb://$mongoServer/AR.sites'     USING com.mongodb.hadoop.pig.MongoInsertStorage();
-STORE service_status INTO 'mongodb://$mongoServer/AR.timelines' USING com.mongodb.hadoop.pig.MongoInsertStorage();
+--- VO calculation
+vo_g = GROUP timetables BY (vo, profile, date);
+vo = FOREACH vo_g GENERATE group.vo as vo, group.profile as profile, group.date as dates,
+						 FLATTEN(myudf.VOAvailability(timetables)) as (availability, reliability, up, unknown, downtime);
+vo_shrink = FOREACH vo GENERATE dates as d, vo as v, profile as p, availability as a, reliability as r, up as up, unknown as u, downtime as d;
+
+STORE sites_shrink          INTO 'mongodb://$mongoServer/AR.sites'     USING com.mongodb.hadoop.pig.MongoInsertStorage();
+STORE service_status_shrink INTO 'mongodb://$mongoServer/AR.timelines' USING com.mongodb.hadoop.pig.MongoInsertStorage();
+STORE vo_shrink             INTO 'mongodb://$mongoServer/AR.vos'       USING com.mongodb.hadoop.pig.MongoInsertStorage();

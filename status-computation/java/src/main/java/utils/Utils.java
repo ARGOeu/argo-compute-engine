@@ -2,6 +2,8 @@ package utils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import org.apache.pig.backend.executionengine.ExecException;
+import org.apache.pig.data.Tuple;
 
 /**
  *
@@ -42,5 +44,40 @@ public class Utils {
             // return 0;
         }
 
+    }
+    
+    public static Tuple getARReport(State[] state_table, Tuple outputTuple, double quantum) throws ExecException {
+        int UP, UNKNOWN, DOWNTIME;
+        UP = UNKNOWN = DOWNTIME = 0;
+
+        for (State s : state_table) {
+            switch (s) {
+                case OK:
+                case WARNING:
+                    UP++;
+                    break;
+                case CRITICAL:
+                    break;
+                case MISSING:
+                case UNKNOWN:
+                    UNKNOWN++;
+                    break;
+                case DOWNTIME:
+                    DOWNTIME++;
+                    break;
+            }
+        }
+
+        // Availability = UP period / KNOWN period = UP period / (Total period – UNKNOWN period)
+        outputTuple.set(0, Utils.round(((UP / quantum) / (1.0 - (UNKNOWN / quantum))) * 100, 3, BigDecimal.ROUND_HALF_UP));
+
+        // Reliability = UP period / (KNOWN period – Scheduled Downtime)
+        //             = UP period / (Total period – UNKNOWN period – ScheduledDowntime)
+        outputTuple.set(1, Utils.round(((UP / quantum) / (1.0 - (UNKNOWN / quantum) - (DOWNTIME / quantum))) * 100, 3, BigDecimal.ROUND_HALF_UP));
+
+        outputTuple.set(2, Utils.round(UP / quantum, 5, BigDecimal.ROUND_HALF_UP));
+        outputTuple.set(3, Utils.round(UNKNOWN / quantum, 5, BigDecimal.ROUND_HALF_UP));
+        outputTuple.set(4, Utils.round(DOWNTIME / quantum, 5, BigDecimal.ROUND_HALF_UP));
+        return outputTuple;
     }
 }

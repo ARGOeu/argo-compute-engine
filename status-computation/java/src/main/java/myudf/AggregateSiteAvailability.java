@@ -3,16 +3,9 @@ package myudf;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
-import static utils.State.OK;
-import static utils.State.WARNING;
-import static utils.State.UNKNOWN;
-import static utils.State.CRITICAL;
-import static utils.State.MISSING;
-import static utils.State.DOWNTIME;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +15,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import org.apache.pig.EvalFunc;
-import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
@@ -129,43 +121,6 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         this.highLevelProfiles.put("SRMv2", 2);
         this.highLevelProfiles.put("Site-BDII", 3);
     }
-        
-    private Tuple getReport() throws ExecException {
-        int UP, UNKNOWN, DOWNTIME;
-        UP = UNKNOWN = DOWNTIME = 0;
-        
-        for (State s : this.output_table) {
-            switch (s) {
-                case OK:
-                case WARNING:
-                    UP++;
-                    break;                
-                case CRITICAL:
-                    break;
-                case MISSING:
-                case UNKNOWN:
-                    UNKNOWN++;
-                    break;
-                case DOWNTIME:
-                    DOWNTIME++;
-                    break;
-            }            
-        }
-        
-        Tuple t = mTupleFactory.newTuple(6);
-        
-        // Availability = UP period / KNOWN period = UP period / (Total period – UNKNOWN period)
-        t.set(0, Utils.round(((UP/this.quantum)/(1.0 - (UNKNOWN/this.quantum)))*100, 3, BigDecimal.ROUND_HALF_UP));
-        
-        // Reliability = UP period / (KNOWN period – Scheduled Downtime)
-        //             = UP period / (Total period – UNKNOWN period – ScheduledDowntime)
-        t.set(1, Utils.round(((UP/this.quantum)/(1.0 - (UNKNOWN/this.quantum) - (DOWNTIME/this.quantum)))*100, 3, BigDecimal.ROUND_HALF_UP));
-        
-        t.set(2, Utils.round(UP/this.quantum,       5, BigDecimal.ROUND_HALF_UP));
-        t.set(3, Utils.round(UNKNOWN/this.quantum,  5, BigDecimal.ROUND_HALF_UP));
-        t.set(4, Utils.round(DOWNTIME/this.quantum, 5, BigDecimal.ROUND_HALF_UP));
-        return t;
-    }
     
     @Override
     public Tuple exec(Tuple tuple) throws IOException {
@@ -214,10 +169,11 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
             } else {
                 if (group_id!=null) {
                     this.ultimate_kickass_table.put(group_id, timeline);
-                } else {
-                    String msg = "Encounterd: " + service_flavor;
-                    Logger.getLogger(AggregateSiteAvailability.class.getName()).log(Level.INFO, msg);
-                }
+                } 
+//                else {
+//                    String msg = "Encounterd: " + service_flavor;
+//                    Logger.getLogger(AggregateSiteAvailability.class.getName()).log(Level.INFO, msg);
+//                }
             }
         }
         
@@ -244,16 +200,13 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
             w = "1";
         }
         
-        Tuple t = getReport();
+        Tuple t = Utils.getARReport(this.output_table, mTupleFactory.newTuple(6), this.quantum);
         t.set(5, w);
         return t;
     }
     
     @Override
     public Schema outputSchema(Schema input) {
-
-        // Construct our output schema, which is:
-        // (OK: INTEGER, WARNING: INTEGER, UNKNOWN: INTEGER, CRITICAL: INTEGER, MISSING: INTEGER)        
         try {
             Schema.FieldSchema availA   = new Schema.FieldSchema("availability", DataType.DOUBLE);
             Schema.FieldSchema availR   = new Schema.FieldSchema("reliability",  DataType.DOUBLE);
