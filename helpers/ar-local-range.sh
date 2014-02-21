@@ -67,7 +67,7 @@ until [ "$currentdate" == "$loopenddate" ]; do
 
   ### prepare weights
   echo "Prepare HEPSPEC for $RUN_DATE"
-  cat hepspec_sync.out | awk 'BEGIN {ORS="|"; RS="\r\n"} {print $0}' | gzip -c | base64 | awk 'BEGIN {ORS=""} {print $0}' > hepspec_sync_$RUN_DATE_UNDER.zip
+  cat hepspec_sync_$RUN_DATE.out | awk 'BEGIN {ORS="|"; RS="\r\n"} {print $0}' | gzip -c | base64 | awk 'BEGIN {ORS=""} {print $0}' > hepspec_sync_$RUN_DATE_UNDER.zip
 
   ### run calculator.pig
   pig -x local -useHCatalog -param mongoServer=$mongoDBServer -param input_path=/var/lib/ar-sync/prefilter_ -param out_path=/usr/libexec/ar-local-compute/output/ -param in_date=$RUN_DATE -param weights_file=hepspec_sync_$RUN_DATE_UNDER.zip -param downtimes_file=downtimes_$RUN_DATE.zip -param poem_file=poem_sync_$RUN_DATE_UNDER.out.clean -param topology_file1=sites_$RUN_DATE_UNDER.aa -param topology_file2=sites_$RUN_DATE_UNDER.ab -param topology_file3=sites_$RUN_DATE_UNDER.ac -f /usr/libexec/ar-local-compute/pig/local_calculator.pig
