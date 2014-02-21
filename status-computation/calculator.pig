@@ -74,7 +74,7 @@ logs   = FILTER logs_r BY ((dates=='$PREV_DATE') OR (dates=='$CUR_DATE')) AND pr
 profile_groups = GROUP logs BY (hostname, service_flavour, profile) PARALLEL 1;
 
 --- After the grouping, we append the actual rules of the POEM profiles
-profiled_logs = FOREACH profile_groups 
+profiled_logs = FOREACH profile_groups
         GENERATE group.hostname as hostname, group.service_flavour as service_flavour, 
                  group.profile as profile, 
                  FLATTEN(FirstTupleFromBag(logs.vo,null)) as vo, 
@@ -84,13 +84,13 @@ profiled_logs = FOREACH profile_groups
 --- We calculate the timelines and create an integral of all reports
 timetables = FOREACH profiled_logs {
         timeline_s = ORDER timeline BY time_stamp;
-        GENERATE hostname, service_flavour, profile, vo, FLATTEN(ApplyProfiles(timeline_s, profile, '$PREV_DATE', hostname, service_flavour, '$CUR_DATE', '$DOWNTIMES', '$POEMS')) as (date, timeline);
+        GENERATE hostname, service_flavour, profile, vo,
+								 FLATTEN(ApplyProfiles(timeline_s, profile, '$PREV_DATE', hostname, service_flavour, '$CUR_DATE', '$DOWNTIMES', '$POEMS')) as (date, timeline);
 };
 
-timetables2 = FOREACH timetables GENERATE date as dates, hostname, service_flavour, profile, vo, myudf.TimelineToPercentage(*) as timeline;
-
 --- Join topology with logs, so we have have for each log raw all topology information
-topologed = FOREACH timetables GENERATE date, profile, vo, timeline, hostname, service_flavour, FLATTEN(AddTopology(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3'));
+topologed = FOREACH timetables GENERATE date, profile, vo, timeline, hostname, service_flavour, 
+                    FLATTEN(AddTopology(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3'));
 
 topology_g = GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 1;
 
@@ -103,5 +103,8 @@ topology = FOREACH topology_g {
             FLATTEN(myudf.AggregateSiteAvailability(t, '$HLP', '$WEIGHTS', group.site)) as (availability, reliability, up, unknown, downtime, weight);
 };
 
-STORE topology    INTO 'sitereports' USING org.apache.hcatalog.pig.HCatStorer();
-STORE timetables2 INTO 'apireports'  USING org.apache.hcatalog.pig.HCatStorer();
+--- Status computation for services
+service_status = FOREACH timetables GENERATE date as dates, hostname, service_flavour, profile, vo, myudf.TimelineToPercentage(*) as timeline;
+
+STORE topology       INTO 'sitereports' USING org.apache.hcatalog.pig.HCatStorer();
+STORE service_status INTO 'apireports'  USING org.apache.hcatalog.pig.HCatStorer();

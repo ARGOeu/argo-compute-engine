@@ -91,14 +91,11 @@ profiled_logs = FOREACH profile_groups
                  FLATTEN(FirstTupleFromBag(logs.vo,null)) as vo, 
                  logs.(metric, status, time_stamp) as timeline;
 
-
 --- We calculate the timelines and create an integral of all reports
 timetables = FOREACH profiled_logs {
         timeline_s = ORDER timeline BY time_stamp;
         GENERATE hostname, service_flavour, profile, vo, FLATTEN(ApplyProfiles(timeline_s, profile, '$PREV_DATE', hostname, service_flavour, '$CUR_DATE', '$DOWNTIMES', '$POEMS')) as (date, timeline);
 };
-
-timetables2 = FOREACH timetables GENERATE date as dates, hostname, service_flavour, profile, vo, myudf.TimelineToPercentage(*) as timeline;
 
 --- Join topology with logs, so we have have for each log raw all topology information
 topologed = FOREACH timetables GENERATE date, profile, vo, timeline, hostname, service_flavour, FLATTEN(AddTopology(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3'));
@@ -115,7 +112,10 @@ topology = FOREACH topology_g {
 };
 
 top_marked = FOREACH topology GENERATE dates as dt, site as s, profile as p, production as pr, monitored as m, scope as sc, ngi as n, infrastructure as i, certification_status as cs, site_scope as ss, availability as a, reliability as r, up as up, unknown as u, downtime as d, weight as hs;
-tim_marked = FOREACH timetables2 GENERATE dates as d, hostname as h, service_flavour as sf, profile as p, vo as vo, timeline as tm;
 
-STORE topology    INTO 'mongodb://$mongoServer/AR.sites'     USING com.mongodb.hadoop.pig.MongoInsertStorage();
-STORE timetables2 INTO 'mongodb://$mongoServer/AR.timelines' USING com.mongodb.hadoop.pig.MongoInsertStorage();
+--- Status computation for services
+ss = FOREACH timetables GENERATE date as dates, hostname, service_flavour, profile, vo, myudf.TimelineToPercentage(*) as timeline;
+service_status = FOREACH ss GENERATE dates as d, hostname as h, service_flavour as sf, profile as p, vo as vo, timeline as tm;
+
+STORE topology       INTO 'mongodb://$mongoServer/AR.sites'     USING com.mongodb.hadoop.pig.MongoInsertStorage();
+STORE service_status INTO 'mongodb://$mongoServer/AR.timelines' USING com.mongodb.hadoop.pig.MongoInsertStorage();
