@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.1.0
-Release: 1%{?dist}
+Version: 1.2.0
+Release: %{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -31,12 +31,13 @@ install --directory %{buildroot}/var/lib/ar-compute
 install --directory %{buildroot}/var/log/ar-compute
 install --directory %{buildroot}/etc/cron.daily
 
-install --mode 755 helpers/ar-range.sh                          %{buildroot}/usr/libexec/ar-compute/
+install --mode 755 helpers/ar-input.sh                          %{buildroot}/usr/libexec/ar-compute/
+install --mode 755 helpers/ar-compute.sh                        %{buildroot}/usr/libexec/ar-compute/
 install --mode 755 helpers/ar-input-range.sh                    %{buildroot}/usr/libexec/ar-compute/
+install --mode 755 helpers/ar-compute-range.sh                  %{buildroot}/usr/libexec/ar-compute/
 install --mode 644 status-computation/calculator.pig            %{buildroot}/usr/libexec/ar-compute/pig/
 install --mode 644 status-computation/java/target/MyUDF-1.0.jar %{buildroot}/usr/libexec/ar-compute/MyUDF.jar
-install --mode 644 cronjobs/ar-compute %{buildroot}/etc/cron.daily
-### install --mode 644 helpers/ar-cron  %{buildroot}/etc/cron.d
+install --mode 644 cronjobs/ar-compute-the-day-before-yesterday %{buildroot}/etc/cron.daily
 
 %clean
 cd status-computation/java
@@ -45,15 +46,19 @@ mvn clean
 
 %files
 %defattr(0644,root,root)
-%attr(0755,root,root) /usr/libexec/ar-compute/ar-range.sh
+%attr(0755,root,root) /usr/libexec/ar-compute/ar-input.sh
+%attr(0755,root,root) /usr/libexec/ar-compute/ar-compute.sh
 %attr(0755,root,root) /usr/libexec/ar-compute/ar-input-range.sh
+%attr(0755,root,root) /usr/libexec/ar-compute/ar-compute-range.sh
 %attr(0755,root,root) /usr/libexec/ar-compute/pig/calculator.pig
 %attr(0755,root,root) /usr/libexec/ar-compute/MyUDF.jar
 %attr(0750,root,root) /var/lib/ar-compute
 %attr(0750,root,root) /var/log/ar-compute
-%attr(0755,root,root) /etc/cron.daily/ar-compute
+%attr(0755,root,root) /etc/cron.daily/ar-compute-the-day-before-yesterday
 
 %changelog
+* Thu Feb 21 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.2.0-%{?dist}
+- Re-arranged helper scripts and cron jobs
 * Thu Feb 06 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.1.0-1%{?dist}
 - Fixed issue in pig comments
 * Mon Dec 02 2013 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.0.16-4%{?dist}
