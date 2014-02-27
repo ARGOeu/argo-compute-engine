@@ -69,10 +69,8 @@ logs   = FILTER logs_r BY ((dates=='$PREV_DATE') OR (dates=='$CUR_DATE')) AND pr
 --- MAIN ALGORITHM ---
 
 --- Group rows so we can have for each hostname and flavor, the applied poem profile with reports
-profile_groups = GROUP logs BY (hostname, service_flavour, profile) PARALLEL 4;
-
 --- After the grouping, we append the actual rules of the POEM profiles
-profiled_logs = FOREACH profile_groups
+profiled_logs = FOREACH (GROUP logs BY (hostname, service_flavour, profile) PARALLEL 4)
         GENERATE group.hostname as hostname, group.service_flavour as service_flavour, 
                  group.profile as profile,
 								 logs.vo as vo,
@@ -82,7 +80,8 @@ profiled_logs = FOREACH profile_groups
 --- We calculate the timelines and create an integral of all reports
 timetables = FOREACH profiled_logs {
         timeline_s = ORDER timeline BY time_stamp;
-        GENERATE hostname, service_flavour, profile, vo,
+				vos = DISTINCT vo;
+        GENERATE hostname, service_flavour, profile, vos as vo,
 								 FLATTEN(ApplyProfiles(timeline_s, profile, '$PREV_DATE', hostname, service_flavour, '$CUR_DATE', '$DOWNTIMES', '$POEMS')) as (date, timeline);
 };
 
@@ -90,9 +89,7 @@ timetables = FOREACH profiled_logs {
 topologed = FOREACH timetables GENERATE date, profile, timeline, hostname, service_flavour, 
                     FLATTEN(AddTopology(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3'));
 
-topology_g = GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 2;
-
-sites = FOREACH topology_g {
+sites = FOREACH (GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 2) {
         t = ORDER topologed BY service_flavour;
         GENERATE group.date as dates, group.site as site, group.profile as profile,
             group.production as production, group.monitored as monitored, group.scope as scope,
@@ -105,12 +102,10 @@ sites = FOREACH topology_g {
 service_status = FOREACH timetables GENERATE date as dates, hostname, service_flavour, profile, vo, myudf.TimelineToPercentage(*) as timeline;
 
 --- VO calculation
-vo_s = FOREACH timetables {
-		vos = DISTINCT vo;
-		GENERATE hostname, service_flavour, profile, date, FLATTEN(vos) as vo, timeline;
-}
-vo_g = GROUP vo_s BY (vo, profile, date) PARALLEL 4;
-vo = FOREACH vo_g GENERATE group.vo as vo, group.profile as profile, group.date as dates,
+vo_s = FOREACH timetables GENERATE hostname, service_flavour, profile, date, FLATTEN(vo) as vo, timeline;
+
+vo = FOREACH (GROUP vo_s BY (vo, profile, date) PARALLEL 4) 
+				GENERATE group.vo as vo, group.profile as profile, group.date as dates,
 						 FLATTEN(myudf.VOAvailability(vo_s)) as (availability, reliability, up, unknown, downtime);
 
 STORE sites          INTO 'sitereports' USING org.apache.hcatalog.pig.HCatStorer();
