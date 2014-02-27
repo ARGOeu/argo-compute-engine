@@ -143,7 +143,7 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         ultimate_kickass_table = new HashMap<Integer, State[]>();
         
         for (Tuple t : in) {            
-            service_flavor = (String) t.get(5);
+            service_flavor = (String) t.get(4);
             String [] tmpa = ((String) t.get(2)).substring(1, ((String)t.get(2)).length() - 1).split(", ");
             
             timeline = new State[tmpa.length];
