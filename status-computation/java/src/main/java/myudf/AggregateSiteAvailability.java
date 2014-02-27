@@ -53,7 +53,7 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         StringTokenizer tokenizer = new StringTokenizer(input, "\\|");
 
         while (tokenizer.hasMoreTokens()) {
-            String[] tokens = tokenizer.nextToken().split("\u0001");
+            String[] tokens = tokenizer.nextToken().split(":");
             // Input:
             //  [0]:hlpName, [1]:serviceFlavor, [2] groupID
             if (tokens.length > 2) {
@@ -132,6 +132,7 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         }
 
         if (this.highLevelProfiles == null) {
+            initHLPs((String) tuple.get(1));
             getHighLevelProfiles();
         }
         
@@ -141,12 +142,12 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         
         ultimate_kickass_table = new HashMap<Integer, State[]>();
         
-        for (Tuple t : in) {
+        for (Tuple t : in) {            
             service_flavor = (String) t.get(5);
-            String [] tmpa = ((String) t.get(3)).substring(1, ((String)t.get(3)).length() - 1).split(", ");
+            String [] tmpa = ((String) t.get(2)).substring(1, ((String)t.get(2)).length() - 1).split(", ");
             
             timeline = new State[tmpa.length];
-            
+                        
             for (int i = 0; i<tmpa.length; i++) {
                 timeline[i] = State.valueOf(tmpa[i]);
             }

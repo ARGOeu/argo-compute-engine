@@ -1,10 +1,6 @@
 package myudf;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,10 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.GZIPInputStream;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.DataBag;
@@ -27,6 +21,7 @@ import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
+import utils.ExternalResources;
 import utils.State;
 import utils.Utils;
 
@@ -39,8 +34,11 @@ public class ApplyProfiles extends EvalFunc<Tuple> {
     private final int quantum = 288;
     private final TupleFactory mTupleFactory = TupleFactory.getInstance();
     private String prev_date = null;
-    private Set<String> profile = new HashSet<String>();
-
+    private final Set<String> profile = new HashSet<String>();
+    
+    private Map<String, Entry<Integer, Integer>> downtimes = null;
+    private Map<String, ArrayList<String>> poems = null;
+    
     private Tuple point = null;
     private Iterator<Tuple> timeLineIt = null;
 
@@ -156,78 +154,12 @@ public class ApplyProfiles extends EvalFunc<Tuple> {
         }
     }
 
-    private Map<String, Entry<Integer, Integer>> downtimes = null;
-
-    private void getDowntimes(final String downtimes) throws FileNotFoundException, IOException {
-        this.downtimes = new HashMap<String, Entry<Integer, Integer>>();
-
-        byte[] decodedBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(downtimes);
-        BufferedReader in = new BufferedReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(decodedBytes))));
-
-        String input = in.readLine();
-
-        StringTokenizer tokenizer = new StringTokenizer(input, "\\|");
-
-        String host, serviceFlavor;
-        Entry<Integer, Integer> period;
-        while (tokenizer.hasMoreTokens()) {
-            String[] tokens = tokenizer.nextToken().split("\u0001");
-            if (tokens.length > 2) {
-                host = tokens[0];
-                serviceFlavor = tokens[1];
-
-                int hour = Integer.parseInt(tokens[2].split("T", 2)[1].split(":")[0]);
-                int minutes = Integer.parseInt(tokens[2].split("T", 2)[1].split(":")[1]);
-                int timeGroupStart = (hour * 60 + minutes) / (24 * 60 / this.quantum);
-
-                hour = Integer.parseInt(tokens[3].split("T", 2)[1].split(":")[0]);
-                minutes = Integer.parseInt(tokens[3].split("T", 2)[1].split(":")[1]);
-                int timeGroupEnd = (hour * 60 + minutes) / (24 * 60 / this.quantum);
-
-                period = new SimpleEntry<Integer, Integer>(timeGroupStart, timeGroupEnd);
-
-                this.downtimes.put(host + " " + serviceFlavor, period);
-            }
-        }
-    }
-
     private void addDowntimes(State[] tmp_timelineTable, String host, String flavor) {
         String key = host + " " + flavor;
         if (this.downtimes.containsKey(key)) {
             Entry<Integer, Integer> p = this.downtimes.get(key);
             for (int i = p.getKey(); i <= p.getValue(); i++) {
                 tmp_timelineTable[i] = State.DOWNTIME;
-            }
-        }
-    }
-
-    private Map<String, ArrayList<String>> poems = null;
-
-    private void initPOEMs(final String poems) throws FileNotFoundException, IOException {
-        this.poems = new HashMap<String, ArrayList<String>>();
-
-        byte[] decodedBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(poems);
-        BufferedReader in = new BufferedReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(decodedBytes))));
-
-        String input = in.readLine();
-
-        StringTokenizer tokenizer = new StringTokenizer(input, "\\|");
-
-        while (tokenizer.hasMoreTokens()) {
-            String[] tokens = tokenizer.nextToken().split("\u0001");
-            // Input:
-            //  [0]:profile_name, [1]:service_flavor, [2] metric
-            if (tokens.length > 2) {
-                String key = tokens[0] + " " + tokens[1];
-                String metric = tokens[2];
-
-                if (this.poems.containsKey(key)) {
-                    this.poems.get(key).add(metric);
-                } else {
-                    ArrayList<String> metrics = new ArrayList<String>();
-                    metrics.add(metric);
-                    this.poems.put(key, metrics);
-                }
             }
         }
     }
@@ -239,7 +171,7 @@ public class ApplyProfiles extends EvalFunc<Tuple> {
             String hostname, service_flavor, pprofile, calculationDate;
             calculationDate = null;
 
-            // Get timeline and profiles to two different stractures.
+            // Get timeline and profiles to two different structures.
             try {
                 this.timeLineIt = ((DataBag) tuple.get(0)).iterator();
                 this.point = null;
@@ -249,10 +181,10 @@ public class ApplyProfiles extends EvalFunc<Tuple> {
                 service_flavor = (String) tuple.get(4);
                 calculationDate = (String) tuple.get(5);
                 if (this.downtimes == null) {
-                    getDowntimes((String) tuple.get(6));
+                    this.downtimes = ExternalResources.getDowntimes((String) tuple.get(6), this.quantum);
                 }
                 if (this.poems == null) {
-                    initPOEMs((String) tuple.get(7));
+                    this.poems = ExternalResources.initPOEMs((String) tuple.get(7));
                 }
             } catch (Exception e) {
                 throw new IOException("There is a problem with the input in AppyProfiles: " + e);

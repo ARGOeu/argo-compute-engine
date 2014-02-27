@@ -8,11 +8,14 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
+import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 /**
@@ -93,8 +96,14 @@ public class AddTopology extends EvalFunc<Tuple> {
         p_metricS.add(infrastructure);
         p_metricS.add(certification_status);
         p_metricS.add(site_scope);
-
-        return p_metricS;
+        
+        try {
+            return new Schema(new Schema.FieldSchema("topology", p_metricS, DataType.TUPLE));
+        } catch (FrontendException ex) {
+            Logger.getLogger(AddTopology.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return null;
     }
 
 }
