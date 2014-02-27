@@ -85,10 +85,13 @@ timetables = FOREACH profiled_logs {
 								 FLATTEN(ApplyProfiles(timeline_s, profile, '$PREV_DATE', hostname, service_flavour, '$CUR_DATE', '$DOWNTIMES', '$POEMS')) as (date, timeline);
 };
 
---- Join topology with logs, so we have have for each log raw all topology information
+--- Join topology with logs, so we have have for each log row, all topology information
 topologed = FOREACH timetables GENERATE date, profile, timeline, hostname, service_flavour, 
                     FLATTEN(AddTopology(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3'));
 
+--- Group rows by important attributes. Note the date column, will be used for making a distinction in each day
+--- After the grouping, we calculate AR for each site and append the weights
+--- up, unknown, downtime columns are used for generalizing the calculation, so we can produce AR for months
 sites = FOREACH (GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 2) {
         t = ORDER topologed BY service_flavour;
         GENERATE group.date as dates, group.site as site, group.profile as profile,
