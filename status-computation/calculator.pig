@@ -116,6 +116,17 @@ vo = FOREACH (GROUP vo_s BY (vo, profile, date) PARALLEL 4)
 				GENERATE group.vo as vo, group.profile as profile, group.date as dates,
 						 FLATTEN(VOA(vo_s)) as (availability, reliability, up, unknown, downtime);
 
+--- Service flavor calculation
+service_flavors = FOREACH topologed_g {
+    t = ORDER topologed BY service_flavour;
+    GENERATE group.date as dates, group.site as site, group.profile as profile,
+        group.production as production, group.monitored as monitored, group.scope as scope,
+        group.ngi as ngi, group.infrastructure as infrastructure,
+        group.certification_status as certification_status, group.site_scope as site_scope,
+        FLATTEN(SFA(t)) as (availability, reliability, up, unknown, downtime, service_flavour);
+};
+
 STORE sites           INTO 'sitereports' USING org.apache.hcatalog.pig.HCatStorer();
 STORE service_status  INTO 'apireports'  USING org.apache.hcatalog.pig.HCatStorer();
 STORE vo              INTO 'voreports'   USING org.apache.hcatalog.pig.HCatStorer();
+STORE service_flavors INTO 'sfreports'   USING org.apache.hcatalog.pig.HCatStorer();
