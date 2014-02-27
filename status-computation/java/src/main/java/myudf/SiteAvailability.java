@@ -28,7 +28,7 @@ import utils.Utils;
  *
  * @author Anastasis Andronidis <anastasis90@yahoo.gr>
  */
-public class AggregateSiteAvailability extends EvalFunc<Tuple> {
+public class SiteAvailability extends EvalFunc<Tuple> {
     
     private final double quantum = 288.0;
     private final TupleFactory mTupleFactory = TupleFactory.getInstance();
@@ -125,8 +125,6 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
     @Override
     public Tuple exec(Tuple tuple) throws IOException {
         
-        DataBag in = (DataBag) tuple.get(0);
-        
         if (this.weights == null) {
             this.initWeights((String) tuple.get(2));
         }
@@ -137,17 +135,14 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
         }
         
         String service_flavor;
-        State[] timeline, tmp;
-        timeline = tmp = null;
+        State[] timeline = new State[(int)this.quantum];
         
         ultimate_kickass_table = new HashMap<Integer, State[]>();
         
-        for (Tuple t : in) {            
+        for (Tuple t : (DataBag) tuple.get(0)) {            
             service_flavor = (String) t.get(4);
             String [] tmpa = ((String) t.get(2)).substring(1, ((String)t.get(2)).length() - 1).split(", ");
             
-            timeline = new State[tmpa.length];
-                        
             for (int i = 0; i<tmpa.length; i++) {
                 timeline[i] = State.valueOf(tmpa[i]);
             }
@@ -159,21 +154,20 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
 //                timeline = (State[]) ois.readObject();
 //                ois.close();
 //            } catch (Exception ex) {
-//                Logger.getLogger(AggregateSiteAvailability.class.getName()).log(Level.SEVERE, null, ex);
+//                Logger.getLogger(SiteAvailability.class.getName()).log(Level.SEVERE, null, ex);
 //            }
 
             Integer group_id = this.highLevelProfiles.get(service_flavor);
             
             if (this.ultimate_kickass_table.containsKey(group_id)) {
-                tmp = this.ultimate_kickass_table.get(group_id);
-                Utils.makeOR(timeline, tmp);
+                Utils.makeOR(timeline, this.ultimate_kickass_table.get(group_id));
             } else {
                 if (group_id!=null) {
                     this.ultimate_kickass_table.put(group_id, timeline);
                 } 
 //                else {
 //                    String msg = "Encounterd: " + service_flavor;
-//                    Logger.getLogger(AggregateSiteAvailability.class.getName()).log(Level.INFO, msg);
+//                    Logger.getLogger(SiteAvailability.class.getName()).log(Level.INFO, msg);
 //                }
             }
         }
@@ -226,7 +220,7 @@ public class AggregateSiteAvailability extends EvalFunc<Tuple> {
             
             return new Schema(new Schema.FieldSchema("Availability_Report", p_metricS, DataType.TUPLE));
         } catch (FrontendException ex) {
-            Logger.getLogger(AggregateSiteAvailability.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SiteAvailability.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return null;

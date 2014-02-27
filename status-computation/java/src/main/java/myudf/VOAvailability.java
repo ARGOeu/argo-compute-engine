@@ -70,7 +70,7 @@ public class VOAvailability extends EvalFunc<Tuple> {
             
             return new Schema(new Schema.FieldSchema("VO_Report", p_metricS, DataType.TUPLE));
         } catch (FrontendException ex) {
-            Logger.getLogger(AggregateSiteAvailability.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SiteAvailability.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return null;

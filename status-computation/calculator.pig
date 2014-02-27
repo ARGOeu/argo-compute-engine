@@ -24,8 +24,11 @@
 
 register /usr/libexec/ar-compute/MyUDF.jar
 
-define ApplyProfiles     myudf.ApplyProfiles();
-define AddTopology       myudf.AddTopology();
+define HST myudf.HostServiceTimelines();
+define AT  myudf.AddTopology();
+define SA  myudf.SiteAvailability();
+define VOA myudf.VOAvailability();
+define SFA myudf.SFAvailability();
 
 --- e.g. in_date = 2013-05-29, PREV_DATE = 2013-05-28
 %declare PREV_DATE `date --date=@$(( $(date --date=$in_date +%s) - 86400 )) +'%Y-%m-%d'`
@@ -39,7 +42,7 @@ define AddTopology       myudf.AddTopology();
 %declare TOPOLOGY3  `cat $topology_file3`
 %declare POEMS      `cat $poem_file`
 %declare WEIGHTS    `cat $weights_file`
-%declare HLP        `cat $hlp ` --- `cat $hlp` --- high level profile.
+%declare HLP        `cat $hlp ` --- `cat $hlp` --- high level profiles.
 
 ---SET mapred.min.split.size 3000000;
 ---SET mapred.max.split.size 3000000;
@@ -82,23 +85,25 @@ timetables = FOREACH profiled_logs {
         timeline_s = ORDER timeline BY time_stamp;
 				vos = DISTINCT vo;
         GENERATE hostname, service_flavour, profile, vos as vo,
-								 FLATTEN(ApplyProfiles(timeline_s, profile, '$PREV_DATE', hostname, service_flavour, '$CUR_DATE', '$DOWNTIMES', '$POEMS')) as (date, timeline);
+								 FLATTEN(HST(timeline_s, profile, '$PREV_DATE', hostname, service_flavour, '$CUR_DATE', '$DOWNTIMES', '$POEMS')) as (date, timeline);
 };
 
 --- Join topology with logs, so we have have for each log row, all topology information
-topologed = FOREACH timetables GENERATE date, profile, timeline, hostname, service_flavour, 
-                    FLATTEN(AddTopology(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3'));
+topologed = FOREACH timetables GENERATE date, profile, timeline, hostname, service_flavour,
+                    FLATTEN(AT(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3'));
 
 --- Group rows by important attributes. Note the date column, will be used for making a distinction in each day
+topologed_g = GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 1;
+
 --- After the grouping, we calculate AR for each site and append the weights
 --- up, unknown, downtime columns are used for generalizing the calculation, so we can produce AR for months
-sites = FOREACH (GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 2) {
+sites = FOREACH topologed_g {
         t = ORDER topologed BY service_flavour;
         GENERATE group.date as dates, group.site as site, group.profile as profile,
             group.production as production, group.monitored as monitored, group.scope as scope,
             group.ngi as ngi, group.infrastructure as infrastructure,
             group.certification_status as certification_status, group.site_scope as site_scope,
-            FLATTEN(myudf.AggregateSiteAvailability(t, '$HLP', '$WEIGHTS', group.site)) as (availability, reliability, up, unknown, downtime, weight);
+            FLATTEN(SA(t, '$HLP', '$WEIGHTS', group.site)) as (availability, reliability, up, unknown, downtime, weight);
 };
 
 --- Status computation for services
@@ -109,8 +114,8 @@ vo_s = FOREACH timetables GENERATE hostname, service_flavour, profile, date, FLA
 
 vo = FOREACH (GROUP vo_s BY (vo, profile, date) PARALLEL 4) 
 				GENERATE group.vo as vo, group.profile as profile, group.date as dates,
-						 FLATTEN(myudf.VOAvailability(vo_s)) as (availability, reliability, up, unknown, downtime);
+						 FLATTEN(VOA(vo_s)) as (availability, reliability, up, unknown, downtime);
 
-STORE sites          INTO 'sitereports' USING org.apache.hcatalog.pig.HCatStorer();
-STORE service_status INTO 'apireports'  USING org.apache.hcatalog.pig.HCatStorer();
-STORE vo             INTO 'voreports'   USING org.apache.hcatalog.pig.HCatStorer();
+STORE sites           INTO 'sitereports' USING org.apache.hcatalog.pig.HCatStorer();
+STORE service_status  INTO 'apireports'  USING org.apache.hcatalog.pig.HCatStorer();
+STORE vo              INTO 'voreports'   USING org.apache.hcatalog.pig.HCatStorer();

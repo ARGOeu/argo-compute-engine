@@ -29,7 +29,7 @@ import utils.Utils;
  *
  * @author Anastasis Andronidis <anastasis90@yahoo.gr>
  */
-public class ApplyProfiles extends EvalFunc<Tuple> {
+public class HostServiceTimelines extends EvalFunc<Tuple> {
 
     private final int quantum = 288;
     private final TupleFactory mTupleFactory = TupleFactory.getInstance();
@@ -302,7 +302,7 @@ public class ApplyProfiles extends EvalFunc<Tuple> {
 
             return new Schema(new Schema.FieldSchema("date_timeline", tuple, DataType.TUPLE));
         } catch (FrontendException ex) {
-            Logger.getLogger(ApplyProfiles.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(HostServiceTimelines.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return null;
