@@ -39,7 +39,7 @@ define AddTopology       myudf.AddTopology();
 %declare TOPOLOGY3  `cat $topology_file3`
 %declare POEMS      `cat $poem_file`
 %declare WEIGHTS    `cat $weights_file`
-%declare HLP        `echo ""` --- `cat $hlp` --- high level profile.
+%declare HLP        `cat $hlp ` --- `cat $hlp` --- high level profile.
 
 ---SET mapred.min.split.size 3000000;
 ---SET mapred.max.split.size 3000000;
