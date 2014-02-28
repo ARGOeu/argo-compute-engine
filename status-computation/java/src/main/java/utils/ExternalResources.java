@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPInputStream;
@@ -98,4 +99,60 @@ public class ExternalResources {
         return poems;
     }
 
+    public static Map<String, List<Integer>> initHLPs(final String hlp) throws FileNotFoundException, IOException {
+        Map<String, List<Integer>> hlps = new HashMap<String, List<Integer>>();
+
+        byte[] decodedBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(hlp);
+        BufferedReader in = new BufferedReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(decodedBytes))));
+
+        String input = in.readLine();
+
+        StringTokenizer tokenizer = new StringTokenizer(input, "\\|");
+
+        while (tokenizer.hasMoreTokens()) {
+            String[] tokens = tokenizer.nextToken().split(":");
+            // Input:
+            //  [0]:hlpName, [1]:serviceFlavor, [2] groupID
+            if (tokens.length > 2) {
+                String key = tokens[0] + " " + tokens[1];
+                Integer groupid = Integer.parseInt(tokens[2]);
+
+                if (hlps.containsKey(key)) {
+                    hlps.get(key).add(groupid);
+                } else {
+                    ArrayList<Integer> groupids = new ArrayList<Integer>();
+                    groupids.add(groupid);
+                    hlps.put(key, groupids);
+                }
+            }
+        }
+        
+        return hlps;
+    }
+
+    public static Map<String, String> initWeights(final String weightsString) throws FileNotFoundException, IOException {
+        Map<String, String> weights = new HashMap<String, String>();
+
+        byte[] decodedBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(weightsString);
+        BufferedReader in = new BufferedReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(decodedBytes))));
+
+        String input = in.readLine();
+
+        StringTokenizer tokenizer = new StringTokenizer(input, "\\|");
+
+        String host, w;
+        while (tokenizer.hasMoreTokens()) {
+            // (hostname, weight)
+            String[] tokens = tokenizer.nextToken().split("\u0001", 2);
+            if (tokens.length > 1) {
+                host = tokens[0];
+                w = tokens[1];
+
+                weights.put(host, w);
+            }
+        }
+        
+        return weights;
+    }
+    
 }

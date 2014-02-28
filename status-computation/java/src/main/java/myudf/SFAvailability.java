@@ -29,7 +29,7 @@ public class SFAvailability extends EvalFunc<DataBag> {
 
     private final double quantum = 288.0;
     private final TupleFactory mTupleFactory = TupleFactory.getInstance();
-    private final BagFactory mBagFactory = BagFactory.getInstance();    
+    private final BagFactory mBagFactory = BagFactory.getInstance();
     
     @Override
     public DataBag exec(Tuple input) throws IOException {

@@ -275,6 +275,10 @@ public class HostServiceTimelines extends EvalFunc<Tuple> {
                 }
             }
 
+            // Recalculation Section
+            // The idea is to find the date that we are working on from MongoDB
+            // and then apply UNKNOWN state at those points
+            
             // OUTPUT SECTION
             // Schema: timeline: (date(e.g. 20130823), (quantum*"OK"))
             Tuple t = mTupleFactory.newTuple();

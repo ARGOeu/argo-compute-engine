@@ -1,19 +1,13 @@
 package myudf;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.GZIPInputStream;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
@@ -21,6 +15,7 @@ import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
+import utils.ExternalResources;
 import utils.State;
 import utils.Utils;
 
@@ -38,59 +33,6 @@ public class SiteAvailability extends EvalFunc<Tuple> {
     
     private final Integer nGroups = 3;
     private Map<String, List<Integer>> hlps = null;
-    
-    private void initHLPs(final String hlp) throws FileNotFoundException, IOException {
-        this.hlps = new HashMap<String, List<Integer>>();
-
-        byte[] decodedBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(hlp);
-        BufferedReader in = new BufferedReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(decodedBytes))));
-
-        String input = in.readLine();
-
-        StringTokenizer tokenizer = new StringTokenizer(input, "\\|");
-
-        while (tokenizer.hasMoreTokens()) {
-            String[] tokens = tokenizer.nextToken().split(":");
-            // Input:
-            //  [0]:hlpName, [1]:serviceFlavor, [2] groupID
-            if (tokens.length > 2) {
-                String key = tokens[0] + " " + tokens[1];
-                Integer groupid = Integer.parseInt(tokens[2]);
-
-                if (this.hlps.containsKey(key)) {
-                    this.hlps.get(key).add(groupid);
-                } else {
-                    ArrayList<Integer> groupids = new ArrayList<Integer>();
-                    groupids.add(groupid);
-                    this.hlps.put(key, groupids);
-                }
-            }
-        }
-    }
-
-    private void initWeights(final String weights) throws FileNotFoundException, IOException {
-
-        this.weights = new HashMap<String, String>();
-
-        byte[] decodedBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(weights);
-        BufferedReader in = new BufferedReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(decodedBytes))));
-
-        String input = in.readLine();
-
-        StringTokenizer tokenizer = new StringTokenizer(input, "\\|");
-
-        String host, w;
-        while (tokenizer.hasMoreTokens()) {
-            // (hostname, weight)
-            String[] tokens = tokenizer.nextToken().split("\u0001", 2);
-            if (tokens.length > 1) {
-                host = tokens[0];
-                w = tokens[1];
-
-                this.weights.put(host, w);
-            }
-        }
-    }
 
     private void getHighLevelProfiles() throws FileNotFoundException, IOException {
         this.highLevelProfiles = new HashMap<String, Integer>();
@@ -125,11 +67,11 @@ public class SiteAvailability extends EvalFunc<Tuple> {
         Map<Integer, State[]> ultimate_kickass_table = null;
         
         if (this.weights == null) {
-            this.initWeights((String) tuple.get(2));
+            this.weights = ExternalResources.initWeights((String) tuple.get(2));
         }
 
         if (this.highLevelProfiles == null) {
-            initHLPs((String) tuple.get(1));
+            ExternalResources.initHLPs((String) tuple.get(1));
             getHighLevelProfiles();
         }
         
