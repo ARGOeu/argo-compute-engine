@@ -22,7 +22,10 @@
 --- the EGI-InSPIRE project through the European Commission's 7th
 --- Framework Programme (contract # INFSO-RI-261323) 
 
-register /usr/libexec/ar-compute/MyUDF.jar
+REGISTER /usr/libexec/ar-compute/MyUDF.jar
+REGISTER /usr/libexec/ar-compute/lib/mongo-java-driver-2.11.4.jar   -- mongodb java driver  
+REGISTER /usr/libexec/ar-compute/lib/mongo-hadoop-core.jar          -- mongo-hadoop core lib
+REGISTER /usr/libexec/ar-compute/lib/mongo-hadoop-pig.jar           -- mongo-hadoop pig lib
 
 define HST myudf.HostServiceTimelines();
 define AT  myudf.AddTopology();
@@ -54,6 +57,10 @@ SET io.sort.factor 100;
 SET mapred.job.shuffle.merge.percent 0.33;
 SET pig.udf.profile true;
 */
+
+SET mapred.map.tasks.speculative.execution false
+SET mapred.reduce.tasks.speculative.execution false
+
 --- Get beacons (logs from previous day)
 beacons_r = LOAD 'raw_data' USING org.apache.hcatalog.pig.HCatLoader();
 beacons = FILTER beacons_r BY dates=='$PREV_DATE' AND profile=='ch.cern.sam.ROC_CRITICAL';
@@ -74,7 +81,7 @@ logs   = FILTER logs_r BY ((dates=='$PREV_DATE') OR (dates=='$CUR_DATE')) AND pr
 --- Group rows so we can have for each hostname and flavor, the applied poem profile with reports
 --- After the grouping, we append the actual rules of the POEM profiles
 profiled_logs = FOREACH (GROUP logs BY (hostname, service_flavour, profile) PARALLEL 4)
-        GENERATE group.hostname as hostname, group.service_flavour as service_flavour, 
+        GENERATE group.hostname as hostname, group.service_flavour as service_flavour,
                  group.profile as profile,
                  logs.vo as vo,
                  logs.(metric, status, time_stamp) as timeline;
@@ -111,7 +118,7 @@ service_status = FOREACH timetables GENERATE date as dates, hostname, service_fl
 --- VO calculation
 vo_s = FOREACH timetables GENERATE hostname, service_flavour, profile, date, FLATTEN(vo) as vo, timeline;
 
-vo = FOREACH (GROUP vo_s BY (vo, profile, date) PARALLEL 4) 
+vo = FOREACH (GROUP vo_s BY (vo, profile, date) PARALLEL 4)
         GENERATE group.vo as vo, group.profile as profile, group.date as dates,
             FLATTEN(VOA(vo_s)) as (availability, reliability, up, unknown, downtime);
 
@@ -125,7 +132,34 @@ service_flavors = FOREACH topologed_g {
         FLATTEN(SFA(t)) as (availability, reliability, up, unknown, downtime, service_flavour);
 };
 
-STORE sites           INTO 'sitereports' USING org.apache.hcatalog.pig.HCatStorer();
+/*STORE sites           INTO 'sitereports' USING org.apache.hcatalog.pig.HCatStorer();
 STORE service_status  INTO 'apireports'  USING org.apache.hcatalog.pig.HCatStorer();
 STORE vo              INTO 'voreports'   USING org.apache.hcatalog.pig.HCatStorer();
 STORE service_flavors INTO 'sfreports'   USING org.apache.hcatalog.pig.HCatStorer();
+*/
+
+--- Fix format for MongoDB
+sites_shrink = FOREACH sites
+                   GENERATE dates as dt, site as s, profile as p, production as pr,
+                            monitored as m, scope as sc, ngi as n, infrastructure as i,
+                            certification_status as cs, site_scope as ss, availability as a,
+                            reliability as r, up as up, unknown as u, downtime as d, weight as hs;
+
+service_status_shrink = FOREACH service_status
+                            GENERATE dates as d, hostname as h, service_flavour as sf,
+                                     profile as p, vo as vo, timeline as tm;
+
+vo_shrink = FOREACH vo
+               GENERATE dates as d, vo as v, profile as p, availability as a,
+                        reliability as r, up as up, unknown as u, downtime as dt;
+
+s_f_shrink = FOREACH service_flavors
+                GENERATE dates as dt, site as s, profile as p, production as pr,
+                         monitored as m, scope as sc, ngi as n, infrastructure as i,
+                         certification_status as cs, site_scope as ss, availability as a, 
+                         reliability as r, up as up, unknown as u, downtime as d, service_flavour as sf;
+
+STORE sites_shrink          INTO 'mongodb://$mongoServer/AR.sites'     USING com.mongodb.hadoop.pig.MongoInsertStorage();
+STORE service_status_shrink INTO 'mongodb://$mongoServer/AR.timelines' USING com.mongodb.hadoop.pig.MongoInsertStorage();
+STORE vo_shrink             INTO 'mongodb://$mongoServer/AR.voreports' USING com.mongodb.hadoop.pig.MongoInsertStorage();
+STORE s_f_shrink            INTO 'mongodb://$mongoServer/AR.sfreports' USING com.mongodb.hadoop.pig.MongoInsertStorage();

@@ -24,6 +24,7 @@
 # the EGI-InSPIRE project through the European Commission's 7th
 # Framework Programme (contract # INFSO-RI-261323) 
 
+mongoDBServer="83.212.110.19:27017"
 currentdate=$1
 loopenddate=$(/bin/date --date "$2 1 day" +%Y-%m-%d)
 
@@ -33,6 +34,10 @@ until [ "$currentdate" == "$loopenddate" ]; do
 
   RUN_DATE=$currentdate
   RUN_DATE_UNDER=`echo $RUN_DATE | sed 's/-/_/g'`
+
+  ### prepare MongoDB by cleaning the collections
+  echo "Delete $RUN_DATE from MongoDB"
+  /usr/libexec/ar-compute/lib/mongo-date_delete.py $RUN_DATE
 
   ### prepare poems
   echo "Prepare poems for $RUN_DATE"
@@ -64,7 +69,16 @@ until [ "$currentdate" == "$loopenddate" ]; do
   cat hepspec_sync_$RUN_DATE.out | awk 'BEGIN {ORS="|"; RS="\r\n"} {print $0}' | gzip -c | base64 | awk 'BEGIN {ORS=""} {print $0}' > hepspec_sync_$RUN_DATE_UNDER.zip
 
   ### run calculator.pig
-  pig -useHCatalog -param in_date=$RUN_DATE -param hlp=hlp_$RUN_DATE_UNDER.zip -param weights_file=hepspec_sync_$RUN_DATE_UNDER.zip -param downtimes_file=downtimes_$RUN_DATE.zip -param poem_file=poem_sync_$RUN_DATE_UNDER.out.clean -param topology_file1=sites_$RUN_DATE_UNDER.aa -param topology_file2=sites_$RUN_DATE_UNDER.ab -param topology_file3=sites_$RUN_DATE_UNDER.ac -f /usr/libexec/ar-compute/pig/calculator.pig
+  pig -useHCatalog -param in_date=$RUN_DATE \
+      -param mongoServer=$mongoDBServer \
+      -param hlp=hlp_$RUN_DATE_UNDER.zip \
+      -param weights_file=hepspec_sync_$RUN_DATE_UNDER.zip \
+      -param downtimes_file=downtimes_$RUN_DATE.zip \
+      -param poem_file=poem_sync_$RUN_DATE_UNDER.out.clean \
+      -param topology_file1=sites_$RUN_DATE_UNDER.aa \
+      -param topology_file2=sites_$RUN_DATE_UNDER.ab \
+      -param topology_file3=sites_$RUN_DATE_UNDER.ac \
+      -f /usr/libexec/ar-compute/pig/calculator.pig
 
   rm -f poem_sync_$RUN_DATE_UNDER.out.clean
   rm -f downtimes_$RUN_DATE.zip
@@ -75,7 +89,3 @@ until [ "$currentdate" == "$loopenddate" ]; do
   currentdate=$(/bin/date --date "$currentdate 1 day" +%Y-%m-%d)
   
 done
-
-echo "waiting for hadoop"
-
-wait
