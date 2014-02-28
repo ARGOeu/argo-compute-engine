@@ -135,15 +135,14 @@ service_status_shrink = FOREACH service_status
                                      profile as p, vo as vo, timeline as tm;
 
 vo_shrink = FOREACH vo
-                GENERATE dates as d, vo as v, profile as p, availability as a,
-                         reliability as r, up as up, unknown as u, downtime as d;
+               GENERATE dates as d, vo as v, profile as p, availability as a,
+                        reliability as r, up as up, unknown as u, downtime as dt;
 
 s_f_shrink = FOREACH service_flavors
                 GENERATE dates as dt, site as s, profile as p, production as pr,
                          monitored as m, scope as sc, ngi as n, infrastructure as i,
                          certification_status as cs, site_scope as ss, availability as a, 
-                         reliability as r, up as up, unknown as u, downtime as d, weight as hs,
-                         service_flavour as sf;
+                         reliability as r, up as up, unknown as u, downtime as d, service_flavour as sf;
 
 STORE sites_shrink          INTO 'mongodb://$mongoServer/AR.sites'     USING com.mongodb.hadoop.pig.MongoInsertStorage();
 STORE service_status_shrink INTO 'mongodb://$mongoServer/AR.timelines' USING com.mongodb.hadoop.pig.MongoInsertStorage();

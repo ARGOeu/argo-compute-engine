@@ -37,13 +37,13 @@ until [ "$currentdate" == "$loopenddate" ]; do
 
   RUN_DATE=$currentdate
   RUN_DATE_UNDER=`echo $RUN_DATE | sed 's/-/_/g'`
-	
-	echo "Run prefilter for $RUN_DATE"
-	# /usr/libexec/ar-sync/prefilter -d $RUN_DATE
-	
-	echo "Delete $RUN_DATE from MongoDB"
-	/usr/libexec/ar-local-compute/lib/mongo-date_delete.py $RUN_DATE
-	
+
+  echo "Run prefilter for $RUN_DATE"
+  # /usr/libexec/ar-sync/prefilter -d $RUN_DATE
+
+  echo "Delete $RUN_DATE from MongoDB"
+  /usr/libexec/ar-local-compute/lib/mongo-date_delete.py $RUN_DATE
+
   ### prepare poems
   echo "Prepare poems for $RUN_DATE"
   cat poem_sync_$RUN_DATE_UNDER.out | cut -d $(echo -e '\x01') --output-delimiter=$(echo -e '\x01') -f "3 4 5 6" | sort -u | awk 'BEGIN {ORS="|"; RS="\n"} {print $0}' | gzip -c | base64 | awk 'BEGIN {ORS=""} {print $0}' > poem_sync_$RUN_DATE_UNDER.out.clean
@@ -56,7 +56,7 @@ until [ "$currentdate" == "$loopenddate" ]; do
   rm -f sites_$RUN_DATE_UNDER.out.clean
   split -b 30092 sites_$RUN_DATE_UNDER.zip sites_$RUN_DATE_UNDER.
   rm -f sites_$RUN_DATE_UNDER.zip
-  
+
   ### prepare downtimes
   echo "Prepare downtimes for $RUN_DATE"
   /usr/libexec/ar-sync/downtime-sync -d $RUN_DATE
@@ -76,5 +76,7 @@ until [ "$currentdate" == "$loopenddate" ]; do
   rm -f downtimes_$RUN_DATE.zip
   rm -f hepspec_sync_$RUN_DATE_UNDER.zip
   rm -f sites_$RUN_DATE_UNDER.aa sites_$RUN_DATE_UNDER.ab sites_$RUN_DATE_UNDER.ac
-  
-  curr
+
+  currentdate=$(/bin/date --date "$currentdate 1 day" +%Y-%m-%d)
+
+done
