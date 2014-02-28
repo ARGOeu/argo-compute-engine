@@ -29,18 +29,16 @@ public class SFAvailability extends EvalFunc<DataBag> {
 
     private final double quantum = 288.0;
     private final TupleFactory mTupleFactory = TupleFactory.getInstance();
-    private final BagFactory mBagFactory = BagFactory.getInstance();
-    
-    private final DataBag out_bag = mBagFactory.newDefaultBag();
-    private State[] output_table = null;
-    
+    private final BagFactory mBagFactory = BagFactory.getInstance();    
     
     @Override
     public DataBag exec(Tuple input) throws IOException {
+        final DataBag out_bag = mBagFactory.newDefaultBag();
+        State[] output_table = null;
         
         String prev_service_flavor = null;
-        State[] timeline = new State[(int)this.quantum];        
-        
+        State[] timeline = new State[(int)this.quantum];
+                
         Iterator<Tuple> it = ((DataBag) input.get(0)).iterator();
         
         // The first loop, is always special
@@ -53,7 +51,7 @@ public class SFAvailability extends EvalFunc<DataBag> {
                 timeline[i] = State.valueOf(tmpa[i]);
             }
             
-            this.output_table = timeline;
+            output_table = timeline;
         } else {
             throw new IOException("Empty Bag! Something is wrong with the input!");
         }
@@ -68,18 +66,18 @@ public class SFAvailability extends EvalFunc<DataBag> {
             
             
             if (prev_service_flavor.equals((String) t.get(4))) {
-                Utils.makeOR(timeline, this.output_table);
+                Utils.makeOR(timeline, output_table);
             } else {                
-                Tuple t_o = Utils.getARReport(this.output_table, mTupleFactory.newTuple(6), this.quantum);
+                Tuple t_o = Utils.getARReport(output_table, mTupleFactory.newTuple(6), this.quantum);
                 t_o.set(5, prev_service_flavor);
                 
-                this.out_bag.add(t_o);
+                out_bag.add(t_o);
                 prev_service_flavor = (String) t.get(4);
             }
             
         }
         
-        return this.out_bag;
+        return out_bag;
     }
     
     @Override

@@ -27,11 +27,10 @@ public class VOAvailability extends EvalFunc<Tuple> {
     private final TupleFactory mTupleFactory = TupleFactory.getInstance();
     private final double quantum = 288.0;
     
-    private State[] output_table = null;
-
     @Override
     public Tuple exec(Tuple input) throws IOException {
         State[] timeline = new State[(int) this.quantum];
+        State[] output_table = null;
         
         // Input: timetables: {(hostname: chararray,service_flavour: chararray,profile: chararray,vo: chararray,date: chararray,timeline: chararray)
         for (Tuple t : (DataBag) input.get(0)) {
@@ -41,14 +40,14 @@ public class VOAvailability extends EvalFunc<Tuple> {
                 timeline[i] = State.valueOf(tmp[i]);
             }
             
-            if (this.output_table != null) {
-                Utils.makeOR(timeline, this.output_table);
+            if (output_table != null) {
+                Utils.makeOR(timeline, output_table);
             } else {
-                this.output_table = timeline.clone();
+                output_table = timeline.clone();
             }
         }
         
-        Tuple t = Utils.getARReport(this.output_table, mTupleFactory.newTuple(5), this.quantum);
+        Tuple t = Utils.getARReport(output_table, mTupleFactory.newTuple(5), this.quantum);
         return t;
     }
     

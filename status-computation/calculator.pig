@@ -48,12 +48,12 @@ define SFA myudf.SFAvailability();
 ---SET mapred.max.split.size 3000000;
 ---SET pig.noSplitCombination true;
 
-SET hcat.desired.partition.num.splits 2;
+/*SET hcat.desired.partition.num.splits 2;
 
 SET io.sort.factor 100;
 SET mapred.job.shuffle.merge.percent 0.33;
 SET pig.udf.profile true;
-
+*/
 --- Get beacons (logs from previous day)
 beacons_r = LOAD 'raw_data' USING org.apache.hcatalog.pig.HCatLoader();
 beacons = FILTER beacons_r BY dates=='$PREV_DATE' AND profile=='ch.cern.sam.ROC_CRITICAL';
@@ -93,7 +93,7 @@ topologed = FOREACH timetables GENERATE date, profile, timeline, hostname, servi
                     FLATTEN(AT(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3'));
 
 --- Group rows by important attributes. Note the date column, will be used for making a distinction in each day
-topologed_g = GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 1;
+topologed_g = GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 3;
 
 --- After the grouping, we calculate AR for each site and append the weights
 --- up, unknown, downtime columns are used for generalizing the calculation, so we can produce AR for months

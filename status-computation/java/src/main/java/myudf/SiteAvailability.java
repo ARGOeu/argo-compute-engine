@@ -33,10 +33,7 @@ public class SiteAvailability extends EvalFunc<Tuple> {
     private final double quantum = 288.0;
     private final TupleFactory mTupleFactory = TupleFactory.getInstance();
     private Map<String, String> weights = null;
-    
-    private State[] output_table = null;
-    private Map<Integer, State[]> ultimate_kickass_table = null;
-    
+        
     private Map<String, Integer> highLevelProfiles = null;
     
     private final Integer nGroups = 3;
@@ -124,6 +121,8 @@ public class SiteAvailability extends EvalFunc<Tuple> {
     
     @Override
     public Tuple exec(Tuple tuple) throws IOException {
+        State[] output_table = null;
+        Map<Integer, State[]> ultimate_kickass_table = null;
         
         if (this.weights == null) {
             this.initWeights((String) tuple.get(2));
@@ -159,11 +158,11 @@ public class SiteAvailability extends EvalFunc<Tuple> {
 
             Integer group_id = this.highLevelProfiles.get(service_flavor);
             
-            if (this.ultimate_kickass_table.containsKey(group_id)) {
-                Utils.makeOR(timeline, this.ultimate_kickass_table.get(group_id));
+            if (ultimate_kickass_table.containsKey(group_id)) {
+                Utils.makeOR(timeline, ultimate_kickass_table.get(group_id));
             } else {
                 if (group_id!=null) {
-                    this.ultimate_kickass_table.put(group_id, timeline);
+                    ultimate_kickass_table.put(group_id, timeline);
                 } 
 //                else {
 //                    String msg = "Encounterd: " + service_flavor;
@@ -174,19 +173,19 @@ public class SiteAvailability extends EvalFunc<Tuple> {
         
         // We get the first table, we dont care about the first iteration
         // because we do an AND with self.
-        if (this.ultimate_kickass_table.size() > this.nGroups) {
+        if (ultimate_kickass_table.size() > this.nGroups) {
             // this.output_table = new String[24];
             // Utils.makeMiss(this.output_table);
-            throw new UnsupportedOperationException("A site has more flavors than expected. Something is terribly wrong! " + this.ultimate_kickass_table.keySet());
+            throw new UnsupportedOperationException("A site has more flavors than expected. Something is terribly wrong! " + ultimate_kickass_table.keySet());
         } else {
-            if (this.ultimate_kickass_table.values().size() > 0) {
-                this.output_table = this.ultimate_kickass_table.values().iterator().next();
-                for (State[] tb : this.ultimate_kickass_table.values()) {
-                    Utils.makeAND(tb, this.output_table);
+            if (ultimate_kickass_table.values().size() > 0) {
+                output_table = ultimate_kickass_table.values().iterator().next();
+                for (State[] tb : ultimate_kickass_table.values()) {
+                    Utils.makeAND(tb, output_table);
                 }
             } else {
-                this.output_table = new State[(int)this.quantum];
-                Utils.makeMiss(this.output_table);
+                output_table = new State[(int)this.quantum];
+                Utils.makeMiss(output_table);
             }
         }
         
@@ -195,7 +194,7 @@ public class SiteAvailability extends EvalFunc<Tuple> {
             w = "1";
         }
         
-        Tuple t = Utils.getARReport(this.output_table, mTupleFactory.newTuple(6), this.quantum);
+        Tuple t = Utils.getARReport(output_table, mTupleFactory.newTuple(6), this.quantum);
         t.set(5, w);
         return t;
     }
