@@ -76,21 +76,20 @@ logs   = FILTER logs_r BY ((dates=='$PREV_DATE') OR (dates=='$CUR_DATE')) AND pr
 profiled_logs = FOREACH (GROUP logs BY (hostname, service_flavour, profile) PARALLEL 4)
         GENERATE group.hostname as hostname, group.service_flavour as service_flavour, 
                  group.profile as profile,
-								 logs.vo as vo,
+                 logs.vo as vo,
                  logs.(metric, status, time_stamp) as timeline;
-
 
 --- We calculate the timelines and create an integral of all reports
 timetables = FOREACH profiled_logs {
         timeline_s = ORDER timeline BY time_stamp;
-				vos = DISTINCT vo;
+        vos = DISTINCT vo;
         GENERATE hostname, service_flavour, profile, vos as vo,
-								 FLATTEN(HST(timeline_s, profile, '$PREV_DATE', hostname, service_flavour, '$CUR_DATE', '$DOWNTIMES', '$POEMS')) as (date, timeline);
+            FLATTEN(HST(timeline_s, profile, '$PREV_DATE', hostname, service_flavour, '$CUR_DATE', '$DOWNTIMES', '$POEMS')) as (date, timeline);
 };
 
 --- Join topology with logs, so we have have for each log row, all topology information
 topologed = FOREACH timetables GENERATE date, profile, timeline, hostname, service_flavour,
-                    FLATTEN(AT(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3'));
+                 FLATTEN(AT(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3'));
 
 --- Group rows by important attributes. Note the date column, will be used for making a distinction in each day
 topologed_g = GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 3;
@@ -113,8 +112,8 @@ service_status = FOREACH timetables GENERATE date as dates, hostname, service_fl
 vo_s = FOREACH timetables GENERATE hostname, service_flavour, profile, date, FLATTEN(vo) as vo, timeline;
 
 vo = FOREACH (GROUP vo_s BY (vo, profile, date) PARALLEL 4) 
-				GENERATE group.vo as vo, group.profile as profile, group.date as dates,
-						 FLATTEN(VOA(vo_s)) as (availability, reliability, up, unknown, downtime);
+        GENERATE group.vo as vo, group.profile as profile, group.date as dates,
+            FLATTEN(VOA(vo_s)) as (availability, reliability, up, unknown, downtime);
 
 --- Service flavor calculation
 service_flavors = FOREACH topologed_g {
