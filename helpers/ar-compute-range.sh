@@ -55,9 +55,9 @@ until [ "$currentdate" == "$loopenddate" ]; do
   cat downtimes_cache_$RUN_DATE.out | awk 'BEGIN {ORS="|"; RS="\r\n"} {print $0}' | gzip -c | base64 | awk 'BEGIN {ORS=""} {print $0}' > downtimes_$RUN_DATE.zip
   rm -f downtimes_cache_$RUN_DATE.out 
 
-	### prepare high level profiles
-	echo "Prepare High Level Profiles for $RUN_DATE"
-	cat hlp.out | awk 'BEGIN {ORS="|"; RS="\n"} {print $0}' | gzip -c | base64 | awk 'BEGIN {ORS=""} {print $0}' > hlp_$RUN_DATE_UNDER.zip
+  ### prepare high level profiles
+  echo "Prepare High Level Profiles for $RUN_DATE"
+  cat hlp.out | awk 'BEGIN {ORS="|"; RS="\n"} {print $0}' | gzip -c | base64 | awk 'BEGIN {ORS=""} {print $0}' > hlp_$RUN_DATE_UNDER.zip
 	
   ### prepare weights
   echo "Prepare HEPSPEC for $RUN_DATE"
@@ -69,7 +69,7 @@ until [ "$currentdate" == "$loopenddate" ]; do
   rm -f poem_sync_$RUN_DATE_UNDER.out.clean
   rm -f downtimes_$RUN_DATE.zip
   rm -f hepspec_sync_$RUN_DATE_UNDER.zip
-	rm -f hlp_$RUN_DATE_UNDER.zip
+  rm -f hlp_$RUN_DATE_UNDER.zip
   rm -f sites_$RUN_DATE_UNDER.aa sites_$RUN_DATE_UNDER.ab sites_$RUN_DATE_UNDER.ac
   
   currentdate=$(/bin/date --date "$currentdate 1 day" +%Y-%m-%d)

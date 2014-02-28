@@ -76,6 +76,15 @@ cat downtimes_cache_$RUN_DATE.out \
     > downtimes_$RUN_DATE.zip
 rm -f downtimes_cache_$RUN_DATE.out 
 
+### prepare high level profiles
+echo "Prepare High Level Profiles for $RUN_DATE"
+cat hlp.out \
+    | awk 'BEGIN {ORS="|"; RS="\n"} {print $0}' \
+    | gzip -c \
+    | base64 \
+    | awk 'BEGIN {ORS=""} {print $0}' \
+    > hlp_$RUN_DATE_UNDER.zip
+
 ### prepare weights
 echo "Prepare HEPSPEC for $RUN_DATE"
 cat hepspec_sync_$RUN_DATE.out \
@@ -88,6 +97,7 @@ cat hepspec_sync_$RUN_DATE.out \
 ### run calculator.pig
 pig -useHCatalog \
     -param in_date=$RUN_DATE \
+    -param hlp=hlp_$RUN_DATE_UNDER.zip \
     -param weights_file=hepspec_sync_$RUN_DATE_UNDER.zip \
     -param downtimes_file=downtimes_$RUN_DATE.zip \
     -param poem_file=poem_sync_$RUN_DATE_UNDER.out.clean \
@@ -100,5 +110,6 @@ pig -useHCatalog \
 rm -f poem_sync_$RUN_DATE_UNDER.out.clean
 rm -f downtimes_$RUN_DATE.zip
 rm -f hepspec_sync_$RUN_DATE_UNDER.zip
+rm -f hlp_$RUN_DATE_UNDER.zip
 rm -f sites_$RUN_DATE_UNDER.aa sites_$RUN_DATE_UNDER.ab sites_$RUN_DATE_UNDER.ac
 
