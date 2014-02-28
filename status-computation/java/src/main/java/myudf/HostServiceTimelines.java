@@ -187,7 +187,7 @@ public class HostServiceTimelines extends EvalFunc<Tuple> {
                     this.poems = ExternalResources.initPOEMs((String) tuple.get(7));
                 }
             } catch (Exception e) {
-                throw new IOException("There is a problem with the input in AppyProfiles: " + e);
+                throw new IOException("There is a problem with the input in HostServiceTimelines: " + e);
             }
 
             // Read the profile.
