@@ -111,11 +111,8 @@ sites = FOREACH topology_g {
             FLATTEN(myudf.AggregateSiteAvailability(t, '$HLP', '$WEIGHTS', group.site)) as (availability, reliability, up, unknown, downtime, weight);
 };
 
-sites_shrink = FOREACH sites GENERATE dates as dt, site as s, profile as p, production as pr, monitored as m, scope as sc, ngi as n, infrastructure as i, certification_status as cs, site_scope as ss, availability as a, reliability as r, up as up, unknown as u, downtime as d, weight as hs;
-
 --- Status computation for services
 service_status = FOREACH timetables GENERATE date as dates, hostname, service_flavour, profile, vo, myudf.TimelineToPercentage(*) as timeline;
-service_status_shrink = FOREACH service_status GENERATE dates as d, hostname as h, service_flavour as sf, profile as p, vo as vo, timeline as tm;
 
 --- VO calculation
 vo_s = FOREACH timetables {
@@ -125,8 +122,30 @@ vo_s = FOREACH timetables {
 vo_g = GROUP vo_s BY (vo, profile, date) PARALLEL 4;
 vo = FOREACH vo_g GENERATE group.vo as vo, group.profile as profile, group.date as dates,
             FLATTEN(myudf.VOAvailability(vo_s)) as (availability, reliability, up, unknown, downtime);
-vo_shrink = FOREACH vo GENERATE dates as d, vo as v, profile as p, availability as a, reliability as r, up as up, unknown as u, downtime as d;
+
+--- Fix format for MongoDB
+sites_shrink = FOREACH sites
+                   GENERATE dates as dt, site as s, profile as p, production as pr,
+                            monitored as m, scope as sc, ngi as n, infrastructure as i,
+                            certification_status as cs, site_scope as ss, availability as a,
+                            reliability as r, up as up, unknown as u, downtime as d, weight as hs;
+
+service_status_shrink = FOREACH service_status
+                            GENERATE dates as d, hostname as h, service_flavour as sf,
+                                     profile as p, vo as vo, timeline as tm;
+
+vo_shrink = FOREACH vo
+                GENERATE dates as d, vo as v, profile as p, availability as a,
+                         reliability as r, up as up, unknown as u, downtime as d;
+
+s_f_shrink = FOREACH service_flavors
+                GENERATE dates as dt, site as s, profile as p, production as pr,
+                         monitored as m, scope as sc, ngi as n, infrastructure as i,
+                         certification_status as cs, site_scope as ss, availability as a, 
+                         reliability as r, up as up, unknown as u, downtime as d, weight as hs,
+                         service_flavour as sf;
 
 STORE sites_shrink          INTO 'mongodb://$mongoServer/AR.sites'     USING com.mongodb.hadoop.pig.MongoInsertStorage();
 STORE service_status_shrink INTO 'mongodb://$mongoServer/AR.timelines' USING com.mongodb.hadoop.pig.MongoInsertStorage();
-STORE vo_shrink             INTO 'mongodb://$mongoServer/AR.vos'       USING com.mongodb.hadoop.pig.MongoInsertStorage();
+STORE vo_shrink             INTO 'mongodb://$mongoServer/AR.voreports' USING com.mongodb.hadoop.pig.MongoInsertStorage();
+STORE s_f_shrink            INTO 'mongodb://$mongoServer/AR.sfreports' USING com.mongodb.hadoop.pig.MongoInsertStorage();
