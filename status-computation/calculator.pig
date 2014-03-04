@@ -96,7 +96,7 @@ timetables = FOREACH profiled_logs {
 
 --- Join topology with logs, so we have have for each log row, all topology information. Also append Availability Profiles.
 topologed_j = FOREACH timetables GENERATE date, profile, timeline, hostname, service_flavour,
-                 FLATTEN(AT(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3'));
+                 FLATTEN(AT(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3', '$mongoServer'));
 
 topologed = FOREACH topologed_j GENERATE $0..$12, FLATTEN(availability_profiles) as availability_profile;
 
@@ -109,7 +109,7 @@ sites = FOREACH (GROUP topologed BY (date, site, profile, production, monitored,
             group.production as production, group.monitored as monitored, group.scope as scope,
             group.ngi as ngi, group.infrastructure as infrastructure,
             group.certification_status as certification_status, group.site_scope as site_scope, group.availability_profile as availability_profile,
-            FLATTEN(SA(t, group.availability_profile, '$WEIGHTS', group.site)) as (availability, reliability, up, unknown, downtime, weight);
+            FLATTEN(SA(t, group.availability_profile, '$WEIGHTS', group.site, '$mongoServer')) as (availability, reliability, up, unknown, downtime, weight);
 };
 
 --- Status computation for services

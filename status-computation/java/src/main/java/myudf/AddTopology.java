@@ -62,7 +62,11 @@ public class AddTopology extends EvalFunc<Tuple> {
         }
 
         if (this.avail_profs == null) {
-            this.avail_profs = ExternalResources.getSFtoAvailabilityProfileNames("192.168.0.99", 27017);
+            String[] mongoInfo = ((String) tuple.get(5)).split(":", 2);
+            String mongoHostname = mongoInfo[0];
+            int mongoPort = Integer.parseInt(mongoInfo[1]);
+
+            this.avail_profs = ExternalResources.getSFtoAvailabilityProfileNames(mongoHostname, mongoPort);
         }
         
         String key = (String) tuple.get(0) + " " + (String) tuple.get(1);

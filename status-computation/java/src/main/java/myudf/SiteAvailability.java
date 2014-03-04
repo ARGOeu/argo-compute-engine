@@ -33,14 +33,22 @@ public class SiteAvailability extends EvalFunc<Tuple> {
     @Override
     public Tuple exec(Tuple tuple) throws IOException {
         State[] output_table = null;
-        Map<Integer, State[]> ultimate_kickass_table = null;
+        Map<Integer, State[]> ultimate_kickass_table = new HashMap<Integer, State[]>();
         
+        // Get a map that contains Sites as keys and the weight of each site as
+        // a value.
         if (this.weights == null) {
             this.weights = ExternalResources.initWeights((String) tuple.get(2));
         }
-
+        
+        // Connect to mongo and retrive a Map that contains Service Flavours as keys
+        // and as values, a bag with the appropriate availability profiles.
         if (this.hlps == null) {
-            this.hlps = ExternalResources.initHLPs("192.168.0.99", 27017);
+            String[] mongoInfo = ((String) tuple.get(4)).split(":",2);
+            String mongoHostname = mongoInfo[0];
+            int mongoPort = Integer.parseInt(mongoInfo[1]);
+            
+            this.hlps = ExternalResources.initHLPs(mongoHostname, mongoPort);
         }
         
         Map<String, Integer> highLevelProfiles = this.hlps.get((String) tuple.get(1));
@@ -51,9 +59,7 @@ public class SiteAvailability extends EvalFunc<Tuple> {
         
         String service_flavor;
         State[] timeline = new State[(int)this.quantum];
-        
-        ultimate_kickass_table = new HashMap<Integer, State[]>();
-        
+                
         for (Tuple t : (DataBag) tuple.get(0)) {            
             service_flavor = (String) t.get(4);
             String [] tmpa = ((String) t.get(2)).substring(1, ((String)t.get(2)).length() - 1).split(", ");
@@ -105,11 +111,13 @@ public class SiteAvailability extends EvalFunc<Tuple> {
             }
         }
         
+        // Get the weight of each site. If the weight is missing, mark it as 1.
         String w = this.weights.get((String) tuple.get(3));
         if (w == null) {
             w = "1";
         }
         
+        // Count A/R for the site. Append weight in the end.
         Tuple t = Utils.getARReport(output_table, mTupleFactory.newTuple(6), this.quantum);
         t.set(5, w);
         return t;
