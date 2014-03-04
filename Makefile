@@ -7,7 +7,7 @@ PKGVERSION=$(shell grep -s '^Version:' $(SPECFILE) | sed -e 's/Version: *//')
 dist:
 	rm -rf dist
 	mkdir -p dist/${PKGNAME}-${PKGVERSION}
-	cp -pr ${FILES} helpers status-computation cronjobs dist/${PKGNAME}-${PKGVERSION}/.
+	cp -pr ${FILES} conf helpers status-computation cronjobs dist/${PKGNAME}-${PKGVERSION}/.
 	cd dist ; tar cfz ../${PKGNAME}-${PKGVERSION}.tar.gz ${PKGNAME}-${PKGVERSION}
 	rm -rf dist
 
