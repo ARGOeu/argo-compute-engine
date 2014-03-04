@@ -24,9 +24,10 @@
 # the EGI-InSPIRE project through the European Commission's 7th
 # Framework Programme (contract # INFSO-RI-261323) 
 
-# ____hardcoded_needs_fixing____
-mongoDB_host="83.212.110.19"
-mongoDB_port="27017"
+AR_CONF_FILE="/etc/ar-compute-engine.conf"
+
+mongoDB_host="$(awk -F'=' '/mongo_host/ {print $NF}' $AR_CONF_FILE)"
+mongoDB_port="$(awk -F'=' '/mongo_port/ {print $NF}' $AR_CONF_FILE)"
 
 mongoDBServer="${mongoDB_host}:${mongoDB_port}"
 currentdate=$1
@@ -43,7 +44,7 @@ until [ "$currentdate" == "$loopenddate" ]; do
   ### prepare MongoDB by cleaning the collections
   echo "Delete $RUN_DATE from MongoDB"
   # ____hardcoded_needs_fixing____
-  /usr/libexec/ar-compute/lib/mongo-date_delete.py $RUN_DATE $mongoDB_host $mongoDB_port
+  /usr/libexec/ar-compute/lib/mongo-date_delete.py $RUN_DATE
 
   ### prepare poems
   echo "Prepare poems for $RUN_DATE"
