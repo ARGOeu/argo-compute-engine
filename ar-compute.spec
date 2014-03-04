@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
 Version: 1.2.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -31,6 +31,7 @@ install --directory %{buildroot}/usr/libexec/ar-compute/pig
 install --directory %{buildroot}/usr/libexec/ar-compute/lib
 install --directory %{buildroot}/var/lib/ar-compute
 install --directory %{buildroot}/var/log/ar-compute
+install --directory %{buildroot}/etc
 install --directory %{buildroot}/etc/cron.daily
 
 install --mode 755 helpers/ar-input-range.sh                    %{buildroot}/usr/libexec/ar-compute/
@@ -39,6 +40,7 @@ install --mode 644 status-computation/calculator.pig            %{buildroot}/usr
 install --mode 644 status-computation/lib/*                     %{buildroot}/usr/libexec/ar-compute/lib/
 install --mode 644 status-computation/java/target/MyUDF-1.0.jar %{buildroot}/usr/libexec/ar-compute/MyUDF.jar
 install --mode 644 cronjobs/ar-compute-the-day-before-yesterday %{buildroot}/etc/cron.daily
+install --mode 644 conf/ar-compute-engine.conf                  %{buildroot}/etc/
 
 %clean
 cd status-computation/java
@@ -55,6 +57,7 @@ mvn clean
 %attr(0750,root,root) /var/lib/ar-compute
 %attr(0750,root,root) /var/log/ar-compute
 %attr(0755,root,root) /etc/cron.daily/ar-compute-the-day-before-yesterday
+%attr(0644,root,root) /etc/ar-compute-engine.conf
 
 %changelog
 * Tue Mar 04 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.2.1-1%{?dist}
