@@ -62,7 +62,7 @@ public class AddTopology extends EvalFunc<Tuple> {
         }
 
         if (this.avail_profs == null) {
-            this.avail_profs = ExternalResources.getSFtoAvailabilityProfileNames("83.212.110.19", 27017);
+            this.avail_profs = ExternalResources.getSFtoAvailabilityProfileNames("192.168.0.99", 27017);
         }
         
         String key = (String) tuple.get(0) + " " + (String) tuple.get(1);

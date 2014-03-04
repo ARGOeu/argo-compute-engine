@@ -40,7 +40,7 @@ public class SiteAvailability extends EvalFunc<Tuple> {
         }
 
         if (this.hlps == null) {
-            this.hlps = ExternalResources.initHLPs("83.212.110.19", 27017);
+            this.hlps = ExternalResources.initHLPs("192.168.0.99", 27017);
         }
         
         Map<String, Integer> highLevelProfiles = this.hlps.get((String) tuple.get(1));
