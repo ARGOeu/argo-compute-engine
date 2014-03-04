@@ -6,11 +6,18 @@
 
 package utils;
 
+import com.mongodb.AggregationOutput;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.UnknownHostException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPInputStream;
+import org.apache.pig.data.BagFactory;
+import org.apache.pig.data.DataBag;
+import org.apache.pig.data.TupleFactory;
 
 /**
  *
@@ -99,6 +109,7 @@ public class ExternalResources {
         return poems;
     }
 
+    
     public static Map<String, List<Integer>> initHLPs(final String hlp) throws FileNotFoundException, IOException {
         Map<String, List<Integer>> hlps = new HashMap<String, List<Integer>>();
 
@@ -153,6 +164,72 @@ public class ExternalResources {
         }
         
         return weights;
+    }
+
+    public static Map<String, Map<String, Integer>> initHLPs(final String mongoHostname, final int port) throws FileNotFoundException, IOException {
+        Map<String, Map<String, Integer>> hlps = new HashMap<String, Map<String, Integer>>();
+
+        MongoClient mongoClient = new MongoClient(mongoHostname, port);
+        DBCollection collection = mongoClient.getDB("AR").getCollection("hlps");
+
+        DBObject fields = new BasicDBObject("sf", "$sf").append("g", "$g");
+        DBObject groupFields = new BasicDBObject("_id", "$n");
+        groupFields.put("rules", new BasicDBObject("$push", fields));
+        DBObject group = new BasicDBObject("$group", groupFields);
+
+        AggregationOutput output = collection.aggregate(group);
+
+        for (DBObject dbo : output.results()) {
+            Map<String, Integer> hlpsRules = new HashMap<String, Integer>();
+            hlps.put((String) dbo.get("_id"), hlpsRules);
+
+            BasicDBList l = (BasicDBList) dbo.get("rules");
+
+            for (Object o : l) {
+                DBObject dbor = (BasicDBObject) o;
+                String service_flavor = (String) dbor.get("sf");
+                Integer groupid = ((Number) dbor.get("g")).intValue();
+
+                hlpsRules.put(service_flavor, groupid);
+            }
+        }
+        
+        mongoClient.close();
+        return hlps;
+    }
+    
+    public static Map<String, DataBag> getSFtoAvailabilityProfileNames(final String mongoHostname, final int port) throws UnknownHostException {
+        Map<String, DataBag> sf_to_apnames = new HashMap<String, DataBag>(10);
+        BagFactory mBagFactory = BagFactory.getInstance();
+        TupleFactory mTupleFactory = TupleFactory.getInstance();
+        
+        MongoClient mongoClient = new MongoClient(mongoHostname, port);
+        DBCollection collection = mongoClient.getDB("AR").getCollection("hlps");
+
+        
+        DBObject groupFields = new BasicDBObject("_id", "$sf");
+        groupFields.put("profs", new BasicDBObject("$push", "$n"));
+        DBObject group = new BasicDBObject("$group", groupFields);
+
+        AggregationOutput output = collection.aggregate(group);
+        
+        // For each service flavor
+        for (DBObject dbo : output.results()) {
+            DataBag db = mBagFactory.newDefaultBag();
+            
+            BasicDBList l = (BasicDBList) dbo.get("profs");
+            
+            // For each availability profile name
+            for (Object o : l) {
+                String apname = (String) o;
+                db.add(mTupleFactory.newTuple(apname));
+            }
+            
+            sf_to_apnames.put((String) dbo.get("_id"), db);
+        }
+        
+        mongoClient.close();
+        return sf_to_apnames;
     }
     
 }

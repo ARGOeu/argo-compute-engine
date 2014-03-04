@@ -1,10 +1,8 @@
 package myudf;
 
-import java.io.FileNotFoundException;
-
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,39 +26,10 @@ public class SiteAvailability extends EvalFunc<Tuple> {
     private final double quantum = 288.0;
     private final TupleFactory mTupleFactory = TupleFactory.getInstance();
     private Map<String, String> weights = null;
-        
-    private Map<String, Integer> highLevelProfiles = null;
     
-    private final Integer nGroups = 3;
-    private Map<String, List<Integer>> hlps = null;
+    private Integer nGroups = null;
+    private Map<String, Map<String, Integer>> hlps = null;
 
-    private void getHighLevelProfiles() throws FileNotFoundException, IOException {
-        this.highLevelProfiles = new HashMap<String, Integer>();
-//        
-//        FileReader fr = new FileReader("./highlevelprofiles.txt");
-//        BufferedReader d = new BufferedReader(fr);
-//        String line = d.readLine();
-//        
-//        String service;
-//        Integer group;
-//        String[] tokens;
-//        while (line != null) {
-//            tokens  = line.split(" ");
-//            service = tokens[0];
-//            group   = Integer.parseInt(tokens[1]);
-//            
-//            this.highLevelProfiles.put(service, group);
-//        }
-        
-        this.highLevelProfiles.put("CREAM-CE", 1);
-        this.highLevelProfiles.put("ARC-CE"  , 1);
-        this.highLevelProfiles.put("GRAM5"   , 1);
-        this.highLevelProfiles.put("unicore6.TargetSystemFactory", 1);
-        this.highLevelProfiles.put("SRM"  , 2);
-        this.highLevelProfiles.put("SRMv2", 2);
-        this.highLevelProfiles.put("Site-BDII", 3);
-    }
-    
     @Override
     public Tuple exec(Tuple tuple) throws IOException {
         State[] output_table = null;
@@ -70,10 +39,15 @@ public class SiteAvailability extends EvalFunc<Tuple> {
             this.weights = ExternalResources.initWeights((String) tuple.get(2));
         }
 
-        if (this.highLevelProfiles == null) {
-            ExternalResources.initHLPs((String) tuple.get(1));
-            getHighLevelProfiles();
+        if (this.hlps == null) {
+            this.hlps = ExternalResources.initHLPs("83.212.110.19", 27017);
         }
+        
+        Map<String, Integer> highLevelProfiles = this.hlps.get((String) tuple.get(1));
+        if (highLevelProfiles == null) {
+            return null;
+        }
+        this.nGroups = Collections.max(highLevelProfiles.values());
         
         String service_flavor;
         State[] timeline = new State[(int)this.quantum];
@@ -98,7 +72,7 @@ public class SiteAvailability extends EvalFunc<Tuple> {
 //                Logger.getLogger(SiteAvailability.class.getName()).log(Level.SEVERE, null, ex);
 //            }
 
-            Integer group_id = this.highLevelProfiles.get(service_flavor);
+            Integer group_id = highLevelProfiles.get(service_flavor);
             
             if (ultimate_kickass_table.containsKey(group_id)) {
                 Utils.makeOR(timeline, ultimate_kickass_table.get(group_id));

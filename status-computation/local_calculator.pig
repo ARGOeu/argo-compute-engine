@@ -23,12 +23,15 @@
 --- Framework Programme (contract # INFSO-RI-261323) 
 
 REGISTER /usr/libexec/ar-compute/MyUDF.jar
-REGISTER /usr/libexec/ar-local-compute/lib/mongo-java-driver-2.11.4.jar   -- mongodb java driver  
-REGISTER /usr/libexec/ar-local-compute/lib/mongo-hadoop-core.jar          -- mongo-hadoop core lib
-REGISTER /usr/libexec/ar-local-compute/lib/mongo-hadoop-pig.jar           -- mongo-hadoop pig lib
+REGISTER /usr/libexec/ar-compute/lib/mongo-java-driver-2.11.4.jar   -- mongodb java driver  
+REGISTER /usr/libexec/ar-compute/lib/mongo-hadoop-core.jar          -- mongo-hadoop core lib
+REGISTER /usr/libexec/ar-compute/lib/mongo-hadoop-pig.jar           -- mongo-hadoop pig lib
 
-define ApplyProfiles     myudf.ApplyProfiles();
-define AddTopology       myudf.AddTopology();
+define HST myudf.HostServiceTimelines();
+define AT  myudf.AddTopology();
+define SA  myudf.SiteAvailability();
+define VOA myudf.VOAvailability();
+define SFA myudf.SFAvailability();
 
 --- e.g. in_date = 2013-05-29, PREV_DATE = 2013-05-28
 %declare PREV_DATE `date --date=@$(( $(date --date=$in_date +%s) - 86400 )) +'%Y-%m-%d'`
@@ -36,12 +39,6 @@ define AddTopology       myudf.AddTopology();
 %declare CUR_DATE `echo $in_date | sed 's/-//g'`
 
 --- sanitize......
-%declare hack1 `echo sitereports_`
-%declare OUT1 `echo $out_path$hack1$in_date`
-
-%declare hack2 `echo apireports_`
-%declare OUT2 `echo $out_path$hack2$in_date`
-
 %declare IN_PREVDATE `echo $PREV_DATE | sed 's/-/_/g'`
 %declare IN_CUR_DATE `echo $in_date | sed 's/-/_/g'`
 
@@ -54,7 +51,7 @@ define AddTopology       myudf.AddTopology();
 %declare WEIGHTS    `cat $weights_file`
 %declare HLP        `echo ""` --- `cat $hlp` --- high level profile.
 
-SET mapred.child.java.opts -Xmx2048m
+SET mapred.child.java.opts -Xmx4048m
 SET mapred.map.tasks.speculative.execution false
 SET mapred.reduce.tasks.speculative.execution false
 
@@ -66,6 +63,7 @@ SET hcat.desired.partition.num.splits 2;
 
 SET io.sort.factor 100;
 SET mapred.job.shuffle.merge.percent 0.33;
+SET io.sort.mb 50;
 /*SET pig.udf.profile true;*/
 
 --- Get beacons (logs from previous day)
@@ -80,55 +78,68 @@ logs = UNION current_logs, beacons;
 --- MAIN ALGORITHM ---
 
 --- Group rows so we can have for each hostname and flavor, the applied poem profile with reports
-profile_groups = GROUP logs BY (hostname, service_flavour, profile) PARALLEL 1;
-
 --- After the grouping, we append the actual rules of the POEM profiles
-profiled_logs = FOREACH profile_groups
-        GENERATE group.hostname as hostname, group.service_flavour as service_flavour, 
+profiled_logs = FOREACH (GROUP logs BY (hostname, service_flavour, profile) PARALLEL 4)
+        GENERATE group.hostname as hostname, group.service_flavour as service_flavour,
                  group.profile as profile,
                  logs.vo as vo,
                  logs.(metric, status, time_stamp) as timeline;
 
-
 --- We calculate the timelines and create an integral of all reports
 timetables = FOREACH profiled_logs {
         timeline_s = ORDER timeline BY time_stamp;
-        GENERATE hostname, service_flavour, profile, vo,
-          FLATTEN(ApplyProfiles(timeline_s, profile, '$PREV_DATE', hostname, service_flavour, '$CUR_DATE', '$DOWNTIMES', '$POEMS')) as (date, timeline);
+        vos = DISTINCT vo;
+        GENERATE hostname, service_flavour, profile, vos as vo,
+            FLATTEN(HST(timeline_s, profile, '$PREV_DATE', hostname, service_flavour, '$CUR_DATE', '$DOWNTIMES', '$POEMS')) as (date, timeline);
 };
 
---- Join topology with logs, so we have have for each log raw all topology information
-topologed = FOREACH timetables GENERATE date, profile, vo, timeline, hostname, service_flavour, FLATTEN(AddTopology(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3'));
+--- Join topology with logs, so we have have for each log row, all topology information. Also append Availability Profiles.
+topologed_j = FOREACH timetables GENERATE date, profile, timeline, hostname, service_flavour,
+                 FLATTEN(AT(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3'));
 
-topology_g = GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 1;
+topologed = FOREACH topologed_j GENERATE $0..$12, FLATTEN(availability_profiles) as availability_profile;
 
-sites = FOREACH topology_g {
+--- Group rows by important attributes. Note the date column, will be used for making a distinction in each day
+--- After the grouping, we calculate AR for each site and append the weights
+--- up, unknown, downtime columns are used for generalizing the calculation, so we can produce AR for months
+sites = FOREACH (GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope, availability_profile) PARALLEL 3) {
         t = ORDER topologed BY service_flavour;
         GENERATE group.date as dates, group.site as site, group.profile as profile,
             group.production as production, group.monitored as monitored, group.scope as scope,
             group.ngi as ngi, group.infrastructure as infrastructure,
-            group.certification_status as certification_status, group.site_scope as site_scope,
-            FLATTEN(myudf.AggregateSiteAvailability(t, '$HLP', '$WEIGHTS', group.site)) as (availability, reliability, up, unknown, downtime, weight);
+            group.certification_status as certification_status, group.site_scope as site_scope, group.availability_profile as availability_profile,
+            FLATTEN(SA(t, group.availability_profile, '$WEIGHTS', group.site)) as (availability, reliability, up, unknown, downtime, weight);
 };
 
 --- Status computation for services
 service_status = FOREACH timetables GENERATE date as dates, hostname, service_flavour, profile, vo, myudf.TimelineToPercentage(*) as timeline;
 
 --- VO calculation
-vo_s = FOREACH timetables {
-    vos = DISTINCT vo;
-    GENERATE hostname, service_flavour, profile, date, FLATTEN(vos) as vo, timeline;
-}
-vo_g = GROUP vo_s BY (vo, profile, date) PARALLEL 4;
-vo = FOREACH vo_g GENERATE group.vo as vo, group.profile as profile, group.date as dates,
-            FLATTEN(myudf.VOAvailability(vo_s)) as (availability, reliability, up, unknown, downtime);
+vo_s = FOREACH timetables GENERATE hostname, service_flavour, profile, date, FLATTEN(vo) as vo, timeline;
+
+vo = FOREACH (GROUP vo_s BY (vo, profile, date) PARALLEL 4)
+        GENERATE group.vo as vo, group.profile as profile, group.date as dates,
+            FLATTEN(VOA(vo_s)) as (availability, reliability, up, unknown, downtime);
+
+--- Group rows by important attributes. Note the date column, will be used for making a distinction in each day
+--- Service flavor calculation
+service_flavors = FOREACH (GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 3) {
+    t = ORDER topologed BY service_flavour;
+    GENERATE group.date as dates, group.site as site, group.profile as profile,
+        group.production as production, group.monitored as monitored, group.scope as scope,
+        group.ngi as ngi, group.infrastructure as infrastructure,
+        group.certification_status as certification_status, group.site_scope as site_scope,
+        FLATTEN(SFA(t)) as (availability, reliability, up, unknown, downtime, service_flavour);
+};
+
+--- OUTPUT SECTION
 
 --- Fix format for MongoDB
 sites_shrink = FOREACH sites
                    GENERATE dates as dt, site as s, profile as p, production as pr,
                             monitored as m, scope as sc, ngi as n, infrastructure as i,
-                            certification_status as cs, site_scope as ss, availability as a,
-                            reliability as r, up as up, unknown as u, downtime as d, weight as hs;
+                            certification_status as cs, site_scope as ss, availability_profile as ap,
+                            availability as a, reliability as r, up as up, unknown as u, downtime as d, weight as hs;
 
 service_status_shrink = FOREACH service_status
                             GENERATE dates as d, hostname as h, service_flavour as sf,

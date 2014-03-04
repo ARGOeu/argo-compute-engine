@@ -94,22 +94,22 @@ timetables = FOREACH profiled_logs {
             FLATTEN(HST(timeline_s, profile, '$PREV_DATE', hostname, service_flavour, '$CUR_DATE', '$DOWNTIMES', '$POEMS')) as (date, timeline);
 };
 
---- Join topology with logs, so we have have for each log row, all topology information
-topologed = FOREACH timetables GENERATE date, profile, timeline, hostname, service_flavour,
+--- Join topology with logs, so we have have for each log row, all topology information. Also append Availability Profiles.
+topologed_j = FOREACH timetables GENERATE date, profile, timeline, hostname, service_flavour,
                  FLATTEN(AT(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3'));
 
---- Group rows by important attributes. Note the date column, will be used for making a distinction in each day
-topologed_g = GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 3;
+topologed = FOREACH topologed_j GENERATE $0..$12, FLATTEN(availability_profiles) as availability_profile;
 
+--- Group rows by important attributes. Note the date column, will be used for making a distinction in each day
 --- After the grouping, we calculate AR for each site and append the weights
 --- up, unknown, downtime columns are used for generalizing the calculation, so we can produce AR for months
-sites = FOREACH topologed_g {
+sites = FOREACH (GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope, availability_profile) PARALLEL 3) {
         t = ORDER topologed BY service_flavour;
         GENERATE group.date as dates, group.site as site, group.profile as profile,
             group.production as production, group.monitored as monitored, group.scope as scope,
             group.ngi as ngi, group.infrastructure as infrastructure,
-            group.certification_status as certification_status, group.site_scope as site_scope,
-            FLATTEN(SA(t, '$HLP', '$WEIGHTS', group.site)) as (availability, reliability, up, unknown, downtime, weight);
+            group.certification_status as certification_status, group.site_scope as site_scope, group.availability_profile as availability_profile,
+            FLATTEN(SA(t, group.availability_profile, '$WEIGHTS', group.site)) as (availability, reliability, up, unknown, downtime, weight);
 };
 
 --- Status computation for services
@@ -122,8 +122,9 @@ vo = FOREACH (GROUP vo_s BY (vo, profile, date) PARALLEL 4)
         GENERATE group.vo as vo, group.profile as profile, group.date as dates,
             FLATTEN(VOA(vo_s)) as (availability, reliability, up, unknown, downtime);
 
+--- Group rows by important attributes. Note the date column, will be used for making a distinction in each day
 --- Service flavor calculation
-service_flavors = FOREACH topologed_g {
+service_flavors = FOREACH (GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 3) {
     t = ORDER topologed BY service_flavour;
     GENERATE group.date as dates, group.site as site, group.profile as profile,
         group.production as production, group.monitored as monitored, group.scope as scope,
@@ -131,6 +132,8 @@ service_flavors = FOREACH topologed_g {
         group.certification_status as certification_status, group.site_scope as site_scope,
         FLATTEN(SFA(t)) as (availability, reliability, up, unknown, downtime, service_flavour);
 };
+
+--- OUTPUT SECTION
 
 /*STORE sites           INTO 'sitereports' USING org.apache.hcatalog.pig.HCatStorer();
 STORE service_status  INTO 'apireports'  USING org.apache.hcatalog.pig.HCatStorer();
@@ -142,8 +145,8 @@ STORE service_flavors INTO 'sfreports'   USING org.apache.hcatalog.pig.HCatStore
 sites_shrink = FOREACH sites
                    GENERATE dates as dt, site as s, profile as p, production as pr,
                             monitored as m, scope as sc, ngi as n, infrastructure as i,
-                            certification_status as cs, site_scope as ss, availability as a,
-                            reliability as r, up as up, unknown as u, downtime as d, weight as hs;
+                            certification_status as cs, site_scope as ss, availability_profile as ap,
+                            availability as a, reliability as r, up as up, unknown as u, downtime as d, weight as hs;
 
 service_status_shrink = FOREACH service_status
                             GENERATE dates as d, hostname as h, service_flavour as sf,

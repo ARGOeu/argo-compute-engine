@@ -12,11 +12,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import org.apache.pig.EvalFunc;
+import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
+import utils.ExternalResources;
 
 /**
  *
@@ -25,6 +27,7 @@ import org.apache.pig.impl.logicalLayer.schema.Schema;
 public class AddTopology extends EvalFunc<Tuple> {    
     private final TupleFactory mTupleFactory = TupleFactory.getInstance();
     private Map<String, String[]> topology = null;
+    private Map<String, DataBag> avail_profs = null;
 
     private void initTopology(final String topology) throws FileNotFoundException, IOException {
 
@@ -58,9 +61,13 @@ public class AddTopology extends EvalFunc<Tuple> {
             this.initTopology((String) tuple.get(2) + (String) tuple.get(3) + (String) tuple.get(4));
         }
 
+        if (this.avail_profs == null) {
+            this.avail_profs = ExternalResources.getSFtoAvailabilityProfileNames("83.212.110.19", 27017);
+        }
+        
         String key = (String) tuple.get(0) + " " + (String) tuple.get(1);
 
-        Tuple out = mTupleFactory.newTuple(8);
+        Tuple out = mTupleFactory.newTuple(9);
         String[] s = this.topology.get(key);
         if (s == null) {
 //            AddTopology.log.error("I dont have host: " + tuple.get(0) + " and flavor: " + (String) tuple.get(1));
@@ -73,6 +80,8 @@ public class AddTopology extends EvalFunc<Tuple> {
             out.set(i, s[i]);
         }
 
+        // Add Availability profiles as a bag
+        out.set(8, this.avail_profs.get((String) tuple.get(1)));
         return out;
     }
 
@@ -87,6 +96,18 @@ public class AddTopology extends EvalFunc<Tuple> {
         Schema.FieldSchema certification_status = new Schema.FieldSchema("certification_status", DataType.CHARARRAY);
         Schema.FieldSchema site_scope = new Schema.FieldSchema("site_scope", DataType.CHARARRAY);
 
+        
+        Schema.FieldSchema availability_profile = new Schema.FieldSchema("availability_profile", DataType.CHARARRAY);
+        Schema apS = new Schema();
+        apS.add(availability_profile);
+        Schema.FieldSchema availability_profiles = null;
+        try {
+            Schema tuples = new Schema(new Schema.FieldSchema("availability_profile_t", apS, DataType.TUPLE));
+            availability_profiles = new Schema.FieldSchema("availability_profiles", apS, DataType.BAG);
+        } catch (FrontendException ex) {
+            Logger.getLogger(AddTopology.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         Schema p_metricS = new Schema();
         p_metricS.add(production);
         p_metricS.add(monitored);
@@ -96,6 +117,7 @@ public class AddTopology extends EvalFunc<Tuple> {
         p_metricS.add(infrastructure);
         p_metricS.add(certification_status);
         p_metricS.add(site_scope);
+        p_metricS.add(availability_profiles);
         
         try {
             return new Schema(new Schema.FieldSchema("topology", p_metricS, DataType.TUPLE));
