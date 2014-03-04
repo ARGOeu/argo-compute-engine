@@ -2,7 +2,10 @@
 from pymongo import MongoClient
 import sys
 
-client = MongoClient('83.212.110.19', 27017)
+mongo_host = sys.argv[2]
+mongo_port = sys.argv[3]
+
+client = MongoClient(str(mongo_host), mongo_port)
 db = client.AR
 date = sys.argv[1].replace("-","")
 

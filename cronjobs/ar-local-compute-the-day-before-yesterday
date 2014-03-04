@@ -24,17 +24,8 @@
 # the EGI-InSPIRE project through the European Commission's 7th
 # Framework Programme (contract # INFSO-RI-261323) 
 
-RUN_DATE=$1
-RUN_DATE_UNDER=`echo $RUN_DATE | sed 's/-/_/g'`
-PARTITIONDATE=`echo $RUN_DATE | sed 's/-//g'`
-# Run prefilter
-/usr/libexec/ar-sync/prefilter -d $RUN_DATE
+RUN_DATE=$(/bin/date --date "-2 day" +%Y-%m-%d)
+AR_COMPUTE_DIR=/usr/libexec/ar-compute
 
-# Upload onto hdfs
-hive -e "LOAD DATA LOCAL INPATH \"/var/lib/ar-sync/prefilter_${RUN_DATE_UNDER}.out\" OVERWRITE INTO TABLE raw_data PARTITION (dates=${PARTITIONDATE})"
-
-# Remove prefiltered file from local filesystem after it's been transferred on hdfs
-/bin/rm -f /var/lib/ar-sync/prefilter_${RUN_DATE_UNDER}.out
-  
-
+${AR_COMPUTE_DIR}/ar-local-compute-range.sh ${RUN_DATE} ${RUN_DATE}
 
