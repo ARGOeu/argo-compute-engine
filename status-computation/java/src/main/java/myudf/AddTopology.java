@@ -106,7 +106,6 @@ public class AddTopology extends EvalFunc<Tuple> {
         apS.add(availability_profile);
         Schema.FieldSchema availability_profiles = null;
         try {
-            Schema tuples = new Schema(new Schema.FieldSchema("availability_profile_t", apS, DataType.TUPLE));
             availability_profiles = new Schema.FieldSchema("availability_profiles", apS, DataType.BAG);
         } catch (FrontendException ex) {
             Logger.getLogger(AddTopology.class.getName()).log(Level.SEVERE, null, ex);

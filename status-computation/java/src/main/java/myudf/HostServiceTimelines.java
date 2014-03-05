@@ -42,11 +42,11 @@ public class HostServiceTimelines extends EvalFunc<Tuple> {
     private Tuple point = null;
     private Iterator<Tuple> timeLineIt = null;
 
-    private Map<String, Entry<State, Integer>> getBeakons() throws ExecException {
+    private Map<String, Entry<State, Integer>> getBeacons() throws ExecException {
         String metric, status, timeStamp;
         boolean sameDate = true;
         // Key: metric, Value: Time + "@" + Status
-        Map<String, Entry<State, Integer>> beakons = new HashMap<String, Entry<State, Integer>>();
+        Map<String, Entry<State, Integer>> beacons = new HashMap<String, Entry<State, Integer>>();
 
         while (sameDate && this.timeLineIt.hasNext()) {
             Tuple t = this.timeLineIt.next();
@@ -65,17 +65,17 @@ public class HostServiceTimelines extends EvalFunc<Tuple> {
             if (timeStamp.startsWith(this.prev_date)) {
                 int inMinutes = Integer.valueOf(timeStamp.split("T")[1].split(":")[0]) * 60 + Integer.valueOf(timeStamp.split("T")[1].split(":")[1]);
                 Entry<State, Integer> e = new SimpleEntry<State, Integer>(State.valueOf(status), inMinutes);
-                beakons.put(metric, e);
+                beacons.put(metric, e);
             } else {
                 this.point = t;
                 sameDate = false;
             }
         }
 
-        return beakons;
+        return beacons;
     }
 
-    private void addBeakon(State[] tmp_timelineTable, State status, Integer expire_minutes) {
+    private void addBeacon(State[] tmp_timelineTable, State status, Integer expire_minutes) {
         tmp_timelineTable[0] = status;
 
         int timeGroup = expire_minutes / (24 * 60 / this.quantum);
@@ -198,8 +198,8 @@ public class HostServiceTimelines extends EvalFunc<Tuple> {
                 throw new IOException("Profile is empty!");
             }
 
-            // Beakon poems. Key: Metric, Value: (status, hour)
-            Map<String, Entry<State, Integer>> beakon_map = getBeakons();
+            // Beacon poems. Key: Metric, Value: (status, hour)
+            Map<String, Entry<State, Integer>> beacon_map = getBeacons();
 
             // The input is order by timestamps. We are going from past
             // to future. e.g. 2013-06-03 --> 2013-06-05
@@ -246,12 +246,12 @@ public class HostServiceTimelines extends EvalFunc<Tuple> {
                     }
                 }
 
-                // Add beakon.
+                // Add beacon.
                 if (tmp_timelineTable[0] == null) {
-                    if (beakon_map.containsKey(k_metric)) {
-                        addBeakon(tmp_timelineTable,
-                                beakon_map.get(k_metric).getKey(),
-                                beakon_map.get(k_metric).getValue());
+                    if (beacon_map.containsKey(k_metric)) {
+                        addBeacon(tmp_timelineTable,
+                                beacon_map.get(k_metric).getKey(),
+                                beacon_map.get(k_metric).getValue());
                     } else {
                         tmp_timelineTable[0] = State.MISSING;
                     }
