@@ -108,7 +108,7 @@ sites = FOREACH (GROUP topologed BY (date, site, profile, production, monitored,
             group.production as production, group.monitored as monitored, group.scope as scope,
             group.ngi as ngi, group.infrastructure as infrastructure,
             group.certification_status as certification_status, group.site_scope as site_scope, group.availability_profile as availability_profile,
-            FLATTEN(SA(t, group.availability_profile, '$WEIGHTS', group.site, '$mongoServer')) as (availability, reliability, up, unknown, downtime, weight);
+            FLATTEN(SA(t, group.availability_profile, '$WEIGHTS', group.site, '$mongoServer', group.date, group.ngi)) as (availability, reliability, up, unknown, downtime, weight);
 };
 
 --- Status computation for services

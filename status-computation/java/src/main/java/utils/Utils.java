@@ -2,6 +2,7 @@ package utils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Map.Entry;
 import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.Tuple;
 
@@ -43,9 +44,14 @@ public class Utils {
             return -1;
             // return 0;
         }
-
     }
     
+    public static void putRecalculations(Entry<Integer, Integer> e, State[] tmp_timelineTable) {
+        for (int i = e.getKey(); i <= e.getValue(); i++) {
+            tmp_timelineTable[i] = State.UNKNOWN;
+        }
+    }
+
     public static Tuple getARReport(State[] state_table, Tuple outputTuple, double quantum) throws ExecException {
         int UP, UNKNOWN, DOWNTIME;
         UP = UNKNOWN = DOWNTIME = 0;

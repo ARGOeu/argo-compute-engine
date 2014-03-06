@@ -1,9 +1,11 @@
 package myudf;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.pig.EvalFunc;
@@ -29,33 +31,49 @@ public class SiteAvailability extends EvalFunc<Tuple> {
     
     private Integer nGroups = null;
     private Map<String, Map<String, Integer>> hlps = null;
+    private Map<String, Map<String, Object>> recalculationMap = null;
 
     @Override
     public Tuple exec(Tuple tuple) throws IOException {
+        String availabilityProfile = (String) tuple.get(1);
+        String weightsInfo = (String) tuple.get(2);
+        String site = (String) tuple.get(3);
+        String mongoInfo = (String) tuple.get(4);
+        String date = (String) tuple.get(5);
+        String ngi = (String) tuple.get(6);
+        
         State[] output_table = null;
         Map<Integer, State[]> ultimate_kickass_table = new HashMap<Integer, State[]>();
         
         // Get a map that contains Sites as keys and the weight of each site as
         // a value.
         if (this.weights == null) {
-            this.weights = ExternalResources.initWeights((String) tuple.get(2));
+            this.weights = ExternalResources.initWeights(weightsInfo);
         }
         
         // Connect to mongo and retrive a Map that contains Service Flavours as keys
         // and as values, a bag with the appropriate availability profiles.
         if (this.hlps == null) {
-            String[] mongoInfo = ((String) tuple.get(4)).split(":",2);
-            String mongoHostname = mongoInfo[0];
-            int mongoPort = Integer.parseInt(mongoInfo[1]);
+            String mongoHostname = mongoInfo.split(":",2)[0];
+            int mongoPort = Integer.parseInt(mongoInfo.split(":",2)[1]);
             
             this.hlps = ExternalResources.initHLPs(mongoHostname, mongoPort);
         }
         
-        Map<String, Integer> highLevelProfiles = this.hlps.get((String) tuple.get(1));
+        Map<String, Integer> highLevelProfiles = this.hlps.get(availabilityProfile);
         if (highLevelProfiles == null) {
             return null;
         }
         this.nGroups = Collections.max(highLevelProfiles.values());
+        
+        // Get recalculation requests. Create arrays with UKNOWN states that will
+        // be merged later on with the results.
+        if (this.recalculationMap == null) {
+            String mongoHostname = mongoInfo.split(":",2)[0];
+            int mongoPort = Integer.parseInt(mongoInfo.split(":",2)[1]);
+
+            this.recalculationMap = ExternalResources.getRecalculationRequests(mongoHostname, mongoPort, date, (int) this.quantum);
+        }
         
         String service_flavor;
         State[] timeline = new State[(int)this.quantum];
@@ -112,9 +130,20 @@ public class SiteAvailability extends EvalFunc<Tuple> {
         }
         
         // Get the weight of each site. If the weight is missing, mark it as 1.
-        String w = this.weights.get((String) tuple.get(3));
+        String w = this.weights.get(site);
         if (w == null) {
             w = "1";
+        }
+        
+        // Add recalculation data at site levels.
+        Map<String, Object> ngiRecalcRequest = this.recalculationMap.get(ngi);
+        
+        // Check if we have a request for this ngi.
+        if (ngiRecalcRequest != null) {
+            // Check if this site is excluded.
+            if (!Arrays.asList((String[]) ngiRecalcRequest.get("exclude")).contains(site)) {
+                Utils.putRecalculations((Entry<Integer, Integer>) ngiRecalcRequest.get("data"), output_table);
+            }
         }
         
         // Count A/R for the site. Append weight in the end.

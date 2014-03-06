@@ -10,6 +10,7 @@ import com.mongodb.AggregationOutput;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import java.io.BufferedReader;
@@ -18,11 +19,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.UnknownHostException;
-import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPInputStream;
 import org.apache.pig.data.BagFactory;
@@ -35,6 +37,23 @@ import org.apache.pig.data.TupleFactory;
  */
 public class ExternalResources {
     
+    private static int getTimeGroupNoDash(final String timeStamp, final int quantum) {
+        int hour = Integer.parseInt(timeStamp.substring(0, 2));
+        int minutes = Integer.parseInt(timeStamp.substring(2, 4));
+
+        return (hour * 60 + minutes) / (24 * 60 / quantum);
+    }
+    
+    // The timeStamp string should have 00:00:00... format. So if we are in the
+    // standard format that we get from input (2013...T00:00:00Z), we should split
+    // before using.
+    private static int getTimeGroup(final String timeStamp, final int quantum) {
+        int hour = Integer.parseInt(timeStamp.substring(0, 2));
+        int minutes = Integer.parseInt(timeStamp.substring(3, 5));
+
+        return (hour * 60 + minutes) / (24 * 60 / quantum);
+    }
+    
     /**
      *
      * @param downtimesString
@@ -43,7 +62,7 @@ public class ExternalResources {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public static Map<String, Map.Entry<Integer, Integer>> getDowntimes(final String downtimesString, final int quantum) throws FileNotFoundException, IOException {
+    public static Map<String, Entry<Integer, Integer>> getDowntimes(final String downtimesString, final int quantum) throws FileNotFoundException, IOException {
         Map<String, Map.Entry<Integer, Integer>> downtimes = new HashMap<String, Map.Entry<Integer, Integer>>();
 
         byte[] decodedBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(downtimesString);
@@ -61,15 +80,13 @@ public class ExternalResources {
                 host = tokens[0];
                 serviceFlavor = tokens[1];
 
-                int hour = Integer.parseInt(tokens[2].split("T", 2)[1].split(":")[0]);
-                int minutes = Integer.parseInt(tokens[2].split("T", 2)[1].split(":")[1]);
-                int timeGroupStart = (hour * 60 + minutes) / (24 * 60 / quantum);
+                String startTimeStamp = tokens[2].split("T", 2)[1];
+                String endTimeStamp = tokens[3].split("T", 2)[1];
 
-                hour = Integer.parseInt(tokens[3].split("T", 2)[1].split(":")[0]);
-                minutes = Integer.parseInt(tokens[3].split("T", 2)[1].split(":")[1]);
-                int timeGroupEnd = (hour * 60 + minutes) / (24 * 60 / quantum);
+                int startGroup = getTimeGroup(startTimeStamp, quantum);
+                int endGroup = getTimeGroup(endTimeStamp, quantum);
 
-                period = new AbstractMap.SimpleEntry<Integer, Integer>(timeGroupStart, timeGroupEnd);
+                period = new SimpleEntry<Integer, Integer>(startGroup, endGroup);
 
                 downtimes.put(host + " " + serviceFlavor, period);
             }
@@ -205,7 +222,6 @@ public class ExternalResources {
         
         MongoClient mongoClient = new MongoClient(mongoHostname, port);
         DBCollection collection = mongoClient.getDB("AR").getCollection("hlps");
-
         
         DBObject groupFields = new BasicDBObject("_id", "$sf");
         groupFields.put("profs", new BasicDBObject("$push", "$n"));
@@ -231,5 +247,43 @@ public class ExternalResources {
         mongoClient.close();
         return sf_to_apnames;
     }
-    
+        
+    public static Map<String, Map<String, Object>> getRecalculationRequests(final String mongoHostname, final int port, final String date, final int quantum) throws UnknownHostException {
+        Map<String, Map<String, Object>> recalcMap = new HashMap<String, Map<String, Object>>(10);
+        
+        MongoClient mongoClient = new MongoClient(mongoHostname, port);
+        DBCollection collection = mongoClient.getDB("AR").getCollection("Recalculations");
+
+        DBObject lte = new BasicDBObject("$lte", "20131209");
+        DBObject startTime = new BasicDBObject("start_time", lte);
+
+        DBObject gte = new BasicDBObject("$gte", "20131209");
+        DBObject endTime = new BasicDBObject("end_time", gte);
+        
+        BasicDBList between = new BasicDBList();
+        between.add(startTime);
+        between.add(endTime);
+        DBCursor cursor = collection.find(new BasicDBObject("$or", between));
+
+        for (DBObject dbo : cursor) {
+            String startTimeStamp = (String) dbo.get("start_time");
+            String endTimeStamp = (String) dbo.get("end_time");
+            String ngi = (String) dbo.get("ngi");
+            int size = ((BasicDBList) dbo.get("exclude_site")).size();
+            String[] excludedSites = ((BasicDBList) dbo.get("exclude_site")).toArray(new String[size]);
+            
+            int startGroup = getTimeGroupNoDash(startTimeStamp, quantum);
+            int endGroup = getTimeGroupNoDash(endTimeStamp, quantum);
+            
+            // data object is Entry<Integer, Integer>
+            // exclude object is String[]
+            Map<String, Object> hmap = new HashMap<String, Object>(5);
+            hmap.put("data", new SimpleEntry<Integer, Integer>(startGroup, endGroup));
+            hmap.put("exclude", excludedSites);
+            recalcMap.put(ngi, hmap);
+        }
+        
+        mongoClient.close();
+        return recalcMap;
+    }
 }
