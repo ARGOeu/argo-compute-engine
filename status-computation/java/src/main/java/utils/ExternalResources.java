@@ -254,10 +254,10 @@ public class ExternalResources {
         MongoClient mongoClient = new MongoClient(mongoHostname, port);
         DBCollection collection = mongoClient.getDB("AR").getCollection("Recalculations");
 
-        DBObject lte = new BasicDBObject("$lte", "20131209");
+        DBObject lte = new BasicDBObject("$lte", date);
         DBObject startTime = new BasicDBObject("start_time", lte);
 
-        DBObject gte = new BasicDBObject("$gte", "20131209");
+        DBObject gte = new BasicDBObject("$gte", date);
         DBObject endTime = new BasicDBObject("end_time", gte);
         
         BasicDBList between = new BasicDBList();
