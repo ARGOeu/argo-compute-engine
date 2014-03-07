@@ -11,7 +11,7 @@ cfg_parser = SafeConfigParser()
 try:
 	# check if file exists while trying to parse it
 	if (len(cfg_parser.read(cfg_filename)) == 0):
-    	print "Configuration File:%s not found! \nExiting..." % cfg_filename
+		print "Configuration File:%s not found! \nExiting..." % cfg_filename
 		sys.exit(1)
 except ConfigParser.Error as e:
 	print "Configuration File Parse Error: %s \nExiting..." % e.message
