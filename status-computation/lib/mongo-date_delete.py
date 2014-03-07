@@ -21,7 +21,7 @@ except ConfigParser.Error as e:
 mongo_host = cfg_parser.get('default','mongo_host')
 mongo_port = cfg_parser.get('default','mongo_port')
 
-client = MongoClient(str(mongo_host), mongo_port)
+client = MongoClient(str(mongo_host), int(mongo_port))
 db = client.AR
 date = sys.argv[1].replace("-","")
 
