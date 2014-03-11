@@ -168,8 +168,8 @@ public class HostServiceTimelines extends EvalFunc<Tuple> {
     // Input: timeline: {(metric, status, time_stamp)},profile_metrics: {metric}, previous_date, hostname, service_flavor
     public Tuple exec(Tuple tuple) throws IOException {
         try {
-            String hostname, service_flavor, pprofile, calculationDate;
-            calculationDate = null;
+            String hostname, service_flavor, pprofile;
+            Integer calculationDate = null;
 
             // Get timeline and profiles to two different structures.
             try {
@@ -179,7 +179,7 @@ public class HostServiceTimelines extends EvalFunc<Tuple> {
                 this.prev_date = (String) tuple.get(2);
                 hostname = (String) tuple.get(3);
                 service_flavor = (String) tuple.get(4);
-                calculationDate = (String) tuple.get(5);
+                calculationDate = Integer.parseInt((String) tuple.get(5));
                 if (this.downtimes == null) {
                     this.downtimes = ExternalResources.getDowntimes((String) tuple.get(6), this.quantum);
                 }
@@ -297,7 +297,7 @@ public class HostServiceTimelines extends EvalFunc<Tuple> {
         // Construct our output schema, which is:
         // (OK: INTEGER, WARNING: INTEGER, UNKNOWN: INTEGER, CRITICAL: INTEGER, MISSING: INTEGER)
         try {
-            Schema.FieldSchema date = new Schema.FieldSchema("date", DataType.CHARARRAY);
+            Schema.FieldSchema date = new Schema.FieldSchema("date", DataType.INTEGER);
             Schema.FieldSchema timeline = new Schema.FieldSchema("timeline", DataType.CHARARRAY);
 
             Schema tuple = new Schema();
