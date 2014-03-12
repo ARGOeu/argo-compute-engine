@@ -252,7 +252,7 @@ public class ExternalResources {
         Map<String, Map<String, Object>> recalcMap = new HashMap<String, Map<String, Object>>(10);
         
         MongoClient mongoClient = new MongoClient(mongoHostname, port);
-        DBCollection collection = mongoClient.getDB("AR").getCollection("Recalculations");
+        DBCollection collection = mongoClient.getDB("AR").getCollection("recalculations");
 
         DBObject lte = new BasicDBObject("$lte", date);
         DBObject startTime = new BasicDBObject("start_time", lte);
@@ -272,8 +272,8 @@ public class ExternalResources {
             int size = ((BasicDBList) dbo.get("exclude_site")).size();
             String[] excludedSites = ((BasicDBList) dbo.get("exclude_site")).toArray(new String[size]);
             
-            int startGroup = getTimeGroupNoDash(startTimeStamp, quantum);
-            int endGroup = getTimeGroupNoDash(endTimeStamp, quantum);
+            int startGroup = 0;//getTimeGroupNoDash(startTimeStamp, quantum);
+            int endGroup = quantum-1;//getTimeGroupNoDash(endTimeStamp, quantum);
             
             // data object is Entry<Integer, Integer>
             // exclude object is String[]
