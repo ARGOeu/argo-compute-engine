@@ -39,7 +39,7 @@ public class SiteAvailability extends EvalFunc<Tuple> {
         String weightsInfo = (String) tuple.get(2);
         String site = (String) tuple.get(3);
         String mongoInfo = (String) tuple.get(4);
-        String date = (String) tuple.get(5);
+        Integer date = Integer.parseInt((String) tuple.get(5));
         String ngi = (String) tuple.get(6);
         
         State[] output_table = null;
