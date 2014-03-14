@@ -23,7 +23,7 @@ mongo_port = cfg_parser.get('default','mongo_port')
 
 client = MongoClient(str(mongo_host), int(mongo_port))
 db = client.AR
-date = sys.argv[1].replace("-","")
+date = int(sys.argv[1].replace("-",""))
 
 db.sites.remove({"dt": date})
 db.timelines.remove({"d": date})
