@@ -1,13 +1,14 @@
 Name: ar-local-compute
 Summary: A/R Comp Engine local scripts
-Version: 1.2.1
-Release: 3%{?dist}
+Version: 1.2.2
+Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
 BuildArch: x86_64
 Source0:   %{name}-%{version}.tar.gz
 Requires: ar-sync
+Requires: python-pymongo
 Requires: hive
 Requires: hbase
 Requires: hcatalog
@@ -59,6 +60,8 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute-engine.conf
 
 %changelog
+* Fri Mar 14 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.2.2-1%{?dist}
+- Added missing dep on pymongo
 * Tue Mar 04 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.2.1-1%{?dist}
 - Re-arranged helper scripts
 * Thu Feb 06 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.1.0-1%{?dist}
