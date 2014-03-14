@@ -97,7 +97,7 @@ until [ "$currentdate" == "$loopenddate" ]; do
 	
   ### prepare weights
   echo "Prepare HEPSPEC for $RUN_DATE"
-  cat hepspec_sync_$RUN_DATE.out \
+  cat hepspec_sync_$RUN_DATE_UNDER.out \
       | awk 'BEGIN {ORS="|"; RS="\r\n"} {print $0}' \
       | gzip -c \
       | base64 \
