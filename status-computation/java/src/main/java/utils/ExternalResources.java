@@ -248,7 +248,7 @@ public class ExternalResources {
         return sf_to_apnames;
     }
         
-    public static Map<String, Map<String, Object>> getRecalculationRequests(final String mongoHostname, final int port, final String date, final int quantum) throws UnknownHostException {
+    public static Map<String, Map<String, Object>> getRecalculationRequests(final String mongoHostname, final int port, final int date, final int quantum) throws UnknownHostException {
         Map<String, Map<String, Object>> recalcMap = new HashMap<String, Map<String, Object>>(10);
         
         MongoClient mongoClient = new MongoClient(mongoHostname, port);
