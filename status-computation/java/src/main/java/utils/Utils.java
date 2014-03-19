@@ -86,4 +86,36 @@ public class Utils {
         outputTuple.set(4, Utils.round(DOWNTIME / quantum, 5, BigDecimal.ROUND_HALF_UP));
         return outputTuple;
     }
+    
+    // The timeStamp string should be zulu.split("T")[1]. So if we are in the
+    // standard format that we get from input (2013...T00:00:00Z), we should split
+    // before using.
+    public static int getTimeGroup(final String timeStamp, final int quantum) {
+        int hour = Integer.parseInt(timeStamp.substring(0, 2));
+        int minutes = Integer.parseInt(timeStamp.substring(3, 5));
+
+        return (hour * 60 + minutes) / (24 * 60 / quantum);
+    }
+
+    // From mongodb, we are getting a time range. 
+    // e.g.
+    // "start_time" : "2013-12-08T12:03:44Z"
+    // "end_time" : "2013-12-10T12:03:44Z"
+    // 
+    // If we are calculating for date 20131209 (this is the format of the input data)
+    // we need understand if we have to compare the dates or the times, to get the group.
+    // If we are on the same date with start_time||end_time, we determine the group
+    // from the time. But if we are on a date between, we determine the group from
+    // the date.
+    public static int determineTimeGroup(final String zuluTime, final int runningDate, final int quantum) throws IOException {
+        int date = Integer.parseInt(zuluTime.split("T", 2)[0].replaceAll("-", ""));
+
+        if (runningDate > date) {
+            return 0;
+        } else if (runningDate < date) {
+            return quantum - 1;
+        } else { // if (runningDate == date)
+            return getTimeGroup(zuluTime.split("T", 2)[1], quantum);
+        }
+    }
 }
