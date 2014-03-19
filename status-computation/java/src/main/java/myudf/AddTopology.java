@@ -100,7 +100,6 @@ public class AddTopology extends EvalFunc<Tuple> {
         Schema.FieldSchema certification_status = new Schema.FieldSchema("certification_status", DataType.CHARARRAY);
         Schema.FieldSchema site_scope = new Schema.FieldSchema("site_scope", DataType.CHARARRAY);
 
-        
         Schema.FieldSchema availability_profile = new Schema.FieldSchema("availability_profile", DataType.CHARARRAY);
         Schema apS = new Schema();
         apS.add(availability_profile);

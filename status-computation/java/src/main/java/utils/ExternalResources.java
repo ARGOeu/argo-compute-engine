@@ -37,23 +37,6 @@ import org.apache.pig.data.TupleFactory;
  */
 public class ExternalResources {
     
-    private static int getTimeGroupNoDash(final String timeStamp, final int quantum) {
-        int hour = Integer.parseInt(timeStamp.substring(0, 2));
-        int minutes = Integer.parseInt(timeStamp.substring(2, 4));
-
-        return (hour * 60 + minutes) / (24 * 60 / quantum);
-    }
-    
-    // The timeStamp string should have 00:00:00... format. So if we are in the
-    // standard format that we get from input (2013...T00:00:00Z), we should split
-    // before using.
-    private static int getTimeGroup(final String timeStamp, final int quantum) {
-        int hour = Integer.parseInt(timeStamp.substring(0, 2));
-        int minutes = Integer.parseInt(timeStamp.substring(3, 5));
-
-        return (hour * 60 + minutes) / (24 * 60 / quantum);
-    }
-    
     /**
      *
      * @param downtimesString
@@ -83,8 +66,8 @@ public class ExternalResources {
                 String startTimeStamp = tokens[2].split("T", 2)[1];
                 String endTimeStamp = tokens[3].split("T", 2)[1];
 
-                int startGroup = getTimeGroup(startTimeStamp, quantum);
-                int endGroup = getTimeGroup(endTimeStamp, quantum);
+                int startGroup = Utils.getTimeGroup(startTimeStamp, quantum);
+                int endGroup = Utils.getTimeGroup(endTimeStamp, quantum);
 
                 period = new SimpleEntry<Integer, Integer>(startGroup, endGroup);
 
@@ -247,33 +230,24 @@ public class ExternalResources {
         mongoClient.close();
         return sf_to_apnames;
     }
-        
-    public static Map<String, Map<String, Object>> getRecalculationRequests(final String mongoHostname, final int port, final int date, final int quantum) throws UnknownHostException {
+    
+    public static Map<String, Map<String, Object>> getRecalculationRequests(final String mongoHostname, final int port, final int date, final int quantum) throws UnknownHostException, IOException {
         Map<String, Map<String, Object>> recalcMap = new HashMap<String, Map<String, Object>>(10);
         
         MongoClient mongoClient = new MongoClient(mongoHostname, port);
         DBCollection collection = mongoClient.getDB("AR").getCollection("recalculations");
-
-        DBObject lte = new BasicDBObject("$lte", date);
-        DBObject startTime = new BasicDBObject("start_time", lte);
-
-        DBObject gte = new BasicDBObject("$gte", date);
-        DBObject endTime = new BasicDBObject("end_time", gte);
         
-        BasicDBList between = new BasicDBList();
-        between.add(startTime);
-        between.add(endTime);
-        DBCursor cursor = collection.find(new BasicDBObject("$or", between));
+        // We need to take all recalculatios that include the date we calculate.
+        DBCursor cursor = collection.find(new BasicDBObject("$where", 
+            String.format("'%s' <= this.end_time.split('T')[0].replace(/-/g,'') || '%s' >= this.start_time.split('T')[0].replace(/-/g,'')", date, date)));
 
         for (DBObject dbo : cursor) {
-            String startTimeStamp = (String) dbo.get("start_time");
-            String endTimeStamp = (String) dbo.get("end_time");
             String ngi = (String) dbo.get("ngi");
             int size = ((BasicDBList) dbo.get("exclude_site")).size();
             String[] excludedSites = ((BasicDBList) dbo.get("exclude_site")).toArray(new String[size]);
             
-            int startGroup = 0;//getTimeGroupNoDash(startTimeStamp, quantum);
-            int endGroup = quantum-1;//getTimeGroupNoDash(endTimeStamp, quantum);
+            int startGroup = Utils.determineTimeGroup((String) dbo.get("start_time"), date, quantum);
+            int endGroup = Utils.determineTimeGroup((String) dbo.get("end_time"), date, quantum);
             
             // data object is Entry<Integer, Integer>
             // exclude object is String[]
