@@ -22,7 +22,6 @@ import java.net.UnknownHostException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
@@ -144,7 +143,7 @@ public class ExternalResources {
         // {$project : { name : {$concat: ["$namespace", ".", "$name"]}, groups:1}}
         BasicDBList concatArgs = new BasicDBList();
         concatArgs.add("$namespace");
-        concatArgs.add(".");
+        concatArgs.add("-");
         concatArgs.add("$name");
         DBObject project = new BasicDBObject("$project", new BasicDBObject("name", new BasicDBObject("$concat", concatArgs)).append("groups", 1).append("poems", 1));
         
