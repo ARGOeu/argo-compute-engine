@@ -134,36 +134,45 @@ public class ExternalResources {
         return weights;
     }
 
-    public static Map<String, Map<String, Integer>> initHLPs(final String mongoHostname, final int port) throws FileNotFoundException, IOException {
-        Map<String, Map<String, Integer>> hlps = new HashMap<String, Map<String, Integer>>();
+    public static Map<String, Map<String, Integer>> initAPs(final String mongoHostname, final int port) throws FileNotFoundException, IOException {
+        Map<String, Map<String, Integer>> aps = new HashMap<String, Map<String, Integer>>();
 
         MongoClient mongoClient = new MongoClient(mongoHostname, port);
-        DBCollection collection = mongoClient.getDB("AR").getCollection("hlps");
+        DBCollection collection = mongoClient.getDB("AR").getCollection("aps");
 
-        DBObject fields = new BasicDBObject("sf", "$sf").append("g", "$g");
-        DBObject groupFields = new BasicDBObject("_id", "$n");
-        groupFields.put("rules", new BasicDBObject("$push", fields));
-        DBObject group = new BasicDBObject("$group", groupFields);
-
-        AggregationOutput output = collection.aggregate(group);
-
+        // we need to merge namespace with name
+        // {$project : { name : {$concat: ["$namespace", ".", "$name"]}, groups:1}}
+        BasicDBList concatArgs = new BasicDBList();
+        concatArgs.add("$namespace");
+        concatArgs.add(".");
+        concatArgs.add("$name");
+        DBObject project = new BasicDBObject("$project", new BasicDBObject("name", new BasicDBObject("$concat", concatArgs)).append("groups", 1).append("poems", 1));
+        
+        AggregationOutput output = collection.aggregate(project);
+        
+        // For each AP
         for (DBObject dbo : output.results()) {
-            Map<String, Integer> hlpsRules = new HashMap<String, Integer>();
-            hlps.put((String) dbo.get("_id"), hlpsRules);
+            Map<String, Integer> sfGroup = new HashMap<String, Integer>();
+            aps.put((String) dbo.get("name"), sfGroup);
 
-            BasicDBList l = (BasicDBList) dbo.get("rules");
+            BasicDBList l = (BasicDBList) dbo.get("groups");
 
+            int groupID = 0;
+            // For each group
             for (Object o : l) {
-                DBObject dbor = (BasicDBObject) o;
-                String service_flavor = (String) dbor.get("sf");
-                Integer groupid = ((Number) dbor.get("g")).intValue();
-
-                hlpsRules.put(service_flavor, groupid);
+                BasicDBList dbl = (BasicDBList) o;
+                
+                // For each service flavour
+                for (Object sf : dbl) {
+                    sfGroup.put((String) sf, groupID);
+                }
+                
+                groupID++;
             }
         }
         
         mongoClient.close();
-        return hlps;
+        return aps;
     }
     
     public static Map<String, DataBag> getSFtoAvailabilityProfileNames(final String mongoHostname, final int port) throws UnknownHostException {
