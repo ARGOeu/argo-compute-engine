@@ -198,37 +198,68 @@ public class ExternalResources {
         return hlps;
     }
     
-    public static Map<String, DataBag> getSFtoAvailabilityProfileNames(final String mongoHostname, final int port) throws UnknownHostException {
-        Map<String, DataBag> sf_to_apnames = new HashMap<String, DataBag>(10);
+    // We need to create a Pig DataBag full of the possible AP names in tuples.
+    // The reason we do that is for better performance. We need to create the DataBag
+    // only once, and then for each input row we just point out the appropriate DataBag.
+    // After the step of the topology, Pig will take the DataBag and for each tuple inside
+    // will create a row. Thus, each host timeline will be calculated in the apropriate group.
+    public static Map<String, Map <String, DataBag>> getSFtoAvailabilityProfileNames(final String mongoHostname, final int port) throws UnknownHostException {
+        Map<String, Map <String, DataBag>> poemMap = new HashMap<String, Map <String, DataBag>>(10);
         BagFactory mBagFactory = BagFactory.getInstance();
         TupleFactory mTupleFactory = TupleFactory.getInstance();
         
         MongoClient mongoClient = new MongoClient(mongoHostname, port);
-        DBCollection collection = mongoClient.getDB("AR").getCollection("hlps");
+        DBCollection collection = mongoClient.getDB("AR").getCollection("aps");
         
-        DBObject groupFields = new BasicDBObject("_id", "$sf");
-        groupFields.put("profs", new BasicDBObject("$push", "$n"));
-        DBObject group = new BasicDBObject("$group", groupFields);
-
-        AggregationOutput output = collection.aggregate(group);
+        // We need to implement this query to get the unique service flavors 
+        // for each AP
+        // {$project: { name : {$concat : ["$namespace", ".", "$name"]}, groups : 1, poems : 1 }}
+        // { $unwind : "$poems" }, {$unwind : "$groups"}, {$unwind : "$groups"},
+        // { $group : { _id : {poem : "$poems", sf : "$groups" }, aps : {$addToSet : "$name"}}},
+        // { $group : { _id : {poem : "$_id.poem"}, sfs : {$addToSet: { sf : "$_id.sf", aps : "$aps" }}}}
+        BasicDBList concatArgs = new BasicDBList();
+        concatArgs.add("$namespace");
+        concatArgs.add(".");
+        concatArgs.add("$name");
+        DBObject project = new BasicDBObject("$project", new BasicDBObject("name", new BasicDBObject("$concat", concatArgs)).append("groups", 1).append("poems", 1));
+        DBObject unwindPoems = new BasicDBObject("$unwind", "$poems");
+        DBObject unwindGroups = new BasicDBObject("$unwind", "$groups");
+        DBObject group = new BasicDBObject("$group",
+                new BasicDBObject("_id", new BasicDBObject("poem", "$poems").append("sf", "$groups"))
+                        .append("aps", new BasicDBObject("$addToSet", "$name")));
+        DBObject group2 = new BasicDBObject("$group",
+                new BasicDBObject("_id", new BasicDBObject("poem", "$_id.poem"))
+                        .append("sfs", new BasicDBObject("$addToSet", new BasicDBObject("sf", "$_id.sf").append("aps", "$aps"))));
         
-        // For each service flavor
+        AggregationOutput output = collection.aggregate(project, unwindPoems, unwindGroups, unwindGroups, group, group2);
+        
+        // For each poem profile
         for (DBObject dbo : output.results()) {
-            DataBag db = mBagFactory.newDefaultBag();
+            BasicDBList l = (BasicDBList) dbo.get("sfs");
+            String poemProfile = (String) ((DBObject) dbo.get("_id")).get("poem");
             
-            BasicDBList l = (BasicDBList) dbo.get("profs");
-            
-            // For each availability profile name
+            Map<String, DataBag> sfMap = new HashMap<String, DataBag>(10);
+            // For each service flavour
             for (Object o : l) {
-                String apname = (String) o;
-                db.add(mTupleFactory.newTuple(apname));
+                DBObject sfs = (DBObject) o;
+                
+                String serviceFlaver = (String) sfs.get("sf");
+                BasicDBList apList = (BasicDBList) sfs.get("aps");
+                
+                DataBag apBag = mBagFactory.newDefaultBag();
+                // For each AP
+                for (Object ap : apList) {
+                    apBag.add(mTupleFactory.newTuple((String) ap));
+                }
+                
+                sfMap.put(serviceFlaver, apBag);
             }
             
-            sf_to_apnames.put((String) dbo.get("_id"), db);
+            poemMap.put(poemProfile, sfMap);
         }
         
         mongoClient.close();
-        return sf_to_apnames;
+        return poemMap;
     }
     
     public static Map<String, Map<String, Object>> getRecalculationRequests(final String mongoHostname, final int port, final int date, final int quantum) throws UnknownHostException, IOException {

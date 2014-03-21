@@ -95,9 +95,11 @@ timetables = FOREACH profiled_logs {
 
 --- Join topology with logs, so we have have for each log row, all topology information. Also append Availability Profiles.
 topologed_j = FOREACH timetables GENERATE date, profile, timeline, hostname, service_flavour,
-                 FLATTEN(AT(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3', '$mongoServer'));
+                 FLATTEN(AT(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3', '$mongoServer', profile));
 
-topologed = FOREACH topologed_j GENERATE $0..$12, FLATTEN(availability_profiles) as availability_profile;
+--- We should delete rows with no APs. Then we need to split the bag, and create lines with individual APs
+topologed = FOREACH (filter topologed_j by not IsEmpty(availability_profiles)) 
+                GENERATE $0..$12, FLATTEN(availability_profiles) as availability_profile;
 
 --- Group rows by important attributes. Note the date column, will be used for making a distinction in each day
 --- After the grouping, we calculate AR for each site and append the weights
