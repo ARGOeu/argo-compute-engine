@@ -1,7 +1,7 @@
 Name: ar-local-compute
 Summary: A/R Comp Engine local scripts
-Version: 1.2.2
-Release: 2%{?dist}
+Version: 1.3.1
+Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -33,14 +33,16 @@ install --directory %{buildroot}/usr/libexec/ar-compute/lib
 install --directory %{buildroot}/var/lib/ar-compute
 install --directory %{buildroot}/var/log/ar-compute
 install --directory %{buildroot}/etc
-install --directory %{buildroot}/etc/cron.daily
+install --directory %{buildroot}/etc/cron.d
 
 
 install --mode 755 helpers/ar-local-compute-range.sh                  %{buildroot}/usr/libexec/ar-compute/
 install --mode 644 status-computation/local_calculator.pig            %{buildroot}/usr/libexec/ar-compute/pig/
 install --mode 644 status-computation/lib/*                           %{buildroot}/usr/libexec/ar-compute/lib/
 install --mode 644 status-computation/java/target/MyUDF-1.0.jar       %{buildroot}/usr/libexec/ar-compute/MyUDF.jar
-install --mode 644 cronjobs/ar-local-compute-the-day-before-yesterday %{buildroot}/etc/cron.daily
+install --mode 644 cronjobs/ar-local-compute-hourly                   %{buildroot}/etc/cron.d
+install --mode 644 cronjobs/ar-local-compute-yesterday                %{buildroot}/etc/cron.d
+install --mode 644 cronjobs/ar-local-compute-the-day-before-yesterday %{buildroot}/etc/cron.d
 install --mode 644 conf/ar-compute-engine.conf                        %{buildroot}/etc/
 
 %clean
@@ -56,10 +58,14 @@ mvn clean
 %attr(0755,root,root) /usr/libexec/ar-compute/MyUDF.jar
 %attr(0750,root,root) /var/lib/ar-compute
 %attr(0750,root,root) /var/log/ar-compute
-%attr(0755,root,root) /etc/cron.daily/ar-local-compute-the-day-before-yesterday
+%attr(0755,root,root) /etc/cron.d/ar-local-compute-hourly
+%attr(0755,root,root) /etc/cron.d/ar-local-compute-yesterday
+%attr(0755,root,root) /etc/cron.d/ar-local-compute-the-day-before-yesterday
 %attr(0644,root,root) /etc/ar-compute-engine.conf
 
 %changelog
+* Thu Mar 20 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.3.1-1%{?dist}
+- Added hourly and daily cronjobs
 * Fri Mar 14 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.2.2-1%{?dist}
 - Added missing dep on pymongo
 * Tue Mar 04 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.2.1-1%{?dist}
