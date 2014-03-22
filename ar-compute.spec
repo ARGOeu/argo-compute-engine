@@ -65,8 +65,8 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute-engine.conf
 
 %changelog
-* Thu Mar 20 2014 Anastasios Andronidis <andronat@grid.auth.gr> - 1.4.0-1%{?dist}
-- Added hourly and daily cronjobs
+* Sat Mar 22 2014 Anastasios Andronidis <andronat@grid.auth.gr> - 1.4.0-1%{?dist}
+- New script stracture. Added python-argparse dep
 * Thu Mar 20 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.3.1-1%{?dist}
 - Added hourly and daily cronjobs
 * Fri Mar 14 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.2.2-1%{?dist}
