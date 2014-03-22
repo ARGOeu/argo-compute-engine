@@ -1,6 +1,6 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.3.1
+Version: 1.4.0
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
@@ -15,6 +15,7 @@ Requires: hcatalog
 Requires: pig
 Requires: pig-udf-datafu
 Requires: java-1.6.0-openjdk
+Requires: python-argparse
 Conflicts: ar-local-compute
 
 %description
@@ -35,9 +36,8 @@ install --directory %{buildroot}/var/log/ar-compute
 install --directory %{buildroot}/etc
 install --directory %{buildroot}/etc/cron.d
 
-install --mode 755 helpers/ar-input-range.sh                    %{buildroot}/usr/libexec/ar-compute/
-install --mode 755 helpers/ar-compute-range.sh                  %{buildroot}/usr/libexec/ar-compute/
-install --mode 644 status-computation/calculator.pig            %{buildroot}/usr/libexec/ar-compute/pig/
+install --mode 755 helpers/ar-compute.py                        %{buildroot}/usr/libexec/ar-compute/
+install --mode 644 status-computation/*                         %{buildroot}/usr/libexec/ar-compute/pig/
 install --mode 644 status-computation/lib/*                     %{buildroot}/usr/libexec/ar-compute/lib/
 install --mode 644 status-computation/java/target/MyUDF-1.0.jar %{buildroot}/usr/libexec/ar-compute/MyUDF.jar
 install --mode 644 cronjobs/ar-compute-hourly                   %{buildroot}/etc/cron.d
@@ -52,9 +52,9 @@ mvn clean
 
 %files
 %defattr(0644,root,root)
-%attr(0755,root,root) /usr/libexec/ar-compute/ar-input-range.sh
-%attr(0755,root,root) /usr/libexec/ar-compute/ar-compute-range.sh
+%attr(0755,root,root) /usr/libexec/ar-compute/ar-compute.py
 %attr(0755,root,root) /usr/libexec/ar-compute/pig/calculator.pig
+%attr(0755,root,root) /usr/libexec/ar-compute/pig/local_calculator.pig
 %attr(0755,root,root) /usr/libexec/ar-compute/lib/*
 %attr(0755,root,root) /usr/libexec/ar-compute/MyUDF.jar
 %attr(0750,root,root) /var/lib/ar-compute
@@ -65,13 +65,15 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute-engine.conf
 
 %changelog
+* Thu Mar 20 2014 Anastasios Andronidis <andronat@grid.auth.gr> - 1.4.0-1%{?dist}
+- Added hourly and daily cronjobs
 * Thu Mar 20 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.3.1-1%{?dist}
 - Added hourly and daily cronjobs
 * Fri Mar 14 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.2.2-1%{?dist}
 - Added missing dep on pymongo
 * Tue Mar 04 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.2.1-1%{?dist}
 - Re-arranged helper scripts
-* Thu Feb 21 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.2.0-%{?dist}
+* Thu Feb 21 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.2.0-1%{?dist}
 - Re-arranged helper scripts and cron jobs
 * Thu Feb 06 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.1.0-1%{?dist}
 - Fixed issue in pig comments
