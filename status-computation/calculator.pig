@@ -90,17 +90,17 @@ profiled_logs = FOREACH (GROUP logs BY (hostname, service_flavour, profile) PARA
 timetables = FOREACH profiled_logs {
         timeline_s = ORDER timeline BY time_stamp;
         vos = DISTINCT vo;
-        GENERATE hostname, service_flavour, profile, vos as vo,
+        GENERATE hostname, service_flavour, profile, vos,
             FLATTEN(HST(timeline_s, profile, '$PREV_DATE', hostname, service_flavour, '$CUR_DATE', '$DOWNTIMES', '$POEMS')) as (date, timeline);
 };
 
 --- Join topology with logs, so we have have for each log row, all topology information. Also append Availability Profiles.
-topologed_j = FOREACH timetables GENERATE date, profile, timeline, hostname, service_flavour,
+topologed_j = FOREACH timetables GENERATE date, profile, timeline, hostname, service_flavour, vos,
                  FLATTEN(AT(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3', '$mongoServer', profile));
 
 --- We should delete rows with no APs. Then we need to split the bag, and create lines with individual APs
 topologed = FOREACH (filter topologed_j by availability_profiles is not null)
-                GENERATE $0..$12, FLATTEN(availability_profiles) as availability_profile;
+                GENERATE $0..$13, FLATTEN(availability_profiles) as availability_profile;
 
 --- Group rows by important attributes. Note the date column, will be used for making a distinction in each day
 --- After the grouping, we calculate AR for each site and append the weights
@@ -115,10 +115,10 @@ sites = FOREACH (GROUP topologed BY (date, site, profile, production, monitored,
 };
 
 --- Status computation for services
-service_status = FOREACH timetables GENERATE date as dates, hostname, service_flavour, profile, vo, myudf.TimelineToPercentage(*) as timeline;
+service_status = FOREACH timetables GENERATE date as dates, hostname, service_flavour, profile, vos, myudf.TimelineToPercentage(*) as timeline;
 
 --- VO calculation
-vo_s = FOREACH timetables GENERATE hostname, service_flavour, profile, date, FLATTEN(vo) as vo, timeline;
+vo_s = FOREACH topologed GENERATE hostname, service_flavour, profile, date, FLATTEN(vos) as vo, timeline;
 
 vo = FOREACH (GROUP vo_s BY (vo, profile, date) PARALLEL 4)
         GENERATE group.vo as vo, group.profile as profile, group.date as dates,
