@@ -118,11 +118,11 @@ sites = FOREACH (GROUP topologed BY (date, site, profile, production, monitored,
 service_status = FOREACH timetables GENERATE date as dates, hostname, service_flavour, profile, vos, myudf.TimelineToPercentage(*) as timeline;
 
 --- VO calculation
-vo_s = FOREACH topologed GENERATE hostname, service_flavour, profile, date, FLATTEN(vos) as vo, timeline;
+vo_s = FOREACH topologed GENERATE hostname, service_flavour, profile, date, FLATTEN(vos) as vo, timeline, availability_profile;
 
-vo = FOREACH (GROUP vo_s BY (vo, profile, date) PARALLEL 4)
+vo = FOREACH (GROUP vo_s BY (vo, profile, availability_profile, date) PARALLEL 4)
         GENERATE group.vo as vo, group.profile as profile, group.date as dates,
-            FLATTEN(VOA(vo_s)) as (availability, reliability, up, unknown, downtime);
+            FLATTEN(VOA(vo_s, group.availability_profile, '$mongoServer')) as (availability, reliability, up, unknown, downtime);
 
 --- Group rows by important attributes. Note the date column, will be used for making a distinction in each day
 --- Service flavor calculation
