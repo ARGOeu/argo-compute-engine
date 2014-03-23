@@ -28,7 +28,7 @@ public class AddTopology extends EvalFunc<Tuple> {
     private final TupleFactory mTupleFactory = TupleFactory.getInstance();
     private Map<String, String[]> topology = null;
     // This map contains: poem profile -> service flavour -> list of valid APs
-    private Map<String, Map <String, DataBag>> poemMap = null;
+    private Map<String, Map <String, DataBag>> poemToAPsMap = null;
 
     private void initTopology(final String topology) throws FileNotFoundException, IOException {
 
@@ -64,15 +64,15 @@ public class AddTopology extends EvalFunc<Tuple> {
             this.initTopology((String) tuple.get(2) + (String) tuple.get(3) + (String) tuple.get(4));
         }
 
-        if (this.poemMap == null) {
+        if (this.poemToAPsMap == null) {
             String[] mongoInfo = ((String) tuple.get(5)).split(":", 2);
             String mongoHostname = mongoInfo[0];
             int mongoPort = Integer.parseInt(mongoInfo[1]);
 
-            this.poemMap = ExternalResources.getSFtoAvailabilityProfileNames(mongoHostname, mongoPort);
+            this.poemToAPsMap = ExternalResources.getSFtoAvailabilityProfileNames(mongoHostname, mongoPort);
         }
         
-        if (!this.poemMap.containsKey(poemProfile)) {
+        if (!this.poemToAPsMap.containsKey(poemProfile)) {
             // we need to return a tuple with 9 nulls
             return mTupleFactory.newTuple(9);
         }
@@ -95,7 +95,7 @@ public class AddTopology extends EvalFunc<Tuple> {
         }
 
         // Add Availability profiles as a bag
-        out.set(8, this.poemMap.get(poemProfile).get(serviceFlavour));
+        out.set(8, this.poemToAPsMap.get(poemProfile).get(serviceFlavour));
         return out;
     }
 
