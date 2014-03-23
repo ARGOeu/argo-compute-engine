@@ -277,9 +277,9 @@ public class HostServiceTimelines extends EvalFunc<Tuple> {
 
             // OUTPUT SECTION
             // Schema: timeline: (date(e.g. 20130823), (quantum*"OK"))
-            Tuple t = mTupleFactory.newTuple();
-            t.append(calculationDate);
-            t.append(Arrays.toString(timelineTable));
+            Tuple t = mTupleFactory.newTuple(2);
+            t.set(0, calculationDate);
+            t.set(1, Arrays.toString(timelineTable));
 
             return t;
         } catch (ExecException ee) {
