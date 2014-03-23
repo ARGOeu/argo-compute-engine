@@ -140,7 +140,7 @@ public class ExternalResources {
         DBCollection collection = mongoClient.getDB("AR").getCollection("aps");
 
         // we need to merge namespace with name
-        // {$project : { name : {$concat: ["$namespace", ".", "$name"]}, groups:1}}
+        // {$project : { name : {$concat: ["$namespace", "-", "$name"]}, groups:1}}
         BasicDBList concatArgs = new BasicDBList();
         concatArgs.add("$namespace");
         concatArgs.add("-");
@@ -189,7 +189,7 @@ public class ExternalResources {
         
         // We need to implement this query to get the unique service flavors 
         // for each AP
-        // {$project: { name : {$concat : ["$namespace", ".", "$name"]}, groups : 1, poems : 1 }}
+        // {$project: { name : {$concat : ["$namespace", "-", "$name"]}, groups : 1, poems : 1 }}
         // { $unwind : "$poems" }, {$unwind : "$groups"}, {$unwind : "$groups"},
         // { $group : { _id : {poem : "$poems", sf : "$groups" }, aps : {$addToSet : "$name"}}},
         // { $group : { _id : {poem : "$_id.poem"}, sfs : {$addToSet: { sf : "$_id.sf", aps : "$aps" }}}}
