@@ -104,10 +104,6 @@ public class SiteAvailability extends EvalFunc<Tuple> {
                 if (group_id!=null) {
                     ultimate_kickass_table.put(group_id, timeline);
                 } 
-//                else {
-//                    String msg = "Encounterd: " + service_flavor;
-//                    Logger.getLogger(SiteAvailability.class.getName()).log(Level.INFO, msg);
-//                }
             }
         }
         
