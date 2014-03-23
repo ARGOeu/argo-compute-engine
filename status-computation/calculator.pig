@@ -126,8 +126,8 @@ vo = FOREACH (GROUP vo_s BY (vo, profile, date) PARALLEL 4)
 
 --- Group rows by important attributes. Note the date column, will be used for making a distinction in each day
 --- Service flavor calculation
-service_flavors = FOREACH (GROUP topologed BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 3) {
-    t = ORDER topologed BY service_flavour;
+service_flavours = FOREACH (GROUP topologed_j BY (date, site, profile, production, monitored, scope, ngi, infrastructure, certification_status, site_scope) PARALLEL 3) {
+    t = ORDER topologed_j BY service_flavour;
     GENERATE group.date as dates, group.site as site, group.profile as profile,
         group.production as production, group.monitored as monitored, group.scope as scope,
         group.ngi as ngi, group.infrastructure as infrastructure,
@@ -158,7 +158,7 @@ vo_shrink = FOREACH vo
                GENERATE dates as d, vo as v, profile as p, availability as a,
                         reliability as r, up as up, unknown as u, downtime as dt;
 
-s_f_shrink = FOREACH service_flavors
+s_f_shrink = FOREACH service_flavours
                 GENERATE dates as dt, site as s, profile as p, production as pr,
                          monitored as m, scope as sc, ngi as n, infrastructure as i,
                          certification_status as cs, site_scope as ss, availability as a, 
