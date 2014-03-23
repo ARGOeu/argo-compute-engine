@@ -57,7 +57,7 @@ public class SiteAvailability extends EvalFunc<Tuple> {
             String mongoHostname = mongoInfo.split(":",2)[0];
             int mongoPort = Integer.parseInt(mongoInfo.split(":",2)[1]);
             
-            this.hlps = ExternalResources.initHLPs(mongoHostname, mongoPort);
+            this.hlps = ExternalResources.initAPs(mongoHostname, mongoPort);
         }
         
         Map<String, Integer> highLevelProfiles = this.hlps.get(availabilityProfile);
