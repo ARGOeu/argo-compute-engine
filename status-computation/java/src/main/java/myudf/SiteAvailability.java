@@ -69,11 +69,11 @@ public class SiteAvailability extends EvalFunc<Tuple> {
             this.recalculationMap = ExternalResources.getRecalculationRequests(mongoHostname, mongoPort, date, (int) this.quantum);
         }
         
-        String service_flavor;
+        String serviceFlavour;
         State[] timeline = new State[(int)this.quantum];
                 
         for (Tuple t : (DataBag) tuple.get(0)) {            
-            service_flavor = (String) t.get(4);
+            serviceFlavour = (String) t.get(4);
             String [] tmpa = ((String) t.get(2)).substring(1, ((String)t.get(2)).length() - 1).split(", ");
             
             for (int i = 0; i<tmpa.length; i++) {
@@ -90,13 +90,13 @@ public class SiteAvailability extends EvalFunc<Tuple> {
 //                Logger.getLogger(SiteAvailability.class.getName()).log(Level.SEVERE, null, ex);
 //            }
 
-            Integer group_id = currentAP.get(service_flavor);
+            Integer groupID = currentAP.get(serviceFlavour);
             
-            if (groupingTable.containsKey(group_id)) {
-                Utils.makeOR(timeline, groupingTable.get(group_id));
+            if (groupingTable.containsKey(groupID)) {
+                Utils.makeOR(timeline, groupingTable.get(groupID));
             } else {
-                if (group_id!=null) {
-                    groupingTable.put(group_id, timeline);
+                if (groupID!=null) {
+                    groupingTable.put(groupID, timeline);
                 } 
             }
         }
