@@ -29,7 +29,6 @@ public class SiteAvailability extends EvalFunc<Tuple> {
     private final TupleFactory mTupleFactory = TupleFactory.getInstance();
     private Map<String, String> weights = null;
     
-    private Integer nGroups = null;
     private Map<String, Map<String, Integer>> allAPs = null;
     private Map<String, Map<String, Object>> recalculationMap = null;
 
@@ -60,10 +59,6 @@ public class SiteAvailability extends EvalFunc<Tuple> {
         }
         
         Map<String, Integer> currentAP = this.allAPs.get(availabilityProfile);
-        if (currentAP == null) {
-            return null;
-        }
-        this.nGroups = Collections.max(currentAP.values());
         
         // Get recalculation requests. Create arrays with UKNOWN states that will
         // be merged later on with the results.
@@ -109,20 +104,14 @@ public class SiteAvailability extends EvalFunc<Tuple> {
         // We get the first table, we dont care about the first iteration
         // because we do an AND with self.
         State[] outputTable = null;
-        if (groupingTable.size() > this.nGroups) {
-            // this.outputTable = new String[24];
-            // Utils.makeMiss(this.outputTable);
-            throw new UnsupportedOperationException("A site has more flavors than expected. Something is terribly wrong! " + groupingTable.keySet());
-        } else {
-            if (groupingTable.values().size() > 0) {
-                outputTable = groupingTable.values().iterator().next();
-                for (State[] tb : groupingTable.values()) {
-                    Utils.makeAND(tb, outputTable);
-                }
-            } else {
-                outputTable = new State[(int)this.quantum];
-                Utils.makeMiss(outputTable);
+        if (groupingTable.values().size() > 0) {
+            outputTable = groupingTable.values().iterator().next();
+            for (State[] tb : groupingTable.values()) {
+                Utils.makeAND(tb, outputTable);
             }
+        } else {
+            outputTable = new State[(int) this.quantum];
+            Utils.makeMiss(outputTable);
         }
         
         // Get the weight of each site. If the weight is missing, mark it as 1.
