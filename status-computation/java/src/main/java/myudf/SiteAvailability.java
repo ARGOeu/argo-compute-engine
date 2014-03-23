@@ -42,8 +42,7 @@ public class SiteAvailability extends EvalFunc<Tuple> {
         Integer date = (Integer) tuple.get(5);
         String ngi = (String) tuple.get(6);
         
-        State[] output_table = null;
-        Map<Integer, State[]> ultimate_kickass_table = new HashMap<Integer, State[]>();
+        Map<Integer, State[]> groupingTable = new HashMap<Integer, State[]>();
         
         // Get a map that contains Sites as keys and the weight of each site as
         // a value.
@@ -98,30 +97,31 @@ public class SiteAvailability extends EvalFunc<Tuple> {
 
             Integer group_id = currentAP.get(service_flavor);
             
-            if (ultimate_kickass_table.containsKey(group_id)) {
-                Utils.makeOR(timeline, ultimate_kickass_table.get(group_id));
+            if (groupingTable.containsKey(group_id)) {
+                Utils.makeOR(timeline, groupingTable.get(group_id));
             } else {
                 if (group_id!=null) {
-                    ultimate_kickass_table.put(group_id, timeline);
+                    groupingTable.put(group_id, timeline);
                 } 
             }
         }
         
         // We get the first table, we dont care about the first iteration
         // because we do an AND with self.
-        if (ultimate_kickass_table.size() > this.nGroups) {
-            // this.output_table = new String[24];
-            // Utils.makeMiss(this.output_table);
-            throw new UnsupportedOperationException("A site has more flavors than expected. Something is terribly wrong! " + ultimate_kickass_table.keySet());
+        State[] outputTable = null;
+        if (groupingTable.size() > this.nGroups) {
+            // this.outputTable = new String[24];
+            // Utils.makeMiss(this.outputTable);
+            throw new UnsupportedOperationException("A site has more flavors than expected. Something is terribly wrong! " + groupingTable.keySet());
         } else {
-            if (ultimate_kickass_table.values().size() > 0) {
-                output_table = ultimate_kickass_table.values().iterator().next();
-                for (State[] tb : ultimate_kickass_table.values()) {
-                    Utils.makeAND(tb, output_table);
+            if (groupingTable.values().size() > 0) {
+                outputTable = groupingTable.values().iterator().next();
+                for (State[] tb : groupingTable.values()) {
+                    Utils.makeAND(tb, outputTable);
                 }
             } else {
-                output_table = new State[(int)this.quantum];
-                Utils.makeMiss(output_table);
+                outputTable = new State[(int)this.quantum];
+                Utils.makeMiss(outputTable);
             }
         }
         
@@ -138,12 +138,12 @@ public class SiteAvailability extends EvalFunc<Tuple> {
         if (ngiRecalcRequest != null) {
             // Check if this site is excluded.
             if (!Arrays.asList((String[]) ngiRecalcRequest.get("exclude")).contains(site)) {
-                Utils.putRecalculations((Entry<Integer, Integer>) ngiRecalcRequest.get("data"), output_table);
+                Utils.putRecalculations((Entry<Integer, Integer>) ngiRecalcRequest.get("data"), outputTable);
             }
         }
         
         // Count A/R for the site. Append weight in the end.
-        Tuple t = Utils.getARReport(output_table, mTupleFactory.newTuple(6), this.quantum);
+        Tuple t = Utils.getARReport(outputTable, mTupleFactory.newTuple(6), this.quantum);
         t.set(5, w);
         return t;
     }
