@@ -195,7 +195,7 @@ public class ExternalResources {
         // { $group : { _id : {poem : "$_id.poem"}, sfs : {$addToSet: { sf : "$_id.sf", aps : "$aps" }}}}
         BasicDBList concatArgs = new BasicDBList();
         concatArgs.add("$namespace");
-        concatArgs.add(".");
+        concatArgs.add("-");
         concatArgs.add("$name");
         DBObject project = new BasicDBObject("$project", new BasicDBObject("name", new BasicDBObject("$concat", concatArgs)).append("groups", 1).append("poems", 1));
         DBObject unwindPoems = new BasicDBObject("$unwind", "$poems");
