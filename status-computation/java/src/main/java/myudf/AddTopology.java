@@ -71,12 +71,7 @@ public class AddTopology extends EvalFunc<Tuple> {
 
             this.poemToAPsMap = ExternalResources.getSFtoAvailabilityProfileNames(mongoHostname, mongoPort);
         }
-        
-        if (!this.poemToAPsMap.containsKey(poemProfile)) {
-            // we need to return a tuple with 9 nulls
-            return mTupleFactory.newTuple(9);
-        }
-        
+                
         // Hostname + Service Flavour
         String serviceFlavour = (String) tuple.get(1);
         String key = (String) tuple.get(0) + " " + serviceFlavour;
@@ -95,7 +90,11 @@ public class AddTopology extends EvalFunc<Tuple> {
         }
 
         // Add Availability profiles as a bag
-        out.set(8, this.poemToAPsMap.get(poemProfile).get(serviceFlavour));
+        // If there is no AP, we can calculate only service flavour A/R
+        if (this.poemToAPsMap.containsKey(poemProfile)) {
+            out.set(8, this.poemToAPsMap.get(poemProfile).get(serviceFlavour));
+        }
+
         return out;
     }
 
