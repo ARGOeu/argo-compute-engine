@@ -96,7 +96,7 @@ public class SiteAvailability extends EvalFunc<Tuple> {
                 Utils.makeOR(timeline, groupingTable.get(groupID));
             } else {
                 if (groupID!=null) {
-                    groupingTable.put(groupID, timeline);
+                    groupingTable.put(groupID, timeline.clone());
                 } 
             }
         }
