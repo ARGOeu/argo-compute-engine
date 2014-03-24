@@ -37,7 +37,7 @@ install --directory %{buildroot}/etc
 install --directory %{buildroot}/etc/cron.d
 
 install --mode 755 helpers/ar-compute.py                        %{buildroot}/usr/libexec/ar-compute/
-install --mode 644 status-computation/*                         %{buildroot}/usr/libexec/ar-compute/pig/
+install --mode 644 status-computation/pig/*                     %{buildroot}/usr/libexec/ar-compute/pig/
 install --mode 644 status-computation/lib/*                     %{buildroot}/usr/libexec/ar-compute/lib/
 install --mode 644 status-computation/java/target/MyUDF-1.0.jar %{buildroot}/usr/libexec/ar-compute/MyUDF.jar
 install --mode 644 cronjobs/ar-compute-hourly                   %{buildroot}/etc/cron.d
