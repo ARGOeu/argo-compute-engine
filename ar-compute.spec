@@ -9,13 +9,13 @@ BuildArch: x86_64
 Source0:   %{name}-%{version}.tar.gz
 Requires: ar-sync
 Requires: python-pymongo
+Requires: python-argparse
 Requires: hive
 Requires: hbase
 Requires: hcatalog
 Requires: pig
 Requires: pig-udf-datafu
 Requires: java-1.6.0-openjdk
-Requires: python-argparse
 Conflicts: ar-local-compute
 
 %description
