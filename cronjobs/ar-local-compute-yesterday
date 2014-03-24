@@ -1,1 +1,0 @@
-5 0 * * * RUN_DATE=$(/bin/date --date "-1 day" +%Y-%m-%d) AR_COMPUTE_DIR=/usr/libexec/ar-compute ${AR_COMPUTE_DIR}/ar-compute-range.sh ${RUN_DATE} ${RUN_DATE}
