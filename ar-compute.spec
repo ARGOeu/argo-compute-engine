@@ -8,15 +8,14 @@ Group:     EGI/SA4
 BuildArch: x86_64
 Source0:   %{name}-%{version}.tar.gz
 Requires: ar-sync
-Requires: python-pymongo
 Requires: python-argparse
+Requires: python-pymongo
 Requires: hive
 Requires: hbase
 Requires: hcatalog
 Requires: pig
 Requires: pig-udf-datafu
 Requires: java-1.6.0-openjdk
-Conflicts: ar-local-compute
 
 %description
 Installs the core A/R Compute Engine
