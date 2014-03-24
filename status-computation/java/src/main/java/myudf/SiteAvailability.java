@@ -2,7 +2,6 @@ package myudf;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,8 +28,7 @@ public class SiteAvailability extends EvalFunc<Tuple> {
     private final TupleFactory mTupleFactory = TupleFactory.getInstance();
     private Map<String, String> weights = null;
     
-    private Integer nGroups = null;
-    private Map<String, Map<String, Integer>> hlps = null;
+    private Map<String, Map<String, Integer>> allAPs = null;
     private Map<String, Map<String, Object>> recalculationMap = null;
 
     @Override
@@ -42,8 +40,7 @@ public class SiteAvailability extends EvalFunc<Tuple> {
         Integer date = (Integer) tuple.get(5);
         String ngi = (String) tuple.get(6);
         
-        State[] output_table = null;
-        Map<Integer, State[]> ultimate_kickass_table = new HashMap<Integer, State[]>();
+        Map<Integer, State[]> groupingTable = new HashMap<Integer, State[]>();
         
         // Get a map that contains Sites as keys and the weight of each site as
         // a value.
@@ -53,18 +50,14 @@ public class SiteAvailability extends EvalFunc<Tuple> {
         
         // Connect to mongo and retrive a Map that contains Service Flavours as keys
         // and as values, a bag with the appropriate availability profiles.
-        if (this.hlps == null) {
+        if (this.allAPs == null) {
             String mongoHostname = mongoInfo.split(":",2)[0];
             int mongoPort = Integer.parseInt(mongoInfo.split(":",2)[1]);
             
-            this.hlps = ExternalResources.initAPs(mongoHostname, mongoPort);
+            this.allAPs = ExternalResources.initAPs(mongoHostname, mongoPort);
         }
         
-        Map<String, Integer> highLevelProfiles = this.hlps.get(availabilityProfile);
-        if (highLevelProfiles == null) {
-            return null;
-        }
-        this.nGroups = Collections.max(highLevelProfiles.values());
+        Map<String, Integer> currentAP = this.allAPs.get(availabilityProfile);
         
         // Get recalculation requests. Create arrays with UKNOWN states that will
         // be merged later on with the results.
@@ -75,11 +68,11 @@ public class SiteAvailability extends EvalFunc<Tuple> {
             this.recalculationMap = ExternalResources.getRecalculationRequests(mongoHostname, mongoPort, date, (int) this.quantum);
         }
         
-        String service_flavor;
+        String serviceFlavour;
         State[] timeline = new State[(int)this.quantum];
                 
         for (Tuple t : (DataBag) tuple.get(0)) {            
-            service_flavor = (String) t.get(4);
+            serviceFlavour = (String) t.get(4);
             String [] tmpa = ((String) t.get(2)).substring(1, ((String)t.get(2)).length() - 1).split(", ");
             
             for (int i = 0; i<tmpa.length; i++) {
@@ -96,37 +89,28 @@ public class SiteAvailability extends EvalFunc<Tuple> {
 //                Logger.getLogger(SiteAvailability.class.getName()).log(Level.SEVERE, null, ex);
 //            }
 
-            Integer group_id = highLevelProfiles.get(service_flavor);
+            Integer groupID = currentAP.get(serviceFlavour);
             
-            if (ultimate_kickass_table.containsKey(group_id)) {
-                Utils.makeOR(timeline, ultimate_kickass_table.get(group_id));
+            if (groupingTable.containsKey(groupID)) {
+                Utils.makeOR(timeline, groupingTable.get(groupID));
             } else {
-                if (group_id!=null) {
-                    ultimate_kickass_table.put(group_id, timeline);
+                if (groupID!=null) {
+                    groupingTable.put(groupID, timeline.clone());
                 } 
-//                else {
-//                    String msg = "Encounterd: " + service_flavor;
-//                    Logger.getLogger(SiteAvailability.class.getName()).log(Level.INFO, msg);
-//                }
             }
         }
         
         // We get the first table, we dont care about the first iteration
         // because we do an AND with self.
-        if (ultimate_kickass_table.size() > this.nGroups) {
-            // this.output_table = new String[24];
-            // Utils.makeMiss(this.output_table);
-            throw new UnsupportedOperationException("A site has more flavors than expected. Something is terribly wrong! " + ultimate_kickass_table.keySet());
-        } else {
-            if (ultimate_kickass_table.values().size() > 0) {
-                output_table = ultimate_kickass_table.values().iterator().next();
-                for (State[] tb : ultimate_kickass_table.values()) {
-                    Utils.makeAND(tb, output_table);
-                }
-            } else {
-                output_table = new State[(int)this.quantum];
-                Utils.makeMiss(output_table);
+        State[] outputTable = null;
+        if (groupingTable.values().size() > 0) {
+            outputTable = groupingTable.values().iterator().next();
+            for (State[] tb : groupingTable.values()) {
+                Utils.makeAND(tb, outputTable);
             }
+        } else {
+            outputTable = new State[(int) this.quantum];
+            Utils.makeMiss(outputTable);
         }
         
         // Get the weight of each site. If the weight is missing, mark it as 1.
@@ -142,12 +126,12 @@ public class SiteAvailability extends EvalFunc<Tuple> {
         if (ngiRecalcRequest != null) {
             // Check if this site is excluded.
             if (!Arrays.asList((String[]) ngiRecalcRequest.get("exclude")).contains(site)) {
-                Utils.putRecalculations((Entry<Integer, Integer>) ngiRecalcRequest.get("data"), output_table);
+                Utils.putRecalculations((Entry<Integer, Integer>) ngiRecalcRequest.get("data"), outputTable);
             }
         }
         
         // Count A/R for the site. Append weight in the end.
-        Tuple t = Utils.getARReport(output_table, mTupleFactory.newTuple(6), this.quantum);
+        Tuple t = Utils.getARReport(outputTable, mTupleFactory.newTuple(6), this.quantum);
         t.set(5, w);
         return t;
     }
