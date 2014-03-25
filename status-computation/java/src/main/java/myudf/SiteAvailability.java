@@ -144,7 +144,7 @@ public class SiteAvailability extends EvalFunc<Tuple> {
             Schema.FieldSchema up       = new Schema.FieldSchema("up",           DataType.DOUBLE);
             Schema.FieldSchema unknown  = new Schema.FieldSchema("unknown",      DataType.DOUBLE);
             Schema.FieldSchema down     = new Schema.FieldSchema("downtime",     DataType.DOUBLE);
-            Schema.FieldSchema weight   = new Schema.FieldSchema("weight",       DataType.CHARARRAY);
+            Schema.FieldSchema weight   = new Schema.FieldSchema("weight",       DataType.INTEGER);
 
             Schema p_metricS = new Schema();
             p_metricS.add(availA);
