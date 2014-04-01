@@ -28,6 +28,8 @@ cd /var/lib/ar-sync/
 
 RUN_DATE=$1
 RUN_DATE_UNDER=`echo $RUN_DATE | sed 's/-/_/g'`
+RUN_DATE_M1D=$(date -d "$RUN_DATE -1 day" +%Y-%m-%d)
+RUN_DATE_M1D_UNDER=`echo $RUN_DATE_M1D | sed 's/-/_/g'`
 
 mongoDBServer=$2
 # Variables that control the local or cluster excecution
@@ -40,7 +42,24 @@ echo "Delete $RUN_DATE from MongoDB"
 
 ### prepare poems
 echo "Prepare poems for $RUN_DATE"
-cat poem_sync_$RUN_DATE_UNDER.out \
+POEM_FILE=poem_sync_$RUN_DATE_UNDER.out
+if [ -e $POEM_FILE ] 
+then
+  echo "Found Poem file for date $RUN_DATE"
+else
+  echo "Could not locate a valid Poem file for date $RUN_DATE"
+  POEM_FILE=poem_sync_$RUN_DATE_M1D_UNDER.out
+  echo "Trying to use Poem file for date $RUN_DATE_M1D"
+  if [ -e $POEM_FILE ]
+  then
+    echo "Found Poem file for date $RUN_DATE_M1D"
+  else
+    echo "Could not locate a valid Poem file"
+    exit 1
+  fi
+fi
+
+cat $POEM_FILE \
     | cut -d $(echo -e '\x01') --output-delimiter=$(echo -e '\x01') -f "3 4 5 6" \
     | sort -u \
     | awk 'BEGIN {ORS="|"; RS="\n"} {print $0}' \
@@ -51,7 +70,24 @@ cat poem_sync_$RUN_DATE_UNDER.out \
 
 ### prepare topology
 echo "Prepare topology for $RUN_DATE"
-cat sites_$RUN_DATE_UNDER.out | sort -u > sites_$RUN_DATE_UNDER.out.clean
+TOPO_FILE=sites_$RUN_DATE_UNDER.out
+if [ -e $TOPO_FILE ]
+then
+  echo "Found Topology file for date $RUN_DATE"
+else
+  echo "Could not locate a valid Topology file for date $RUN_DATE"
+  TOPO_FILE=sites_$RUN_DATE_M1D_UNDER.out
+  echo "Trying to use Topology file for date $RUN_DATE_M1D"
+  if [ -e $TOPO_FILE ]
+  then
+    echo "Found Topology file for date $RUN_DATE_M1D"
+  else
+    echo "Could not locate a valid Topology file"
+    exit 1
+  fi
+fi
+
+cat $TOPO_FILE | sort -u > sites_$RUN_DATE_UNDER.out.clean
 cat sites_$RUN_DATE_UNDER.out.clean | sed 's/\x01/ /g' | grep " SRM " | sed 's/ SRM / SRMv2 /g' | sed 's/ /\x01/g' >> sites_$RUN_DATE_UNDER.out.clean
 cat sites_$RUN_DATE_UNDER.out.clean | awk 'BEGIN {ORS="|"; RS="\r\n"} {print $0}' | gzip -c | base64 | awk 'BEGIN {ORS=""} {print $0}' > sites_$RUN_DATE_UNDER.zip
 rm -f sites_$RUN_DATE_UNDER.out.clean
@@ -87,7 +123,24 @@ cat hlp.out \
 
 ### prepare weights
 echo "Prepare HEPSPEC for $RUN_DATE"
-cat hepspec_sync_$RUN_DATE_UNDER.out \
+HEPS_FILE=hepspec_sync_$RUN_DATE_UNDER.out
+if [ -e $HEPS_FILE ]
+then
+  echo "Found Hepspec file for date $RUN_DATE"
+else
+  echo "Could not locate a valid Hepspec file for date $RUN_DATE"
+  HEPS_FILE=hepspec_sync_$RUN_DATE_M1D_UNDER.out
+  echo "Trying to use Hepspec file for date $RUN_DATE_M1D"
+  if [ -e $HEPS_FILE ]
+  then
+    echo "Found Hepspec file for date $RUN_DATE_M1D"
+  else
+    echo "Could not locate a valid Hepspec file"
+    exit 1
+  fi
+fi
+
+cat $HEPS_FILE \
     | awk 'BEGIN {ORS="|"; RS="\r\n"} {print $0}' \
     | gzip -c \
     | base64 \
