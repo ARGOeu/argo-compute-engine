@@ -1,1 +1,1 @@
-59 * * * * RUN_DATE=$(/bin/date +%Y-%m-%d) AR_COMPUTE_DIR=/usr/libexec/ar-compute ${AR_COMPUTE_DIR}/ar-compute.py ${RUN_DATE}
+59 * * * * RUN_DATE=$(/bin/date -u +%Y-%m-%d) AR_COMPUTE_DIR=/usr/libexec/ar-compute ${AR_COMPUTE_DIR}/ar-compute.py ${RUN_DATE}
