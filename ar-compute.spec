@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.4.0
-Release: 3%{?dist}
+Version: 1.4.1
+Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -64,6 +64,9 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute-engine.conf
 
 %changelog
+* Tue Apr 01 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.4.1-1%{?dist}
+- Checks added for hepspec, topology and poem_sync files extistence on consumer node
+- Simplified cronjobs
 * Sat Mar 22 2014 Anastasios Andronidis <andronat@grid.auth.gr> - 1.4.0-1%{?dist}
 - New script stracture. Added python-argparse dep
 * Thu Mar 20 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.3.1-1%{?dist}
