@@ -7,7 +7,9 @@ import static org.junit.Assert.*;
 
 import org.apache.commons.io.IOUtils;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +26,7 @@ import com.google.gson.Gson;
 
 public class ExteralResourcesTest {
 
-	
+	public Gson gson; 
 	
 	
 	
@@ -34,7 +36,7 @@ public class ExteralResourcesTest {
 
 	@Before
 	public void setUp() throws Exception {
-		
+		gson = new Gson();
 	}
 
 	@After
@@ -48,6 +50,10 @@ public class ExteralResourcesTest {
 	   assertNotNull("Test file missing", getClass().getResource("/poems/poemsOut.txt"));
 	   assertNotNull("Test file missing", getClass().getResource("/downtimes/downtimesIn.txt"));
 	   assertNotNull("Test file missing", getClass().getResource("/downtimes/downtimesOut.txt"));
+	   assertNotNull("Test file missing", getClass().getResource("/weights/weightsIn.txt"));
+	   assertNotNull("Test file missing", getClass().getResource("/weights/weightsOut.txt"));
+	   assertNotNull("Test file missing", getClass().getResource("/aps/apsOut.txt"));
+	   assertNotNull("Test file missing", getClass().getResource("/recalc/recalcOut.txt"));
 	}
 	
 	
@@ -59,7 +65,7 @@ public class ExteralResourcesTest {
 		int quantum = 288;
 		result = ExternalResources.getDowntimes(downtimesString, quantum);
 		
-		Gson gson = new Gson(); 
+		 
 		String r_to_json = gson.toJson(result); 
 		
 		JSONAssert.assertEquals(resultString, r_to_json, false);
@@ -79,7 +85,7 @@ public class ExteralResourcesTest {
 		
 		
 		
-		Gson gson = new Gson(); 
+		
 		String r_to_json = gson.toJson(result); 
 		
 		JSONAssert.assertEquals(resultString, r_to_json, false);
@@ -94,26 +100,41 @@ public class ExteralResourcesTest {
 	
 		result = ExternalResources.initWeights(weightString);
 		
-		Gson gson = new Gson(); 
+		
 		String r_to_json = gson.toJson(result); 
 		
 		JSONAssert.assertEquals(resultString, r_to_json, false);
 	
 	}
 
-	@Ignore
-	public void testInitAPs() {
-		fail("Not yet implemented");
+	@Test
+	public void testInitAPs() throws FileNotFoundException, IOException, JSONException {
+		Map<String, Map<String, Integer>> result = new HashMap<String, Map<String, Integer>>();
+		String resultString = IOUtils.toString(this.getClass().getResourceAsStream("/aps/apsOut.txt"),"UTF-8");
+		result = ExternalResources.initAPs("localhost", 27017);
+	
+		String r_to_json = gson.toJson(result); 
+		
+		JSONAssert.assertEquals(resultString,r_to_json,false);
+		
 	}
 
 	@Ignore
-	public void testGetSFtoAvailabilityProfileNames() {
-		fail("Not yet implemented");
+	public void testGetSFtoAvailabilityProfileNames()  {
+		
+		
 	}
 
-	@Ignore
-	public void testGetRecalculationRequests() {
-		fail("Not yet implemented");
+	@Test
+	public void testGetRecalculationRequests() throws UnknownHostException, IOException, JSONException {
+		Map<String, Map<String, Object>> result = new HashMap<String, Map<String, Object>>(10);
+		result = ExternalResources.getRecalculationRequests("localhost", 27017, 20131209, 288);
+		String resultString = IOUtils.toString(this.getClass().getResourceAsStream("/recalc/recalcOut.txt"),"UTF-8");
+		
+		
+		String r_to_json = gson.toJson(result); 
+		
+		JSONAssert.assertEquals(resultString, r_to_json, false);
 	}
 
 }
