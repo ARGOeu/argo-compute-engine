@@ -3,7 +3,7 @@ package utils;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.math.BigDecimal;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +15,7 @@ import org.apache.pig.data.Tuple;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Ignore;
+
 import org.junit.Test;
 
 public class UtilsTest {
@@ -169,9 +169,9 @@ public class UtilsTest {
 	@Test
 	public void testGetTimeGroup() {
 		String sDate = "15:30:43Z";
-		int quantum=233;
+		int quantum=288; // Sampling Frequency - For 24h we sample on 5min intervals = 24*60 / 5 = 288 
 		int res = Utils.getTimeGroup(sDate, quantum);
-		assertTrue(res==155);
+		assertTrue(res==186);
 		
 	}
 
@@ -183,7 +183,7 @@ public class UtilsTest {
 		int rtA=20140402;
 		int rtB=20140312;
 		int rtC=20140401;
-		int quantum=233;
+		int quantum=288; // Sampling Frequency - For 24h we sample on 5min intervals = 24*60 / 5 = 288 
 		
 		try {
 			resA=Utils.determineTimeGroup(sDate, rtA,quantum);
@@ -194,8 +194,8 @@ public class UtilsTest {
 		}
 		
 		assertTrue(resA==0);
-		assertTrue(resB==232);
-		assertTrue(resC==155);
+		assertTrue(resB==287);
+		assertTrue(resC==186);
 			
 		
 	}
