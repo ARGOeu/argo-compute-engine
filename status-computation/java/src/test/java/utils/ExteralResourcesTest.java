@@ -6,6 +6,7 @@ package utils;
 import static org.junit.Assert.*;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.pig.data.DataBag;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -53,6 +54,7 @@ public class ExteralResourcesTest {
 	   assertNotNull("Test file missing", getClass().getResource("/weights/weightsIn.txt"));
 	   assertNotNull("Test file missing", getClass().getResource("/weights/weightsOut.txt"));
 	   assertNotNull("Test file missing", getClass().getResource("/aps/apsOut.txt"));
+	   assertNotNull("Test file missing", getClass().getResource("/aps/sf2aps.txt"));
 	   assertNotNull("Test file missing", getClass().getResource("/recalc/recalcOut.txt"));
 	}
 	
@@ -119,10 +121,14 @@ public class ExteralResourcesTest {
 		
 	}
 
-	@Ignore
-	public void testGetSFtoAvailabilityProfileNames()  {
+	@Test
+	public void testGetSFtoAvailabilityProfileNames() throws IOException, JSONException  {
+		Map<String, Map <String,DataBag>> result = new HashMap<String, Map <String, DataBag>>(10);
+		result = ExternalResources.getSFtoAvailabilityProfileNames("localhost", 27017);
+		String r_to_json = gson.toJson(result);
+		String resultString = IOUtils.toString(this.getClass().getResourceAsStream("/aps/sf2aps.txt"),"UTF-8");
 		
-		
+		JSONAssert.assertEquals(resultString, r_to_json, false);
 	}
 
 	@Test
