@@ -1,1 +1,1 @@
-5 0 * * * /usr/libexec/ar-compute/ar-compute.py $(/bin/date --utc --date "-1 day" +%Y-%m-%d)
+5 0 * * * root /usr/libexec/ar-compute/ar-compute.py $(/bin/date --utc --date "-1 day" +\%Y-\%m-\%d) >> /var/log/ar-compute/daily.log 2>&1
