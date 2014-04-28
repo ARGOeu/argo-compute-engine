@@ -1,0 +1,102 @@
+{
+  "ch.cern.sam.ROC": {
+    "GRAM5": {
+      "mContents": [
+        {
+          "isNull": false,
+          "mFields": [
+            "test-ap1"
+          ]
+        }
+      ],
+      "mSize": 1,
+      "mLastContentsSize": 1,
+      "avgTupleSize": 152,
+      "spillableRegistered": false
+    },
+    "SRM": {
+      "mContents": [
+        {
+          "isNull": false,
+          "mFields": [
+            "test-ap1"
+          ]
+        }
+      ],
+      "mSize": 1,
+      "mLastContentsSize": 1,
+      "avgTupleSize": 152,
+      "spillableRegistered": false
+    },
+    "ARC-CE": {
+      "mContents": [
+        {
+          "isNull": false,
+          "mFields": [
+            "test-ap1"
+          ]
+        }
+      ],
+      "mSize": 1,
+      "mLastContentsSize": 1,
+      "avgTupleSize": 152,
+      "spillableRegistered": false
+    },
+    "unicore6.TargetSystemFactory": {
+      "mContents": [
+        {
+          "isNull": false,
+          "mFields": [
+            "test-ap1"
+          ]
+        }
+      ],
+      "mSize": 1,
+      "mLastContentsSize": 1,
+      "avgTupleSize": 152,
+      "spillableRegistered": false
+    },
+    "Site-BDII": {
+      "mContents": [
+        {
+          "isNull": false,
+          "mFields": [
+            "test-ap1"
+          ]
+        }
+      ],
+      "mSize": 1,
+      "mLastContentsSize": 1,
+      "avgTupleSize": 152,
+      "spillableRegistered": false
+    },
+    "CREAM-CE": {
+      "mContents": [
+        {
+          "isNull": false,
+          "mFields": [
+            "test-ap1"
+          ]
+        }
+      ],
+      "mSize": 1,
+      "mLastContentsSize": 1,
+      "avgTupleSize": 152,
+      "spillableRegistered": false
+    },
+    "SRMv2": {
+      "mContents": [
+        {
+          "isNull": false,
+          "mFields": [
+            "test-ap1"
+          ]
+        }
+      ],
+      "mSize": 1,
+      "mLastContentsSize": 1,
+      "avgTupleSize": 152,
+      "spillableRegistered": false
+    }
+  }
+}
