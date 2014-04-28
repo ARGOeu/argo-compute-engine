@@ -209,7 +209,7 @@ public class ExteralResourcesTest {
 	@Test
 	public void testGetSFtoAvailabilityProfileNames() throws IOException, JSONException  {
 		Map<String, Map <String,DataBag>> result = new HashMap<String, Map <String, DataBag>>(10);
-		result = ExternalResources.getSFtoAvailabilityProfileNames("localhost", 27017);
+		result = ExternalResources.getSFtoAvailabilityProfileNames("localhost", 12345);
 		String r_to_json = gson.toJson(result);
 		String resultString = IOUtils.toString(this.getClass().getResourceAsStream("/aps/sf2aps.txt"),"UTF-8");
 		
