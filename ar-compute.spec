@@ -1,6 +1,6 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.4.2
+Version: 1.4.3
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
@@ -58,12 +58,14 @@ mvn clean
 %attr(0755,root,root) /usr/libexec/ar-compute/MyUDF.jar
 %attr(0750,root,root) /var/lib/ar-compute
 %attr(0750,root,root) /var/log/ar-compute
-%attr(0755,root,root) /etc/cron.d/ar-compute-hourly
-%attr(0755,root,root) /etc/cron.d/ar-compute-yesterday
-%attr(0755,root,root) /etc/cron.d/ar-compute-the-day-before-yesterday
+%attr(0644,root,root) /etc/cron.d/ar-compute-hourly
+%attr(0644,root,root) /etc/cron.d/ar-compute-yesterday
+%attr(0644,root,root) /etc/cron.d/ar-compute-the-day-before-yesterday
 %attr(0644,root,root) /etc/ar-compute-engine.conf
 
 %changelog
+* Mon Apr 28 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.4.3-1%{?dist}
+- Added logging to ar-compute cron scripts
 * Mon Apr 14 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.4.2-1%{?dist}
 - Fix in sfreports deletion
 * Tue Apr 01 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.4.1-1%{?dist}

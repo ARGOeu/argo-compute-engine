@@ -1,1 +1,1 @@
-59 * * * * /usr/libexec/ar-compute/ar-compute.py $(/bin/date --utc +%Y-%m-%d)
+59 * * * * root /usr/libexec/ar-compute/ar-compute.py $(/bin/date --utc +\%Y-\%m-\%d) >> /var/log/ar-compute/hourly.log 2>&1
