@@ -157,7 +157,7 @@ pig ${LOCAL_FLAG} -useHCatalog -param in_date=$RUN_DATE \
     -param topology_file1=sites_$RUN_DATE_UNDER.aa \
     -param topology_file2=sites_$RUN_DATE_UNDER.ab \
     -param topology_file3=sites_$RUN_DATE_UNDER.ac \
-    -param input_path=/var/lib/ar-sync/prefilter_$RUN_DATE_UNDER.out \
+    -param input_path=/var/lib/ar-sync/prefilter_ \
     -f /usr/libexec/ar-compute/pig/${LOCAL_PATH}calculator.pig
 
 rm -f poem_sync_$RUN_DATE_UNDER.out.clean
