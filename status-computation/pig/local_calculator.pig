@@ -151,7 +151,7 @@ vo_shrink = FOREACH vo
                GENERATE dates as d, vo as v, profile as p, availability as a,
                         reliability as r, up as up, unknown as u, downtime as dt;
 
-s_f_shrink = FOREACH service_flavors
+s_f_shrink = FOREACH service_flavours
                 GENERATE dates as dt, site as s, profile as p, production as pr,
                          monitored as m, scope as sc, ngi as n, infrastructure as i,
                          certification_status as cs, site_scope as ss, availability as a, 
