@@ -19,6 +19,7 @@ class StringToDate(argparse.Action):
 # main
 def main(args=None):
     work_path = '/usr/libexec/ar-compute/lib/'
+    prefilter_path = '/usr/libexec/ar-sync/'
     #read arguments from configuration file using standar library's configParser
     cfg_filename = '/etc/ar-compute-engine.conf'
     cfg_parser = SafeConfigParser()
@@ -42,26 +43,29 @@ def main(args=None):
     # Check if the user provided only 1 date
     if not args.end_date:
         args.end_date = args.start_date
-    
+
     # For each day
     for single_date in daterange(args.start_date, args.end_date):
         running_date_str = datetime.strftime(single_date, '%Y-%m-%d')
         
-        # If the -ni flag exists, we skip the input phase
         if not args.no_input and calculation_mode == 'cluster':
             check_call([os.path.join(work_path, 'send-raw-data.sh'), running_date_str])
         
+        if not args.no_input and calculation_mode == 'local':
+            check_call([os.path.join(prefilter_path, 'prefilter'), '-d', running_date_str])
+
         cmd = [os.path.join(work_path, 'calculate.sh'), running_date_str, mongo_host+":"+mongo_port]
         
         if calculation_mode == 'local':
             cmd.extend(["-x local", "local_"])
-        
+
         check_call(cmd)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("start_date", action=StringToDate, help="The first date of the calculation")
     parser.add_argument("end_date", nargs='?', action=StringToDate, help="The last date of the calculation (This argument is optional)")
+    # If the -ni flag exists, we skip the input phase
     parser.add_argument("-ni", "--no_input", default=False, action="store_true", help="Skip the input phase (only on cluster mode)")
     
     sys.exit(main(parser.parse_args()))
