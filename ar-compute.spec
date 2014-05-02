@@ -1,6 +1,6 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.4.3
+Version: 1.4.4
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
@@ -40,8 +40,8 @@ install --mode 644 status-computation/pig/*                     %{buildroot}/usr
 install --mode 644 status-computation/lib/*                     %{buildroot}/usr/libexec/ar-compute/lib/
 install --mode 644 status-computation/java/target/MyUDF-1.0.jar %{buildroot}/usr/libexec/ar-compute/MyUDF.jar
 install --mode 644 cronjobs/ar-compute-hourly                   %{buildroot}/etc/cron.d
-install --mode 644 cronjobs/ar-compute-yesterday                %{buildroot}/etc/cron.d
-install --mode 644 cronjobs/ar-compute-the-day-before-yesterday %{buildroot}/etc/cron.d
+install --mode 644 cronjobs/ar-compute-daily                    %{buildroot}/etc/cron.d
+install --mode 644 cronjobs/ar-compute-monthly                  %{buildroot}/etc/cron.d
 install --mode 644 conf/ar-compute-engine.conf                  %{buildroot}/etc/
 
 %clean
@@ -59,11 +59,13 @@ mvn clean
 %attr(0750,root,root) /var/lib/ar-compute
 %attr(0750,root,root) /var/log/ar-compute
 %attr(0644,root,root) /etc/cron.d/ar-compute-hourly
-%attr(0644,root,root) /etc/cron.d/ar-compute-yesterday
-%attr(0644,root,root) /etc/cron.d/ar-compute-the-day-before-yesterday
+%attr(0644,root,root) /etc/cron.d/ar-compute-daily
+%attr(0644,root,root) /etc/cron.d/ar-compute-monthly
 %attr(0644,root,root) /etc/ar-compute-engine.conf
 
 %changelog
+* Fri May 02 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.4.4-1%{?dist}
+- Re-organization of cron jobs and addition of monthly cron
 * Mon Apr 28 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.4.3-1%{?dist}
 - Added logging to ar-compute cron scripts
 * Mon Apr 14 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.4.2-1%{?dist}
