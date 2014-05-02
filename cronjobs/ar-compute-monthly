@@ -1,0 +1,2 @@
+# Run once a month at 03:05 in the morning of the third day of the month 
+5 3 3 * * root /usr/libexec/ar-compute/ar-compute.py $(/bin/date --date "-1 month" +\%Y-\%m-01) $(/bin/date --date "-1 month" +\%Y-\%m-$(cal $(/bin/date --date "-1 month" +\%m\ \%Y) |  tr "\n" " " | awk '{print $NF}')) >> /var/log/ar-compute/monthly.log 2>&1
