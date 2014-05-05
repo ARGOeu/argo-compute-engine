@@ -1,1 +1,0 @@
-25 0 * * * /usr/libexec/ar-compute/ar-compute.py $(/bin/date --utc --date "-2 day" +%Y-%m-%d)
