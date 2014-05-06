@@ -132,7 +132,11 @@ public class SiteAvailability extends EvalFunc<Tuple> {
         
         // Count A/R for the site. Append weight in the end.
         Tuple t = Utils.getARReport(outputTable, mTupleFactory.newTuple(6), this.quantum);
-        t.set(5, w);
+        
+	// Needed to maintain weights as integers afterall
+	int w_int = Integer.parseInt(w);
+	t.set(5, w_int);
+	
         return t;
     }
     
