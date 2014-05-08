@@ -181,7 +181,7 @@ public class ExteralResourcesTest {
 
 	@Test
 	public void testInitWeights() throws IOException, JSONException {
-		Map<String, String> result = new HashMap<String, String>();
+		Map<String, Integer> result = new HashMap<String, Integer>();
 		String weightString = IOUtils.toString(this.getClass().getResourceAsStream("/weights/weightsIn.txt"),"UTF-8");
 		String resultString = IOUtils.toString(this.getClass().getResourceAsStream("/weights/weightsOut.txt"),"UTF-8");
 	
