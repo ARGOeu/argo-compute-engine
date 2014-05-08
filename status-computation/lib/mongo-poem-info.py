@@ -5,10 +5,10 @@
 # example usage:
 #
 # Retrieve poem info from latest poem_sync:
-#	./gen_poem_list 
+#   ./mongo-poem-info.py 
 #   
 # Retrieve poem info from a specific date:	
-#   ./gen_poem_list 2012-12-24
+#   ./mongo-poem-info.py 2012-12-24
 
 import sys, os, fnmatch, datetime
 from pymongo import MongoClient
@@ -84,7 +84,7 @@ with open(poem_fn) as poem_fl:
 		
 print "Enviroment OK\nRequested Date: %s\nRequested Poem File:%s" %(poem_date,poem_fn)
 
-
+# Do the MongoDB related stuff...
 try:
 	#Connect to mongo and use AR database, clear and store
 	mongo_cl = MongoClient(str(mongo_host),int(mongo_port))
@@ -100,7 +100,6 @@ try:
 		mongo_db.poem_list.insert({"p" : item})
 	
 	print "Total (%d)" % (i+1)
-
 
 except Exception, e:
 	print "Trouble with MongoDB because of following error:\n%s" % e.message
