@@ -26,7 +26,7 @@ public class SiteAvailability extends EvalFunc<Tuple> {
     
     private final double quantum = 288.0;
     private final TupleFactory mTupleFactory = TupleFactory.getInstance();
-    private Map<String, String> weights = null;
+    private Map<String, Integer> weights = null;
     
     private Map<String, Map<String, Integer>> allAPs = null;
     private Map<String, Map<String, Object>> recalculationMap = null;
@@ -114,9 +114,9 @@ public class SiteAvailability extends EvalFunc<Tuple> {
         }
         
         // Get the weight of each site. If the weight is missing, mark it as 1.
-        String w = this.weights.get(site);
+        Integer w = this.weights.get(site);
         if (w == null) {
-            w = "1";
+            w = 1;
         }
         
         // Add recalculation data at site levels.
@@ -132,7 +132,9 @@ public class SiteAvailability extends EvalFunc<Tuple> {
         
         // Count A/R for the site. Append weight in the end.
         Tuple t = Utils.getARReport(outputTable, mTupleFactory.newTuple(6), this.quantum);
-        t.set(5, w);
+        // Needed to maintain weights as integers afterall
+	
+	    t.set(5, w);
         return t;
     }
     

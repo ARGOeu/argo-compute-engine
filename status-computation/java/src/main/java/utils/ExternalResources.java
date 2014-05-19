@@ -108,8 +108,8 @@ public class ExternalResources {
         return poems;
     }
 
-    public static Map<String, String> initWeights(final String weightsString) throws FileNotFoundException, IOException {
-        Map<String, String> weights = new HashMap<String, String>();
+    public static Map<String, Integer> initWeights(final String weightsString) throws FileNotFoundException, IOException {
+        Map<String, Integer> weights = new HashMap<String, Integer>();
 
         byte[] decodedBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(weightsString);
         BufferedReader in = new BufferedReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(decodedBytes))));
@@ -118,13 +118,14 @@ public class ExternalResources {
 
         StringTokenizer tokenizer = new StringTokenizer(input, "\\|");
 
-        String host, w;
+        String host;
+        Integer w;
         while (tokenizer.hasMoreTokens()) {
             // (hostname, weight)
             String[] tokens = tokenizer.nextToken().split("\u0001", 2);
             if (tokens.length > 1) {
                 host = tokens[0];
-                w = tokens[1];
+                w = Integer.parseInt(tokens[1]);
 
                 weights.put(host, w);
             }
