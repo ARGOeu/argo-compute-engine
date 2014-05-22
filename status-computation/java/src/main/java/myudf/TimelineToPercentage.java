@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package myudf;
 
 import java.io.IOException;
@@ -37,8 +33,8 @@ public class TimelineToPercentage extends EvalFunc<String> {
             int ma = -1;
             
             for (int g = 0; g < groupSize; g++) {
-                UP = UNKNOWN = DOWNTIME = 0;
-                State st = State.valueOf(tb[i*4+g]);
+                
+                State st = State.valueOf(tb[i*12+g]);
                 
                 switch (st) {
                     case OK:
