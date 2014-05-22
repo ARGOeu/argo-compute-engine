@@ -79,13 +79,13 @@ public class AddTopology extends EvalFunc<Tuple> {
         Tuple out = mTupleFactory.newTuple(9);
         String[] s = this.topology.get(key);
         if (s == null) {
-//            AddTopology.log.error("I dont have host: " + tuple.get(0) + " and flavor: " + (String) tuple.get(1));
-//            this.log.error("I dont have host: " + tuple.get(0) + " and flavor: " + (String) tuple.get(1));
-//            return out;
-           // Changed: throw new IOException("I dont have host: " + tuple.get(0) + " and flavor: " + (String) tuple.get(1));
-	   // Logger doesn't still work in distributed mode will have to check about that
-	   // Now just return an empty tuple
-	   return out;
+        	// AddTopology.log.error("I dont have host: " + tuple.get(0) + " and flavor: " + (String) tuple.get(1));
+        	// this.log.error("I dont have host: " + tuple.get(0) + " and flavor: " + (String) tuple.get(1));
+        	// return out;
+        	// Changed: throw new IOException("I dont have host: " + tuple.get(0) + " and flavor: " + (String) tuple.get(1));
+        	// Logger doesn't still work in distributed mode will have to check about that
+        	// Now just return an empty tuple
+        	return out;
         }
 
         for (int i = 0; i < s.length; i++) {
