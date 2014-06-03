@@ -39,9 +39,7 @@ public class PigServerTest {
 		pigServer = new PigServer(ExecType.LOCAL);
 		pigContext = pigServer.getPigContext();
 	
-	    assertTrue(pigServer!=null);
-	       
-		
+	    assertTrue(pigServer!=null);   
 	    
 	}
 
