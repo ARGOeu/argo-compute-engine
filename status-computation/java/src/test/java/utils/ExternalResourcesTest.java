@@ -134,8 +134,8 @@ public class ExternalResourcesTest {
 	@Test
 	public void testInitPOEMs() throws IOException, JSONException {
 		Map<String, ArrayList<String>> result = new HashMap<String, ArrayList<String>>();
-		String poemString = IOUtils.toString(this.getClass().getResourceAsStream("/poems/poemsIn.txt"),"UTF-8");
-		String resultString = IOUtils.toString(this.getClass().getResourceAsStream("/poems/poemsOut.txt"),"UTF-8");
+		String poemString = IOUtils.toString(this.getClass().getResourceAsStream("/sync/poems.in.gz.base64"),"UTF-8");
+		String resultString = IOUtils.toString(this.getClass().getResourceAsStream("/sync/poems.out.json"),"UTF-8");
 				
 		result = ExternalResources.initPOEMs(poemString);
 		
