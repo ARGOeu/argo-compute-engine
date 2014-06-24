@@ -18,13 +18,36 @@ public class Utils {
         }
     }
 
-    public static void makeOR(State[] table1, State[] table2) throws IOException {
+    /*public static void makeOR(State[] table1, State[] table2) throws IOException {
         for (int i = 0; i < table1.length; i++) {
             if (table1[i].ordinal() < table2[i].ordinal()) {
                 table2[i] = table1[i];
             }
         }
+    }*/
+    
+    
+    public static void makeOR(State[] table1, State[] table2) throws IOException {
+		
+        for (int i = 0; i < table1.length; i++) {
+            if (getORState(table1[i]) < getORState(table2[i])) {
+                table2[i] = table1[i];
+            }
+        }
+        
     }
+    
+    private static int getORState(State st) {
+		
+		if (st.equals(State.OK)) return 0;
+		else if (st.equals(State.WARNING)) return 1;
+		else if (st.equals(State.CRITICAL)) return 2;
+		else if (st.equals(State.UNKNOWN)) return 3;
+		else if (st.equals(State.MISSING)) return 4;
+		else if (st.equals(State.DOWNTIME)) return 5;
+		return -1;
+	
+	}
 
     public static void makeAND(State[] table1, State[] table2) throws IOException {
         for (int i = 0; i < table1.length; i++) {

@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package myudf;
 
 import java.io.IOException;
@@ -51,7 +45,9 @@ public class SFAvailability extends EvalFunc<DataBag> {
                 timeline[i] = State.valueOf(tmpa[i]);
             }
             
-            output_table = timeline;
+            // timeline will change but output_table must retain previous timeline
+            // -- this is done for the case that we have similar service_flavours so we need to OR them
+            output_table = timeline.clone(); 
         } else {
             throw new IOException("Empty Bag! Something is wrong with the input!");
         }
@@ -73,9 +69,19 @@ public class SFAvailability extends EvalFunc<DataBag> {
                 
                 out_bag.add(t_o);
                 prev_service_flavor = (String) t.get(4);
+                
+                // timeline will change but output_table must retain previous timeline
+                // -- this is done for the case that we have similar service_flavours so we need to OR them
+                output_table = timeline.clone(); 
             }
             
         }
+        
+        // Handling the last service flavour in line
+        Tuple t_o = Utils.getARReport(output_table, mTupleFactory.newTuple(6), this.quantum);
+        t_o.set(5, prev_service_flavor);
+        out_bag.add(t_o);
+        
         
         return out_bag;
     }

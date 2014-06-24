@@ -1,4 +1,4 @@
-package j2pig;
+package TestIO;
 
 import java.util.Map;
 
@@ -17,7 +17,20 @@ import com.google.gson.JsonParser;
 
 public class JsonToPig {
 
-	
+	public static Tuple dblToTuple (double [] arr)
+	{
+		if (arr.length < 1) return null;
+		
+		TupleFactory tf = TupleFactory.getInstance();
+		Tuple t = tf.newTuple();
+		
+		for (int i=0;i<arr.length;i++)
+		{
+			t.append(arr[i]);
+		}
+		
+		return t;
+	}
 	public static Tuple jsonToTuple(String json_str) throws ExecException
 	{
 		JsonParser parser = new JsonParser();
