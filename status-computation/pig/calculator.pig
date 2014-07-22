@@ -158,7 +158,7 @@ sites_shrink = FOREACH sites
                             availability as a, reliability as r, up as up, unknown as u, downtime as d, weight as hs;
 
 service_status_shrink = FOREACH service_status
-                            GENERATE dates as d, hostname as h, service_flavour as sf,
+                            GENERATE dates as dt, hostname as h, service_flavour as sf,
                                      profile as p, vos, timeline as tm;
 
 vo_shrink = FOREACH vo

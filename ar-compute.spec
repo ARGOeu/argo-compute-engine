@@ -1,6 +1,6 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.4.4
+Version: 1.4.5
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
@@ -64,6 +64,8 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute-engine.conf
 
 %changelog
+* Tue Jul 22 2014 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.4.5-1%{?dist}
+- Mongo field schema changes (date field: d->dt)
 * Fri May 02 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.4.4-1%{?dist}
 - Re-organization of cron jobs and addition of monthly cron
 * Mon Apr 28 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.4.3-1%{?dist}
