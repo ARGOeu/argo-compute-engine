@@ -63,11 +63,11 @@ SET mapred.reduce.tasks.speculative.execution false
 
 --- Get beacons (logs from previous day)
 beacons_r = LOAD 'raw_data' USING org.apache.hcatalog.pig.HCatLoader();
-beacons = FILTER beacons_r BY dates=='$PREV_DATE' AND profile=='ch.cern.sam.ROC_CRITICAL';
+beacons = FILTER beacons_r BY dates=='$PREVDATE' AND (profile=='ch.cern.sam.ROC_CRITICAL' OR profile=='ch.cern.sam.CLOUD-MON');
 
 --- Get current logs
 current_logs_r = LOAD 'raw_data' USING org.apache.hcatalog.pig.HCatLoader();
-current_logs = FILTER current_logs_r BY dates=='$CUR_DATE' AND profile=='ch.cern.sam.ROC_CRITICAL';
+current_logs = FILTER current_logs_r BY dates=='$CUR_DATE' AND (profile=='ch.cern.sam.ROC_CRITICAL' OR profile=='ch.cern.sam.CLOUD-MON');
 
 --- Merge current logs with beacons
 logs = UNION current_logs, beacons;
@@ -98,9 +98,11 @@ timetables = FOREACH profiled_logs {
 topologed_j = FOREACH timetables GENERATE date, profile, timeline, hostname, service_flavour, vos,
                  FLATTEN(AT(hostname, service_flavour, '$TOPOLOGY', '$TOPOLOGY2', '$TOPOLOGY3', '$mongoServer', profile));
 
+
 --- We should delete rows with no APs. Then we need to split the bag, and create lines with individual APs
 topologed = FOREACH (filter topologed_j by availability_profiles is not null)
                 GENERATE $0..$13, FLATTEN(availability_profiles) as availability_profile;
+
 
 --- Group rows by important attributes. Note the date column, will be used for making a distinction in each day
 --- After the grouping, we calculate AR for each site and append the weights
@@ -114,6 +116,7 @@ sites = FOREACH (GROUP topologed BY (date, site, profile, production, monitored,
             FLATTEN(SA(t, group.availability_profile, '$WEIGHTS', group.site, '$mongoServer', group.date, group.ngi)) as (availability, reliability, up, unknown, downtime, weight);
 };
 
+
 --- Status computation for services
 service_status = FOREACH timetables GENERATE date as dates, hostname, service_flavour, profile, vos, myudf.TimelineToPercentage(*) as timeline;
 
@@ -121,7 +124,7 @@ service_status = FOREACH timetables GENERATE date as dates, hostname, service_fl
 vo_s = FOREACH topologed GENERATE hostname, service_flavour, profile, date, FLATTEN(vos) as vo, timeline, availability_profile;
 
 vo = FOREACH (GROUP vo_s BY (vo, profile, availability_profile, date) PARALLEL 4)
-        GENERATE group.vo as vo, group.profile as profile, group.date as dates,
+        GENERATE group.vo as vo, group.profile as profile, group.availability_profile as a_profile,  group.date as dates,
             FLATTEN(VOA(vo_s, group.availability_profile, '$mongoServer')) as (availability, reliability, up, unknown, downtime);
 
 --- Group rows by important attributes. Note the date column, will be used for making a distinction in each day
@@ -134,6 +137,10 @@ service_flavours = FOREACH (GROUP topologed_j BY (date, site, profile, productio
         group.certification_status as certification_status, group.site_scope as site_scope,
         FLATTEN(SFA(t)) as (availability, reliability, up, unknown, downtime, service_flavour);
 };
+
+
+
+
 
 --- OUTPUT SECTION
 
@@ -151,18 +158,21 @@ sites_shrink = FOREACH sites
                             availability as a, reliability as r, up as up, unknown as u, downtime as d, weight as hs;
 
 service_status_shrink = FOREACH service_status
-                            GENERATE dates as d, hostname as h, service_flavour as sf,
+                            GENERATE dates as dt, hostname as h, service_flavour as sf,
                                      profile as p, vos, timeline as tm;
 
 vo_shrink = FOREACH vo
-               GENERATE dates as d, vo as v, profile as p, availability as a,
-                        reliability as r, up as up, unknown as u, downtime as dt;
+               GENERATE dates as dt, vo as v, profile as p, a_profile as ap, availability as a,
+                        reliability as r, up as up, unknown as u, downtime as d;
 
 s_f_shrink = FOREACH service_flavours
                 GENERATE dates as dt, site as s, profile as p, production as pr,
                          monitored as m, scope as sc, ngi as n, infrastructure as i,
                          certification_status as cs, site_scope as ss, availability as a, 
                          reliability as r, up as up, unknown as u, downtime as d, service_flavour as sf;
+
+
+
 
 STORE sites_shrink          INTO 'mongodb://$mongoServer/AR.sites'     USING com.mongodb.hadoop.pig.MongoInsertStorage();
 STORE service_status_shrink INTO 'mongodb://$mongoServer/AR.timelines' USING com.mongodb.hadoop.pig.MongoInsertStorage();

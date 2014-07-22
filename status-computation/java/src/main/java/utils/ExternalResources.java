@@ -247,15 +247,15 @@ public class ExternalResources {
         
         // We need to take all recalculatios that include the date we calculate.
         DBCursor cursor = collection.find(new BasicDBObject("$where", 
-            String.format("'%s' <= this.end_time.split('T')[0].replace(/-/g,'') || '%s' >= this.start_time.split('T')[0].replace(/-/g,'')", date, date)));
+            String.format("'%s' <= this.et.split('T')[0].replace(/-/g,'') || '%s' >= this.st.split('T')[0].replace(/-/g,'')", date, date)));
 
         for (DBObject dbo : cursor) {
-            String ngi = (String) dbo.get("ngi");
-            int size = ((BasicDBList) dbo.get("exclude_site")).size();
-            String[] excludedSites = ((BasicDBList) dbo.get("exclude_site")).toArray(new String[size]);
+            String ngi = (String) dbo.get("n");
+            int size = ((BasicDBList) dbo.get("es")).size();
+            String[] excludedSites = ((BasicDBList) dbo.get("es")).toArray(new String[size]);
             
-            int startGroup = Utils.determineTimeGroup((String) dbo.get("start_time"), date, quantum);
-            int endGroup = Utils.determineTimeGroup((String) dbo.get("end_time"), date, quantum);
+            int startGroup = Utils.determineTimeGroup((String) dbo.get("st"), date, quantum);
+            int endGroup = Utils.determineTimeGroup((String) dbo.get("et"), date, quantum);
             
             // data object is Entry<Integer, Integer>
             // exclude object is String[]
