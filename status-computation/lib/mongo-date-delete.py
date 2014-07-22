@@ -26,6 +26,6 @@ db = client.AR
 date = int(sys.argv[1].replace("-",""))
 
 db.sites.remove({"dt": date})
-db.timelines.remove({"d": date})
-db.voreports.remove({"d": date})
+db.timelines.remove({"dt": date})
+db.voreports.remove({"dt": date})
 db.sfreports.remove({"dt": date})
