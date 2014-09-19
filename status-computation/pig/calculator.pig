@@ -172,9 +172,15 @@ s_f_shrink = FOREACH service_flavours
                          reliability as r, up as up, unknown as u, downtime as d, service_flavour as sf;
 
 
+--- STATUS RESULTS 
+--- prepare data for storing status results in MongoDB
+
+status_results = FOREACH logs
+                GENERATE dates as dt, time_stamp as t, profile as p, vo as v, hostname as h, service_flavour as sf, metric as m, status as s;
 
 
 STORE sites_shrink          INTO 'mongodb://$mongoServer/AR.sites'     USING com.mongodb.hadoop.pig.MongoInsertStorage();
 STORE service_status_shrink INTO 'mongodb://$mongoServer/AR.timelines' USING com.mongodb.hadoop.pig.MongoInsertStorage();
 STORE vo_shrink             INTO 'mongodb://$mongoServer/AR.voreports' USING com.mongodb.hadoop.pig.MongoInsertStorage();
 STORE s_f_shrink            INTO 'mongodb://$mongoServer/AR.sfreports' USING com.mongodb.hadoop.pig.MongoInsertStorage();
+STORE status_results        INTO 'mongodb://$mongoServer/AR.status'    USING com.mongodb.hadoop.pig.MongoInsertStorage();
