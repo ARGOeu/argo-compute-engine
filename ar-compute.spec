@@ -1,6 +1,6 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.4.5
+Version: 1.4.6
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
@@ -64,6 +64,8 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute-engine.conf
 
 %changelog
+* Thu Nov 13 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.4.6-1%{?dist}
+- Removal of depricated call in calculator.sh
 * Tue Jul 22 2014 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.4.5-1%{?dist}
 - Mongo field schema changes (date field: d->dt)
 * Fri May 02 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.4.4-1%{?dist}

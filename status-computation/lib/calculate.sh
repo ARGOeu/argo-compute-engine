@@ -112,15 +112,6 @@ cat downtimes_cache_$RUN_DATE.out \
     > downtimes_$RUN_DATE.zip
 rm -f downtimes_cache_$RUN_DATE.out 
 
-### prepare high level profiles
-echo "Prepare High Level Profiles for $RUN_DATE"
-cat hlp.out \
-    | awk 'BEGIN {ORS="|"; RS="\n"} {print $0}' \
-    | gzip -c \
-    | base64 \
-    | awk 'BEGIN {ORS=""} {print $0}' \
-    > hlp_$RUN_DATE_UNDER.zip
-
 ### prepare weights
 echo "Prepare HEPSPEC for $RUN_DATE"
 HEPS_FILE=hepspec_sync_$RUN_DATE_UNDER.out
