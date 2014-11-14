@@ -141,7 +141,6 @@ cat $HEPS_FILE \
 ### run calculator.pig
 pig ${LOCAL_FLAG} -useHCatalog -param in_date=$RUN_DATE \
     -param mongoServer=$mongoDBServer \
-    -param hlp=hlp_$RUN_DATE_UNDER.zip \
     -param weights_file=hepspec_sync_$RUN_DATE_UNDER.zip \
     -param downtimes_file=downtimes_$RUN_DATE.zip \
     -param poem_file=poem_sync_$RUN_DATE_UNDER.out.clean \
@@ -154,5 +153,4 @@ pig ${LOCAL_FLAG} -useHCatalog -param in_date=$RUN_DATE \
 rm -f poem_sync_$RUN_DATE_UNDER.out.clean
 rm -f downtimes_$RUN_DATE.zip
 rm -f hepspec_sync_$RUN_DATE_UNDER.zip
-rm -f hlp_$RUN_DATE_UNDER.zip
 rm -f sites_$RUN_DATE_UNDER.aa sites_$RUN_DATE_UNDER.ab sites_$RUN_DATE_UNDER.ac

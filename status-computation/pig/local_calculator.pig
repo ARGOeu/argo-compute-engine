@@ -49,7 +49,6 @@ define SFA myudf.SFAvailability();
 %declare TOPOLOGY3  `cat $topology_file3`
 %declare POEMS      `cat $poem_file`
 %declare WEIGHTS    `cat $weights_file`
-%declare HLP        `echo ""` --- `cat $hlp` --- high level profile.
 
 SET mapred.child.java.opts -Xmx4048m
 SET mapred.map.tasks.speculative.execution false
