@@ -33,33 +33,31 @@ public class PrevState extends EvalFunc<Tuple> {
 		if ( (endpoint_metric.equals("")) ) {
 			input.append(lastState); //We've jumped to another metric
 			endpoint_metric = sb.toString(); //Set the endpoint_metric info
-		} else if (!(endpoint_metric.equals(sb.toString()))){
+		} else if (!(endpoint_metric.equals(sb.toString()))) {
 			input.append(lastState);
 			endpoint_metric = sb.toString();
 			
-		} else
-		{
+		} else {
 			input.append(prevState);
-			
-			// Calculate integer of date and time
-			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'");
-		    Date parsedDate = null;
-			try {
-				parsedDate = dateFormat.parse((String) input.get(1));
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		    Calendar cal = Calendar.getInstance();
-		    cal.setTime(parsedDate);
-		    int date_int = (cal.get(Calendar.YEAR) * 10000 ) + ((cal.get(Calendar.MONTH) + 1)*100) + (cal.get(Calendar.DAY_OF_MONTH));
-		    int time_int = (cal.get(Calendar.HOUR_OF_DAY) * 10000) + ((cal.get(Calendar.MINUTE)*100)) + (cal.get(Calendar.SECOND));
-		    
-		    input.append(date_int);
-		    input.append(time_int);
 		
 		}
 		
+		// Calculate integer of date and time
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'");
+	    Date parsedDate = null;
+		try {
+			parsedDate = dateFormat.parse((String) input.get(0));
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    Calendar cal = Calendar.getInstance();
+	    cal.setTime(parsedDate);
+	    int date_int = (cal.get(Calendar.YEAR) * 10000 ) + ((cal.get(Calendar.MONTH) + 1)*100) + (cal.get(Calendar.DAY_OF_MONTH));
+	    int time_int = (cal.get(Calendar.HOUR_OF_DAY) * 10000) + ((cal.get(Calendar.MINUTE)*100)) + (cal.get(Calendar.SECOND));
+	    
+	    input.append(date_int);
+	    input.append(time_int);
 		// set the new previous state before going on
 		prevState = (String) input.get(6);
 				
@@ -81,8 +79,8 @@ public class PrevState extends EvalFunc<Tuple> {
         Schema.FieldSchema summary = new Schema.FieldSchema("summary", DataType.CHARARRAY);
         Schema.FieldSchema message = new Schema.FieldSchema("message", DataType.CHARARRAY);
         Schema.FieldSchema prev_state = new Schema.FieldSchema("prev_state", DataType.CHARARRAY);
-        Schema.FieldSchema date_int = new Schema.FieldSchema("date_int", DataType.CHARARRAY);
-        Schema.FieldSchema time_int = new Schema.FieldSchema("time_int", DataType.CHARARRAY);
+        Schema.FieldSchema date_int = new Schema.FieldSchema("date_int", DataType.INTEGER);
+        Schema.FieldSchema time_int = new Schema.FieldSchema("time_int", DataType.INTEGER);
         
         Schema status_detail = new Schema();
         
