@@ -45,7 +45,6 @@ define SFA myudf.SFAvailability();
 %declare TOPOLOGY3  `cat $topology_file3`
 %declare POEMS      `cat $poem_file`
 %declare WEIGHTS    `cat $weights_file`
-%declare HLP        `cat $hlp ` --- `cat $hlp` --- high level profiles.
 
 ---SET mapred.min.split.size 3000000;
 ---SET mapred.max.split.size 3000000;
