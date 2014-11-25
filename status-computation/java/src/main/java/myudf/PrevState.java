@@ -43,7 +43,7 @@ public class PrevState extends EvalFunc<Tuple> {
 		}
 		
 		// Calculate integer of date and time
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 	    Date parsedDate = null;
 		try {
 			parsedDate = dateFormat.parse((String) input.get(0));
@@ -51,10 +51,16 @@ public class PrevState extends EvalFunc<Tuple> {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 	    Calendar cal = Calendar.getInstance();
 	    cal.setTime(parsedDate);
+
+	    int the_hours = cal.get(Calendar.HOUR);
+	    int am = cal.get(Calendar.AM_PM);
+	    if (am>0) the_hours = the_hours + 12;
+	    
 	    int date_int = (cal.get(Calendar.YEAR) * 10000 ) + ((cal.get(Calendar.MONTH) + 1)*100) + (cal.get(Calendar.DAY_OF_MONTH));
-	    int time_int = (cal.get(Calendar.HOUR_OF_DAY) * 10000) + ((cal.get(Calendar.MINUTE)*100)) + (cal.get(Calendar.SECOND));
+	    int time_int = (the_hours * 10000) + ((cal.get(Calendar.MINUTE)*100)) + (cal.get(Calendar.SECOND));
 	    
 	    input.append(date_int);
 	    input.append(time_int);
@@ -69,12 +75,12 @@ public class PrevState extends EvalFunc<Tuple> {
     public Schema outputSchema(Schema input) {
         Schema.FieldSchema timestamp = new Schema.FieldSchema("timestamp", DataType.CHARARRAY);
         Schema.FieldSchema roc = new Schema.FieldSchema("roc", DataType.CHARARRAY);
-        Schema.FieldSchema nagios_host = new Schema.FieldSchema("nagios_host", DataType.CHARARRAY);
-        Schema.FieldSchema metric_type = new Schema.FieldSchema("metric_type", DataType.CHARARRAY);
+        Schema.FieldSchema monitoring_box = new Schema.FieldSchema("monitoring_box", DataType.CHARARRAY);
+        Schema.FieldSchema metric = new Schema.FieldSchema("metric", DataType.CHARARRAY);
         Schema.FieldSchema service_type = new Schema.FieldSchema("service_type", DataType.CHARARRAY);
         Schema.FieldSchema hostname = new Schema.FieldSchema("hostname", DataType.CHARARRAY);
-        Schema.FieldSchema metric_status = new Schema.FieldSchema("metric_status", DataType.CHARARRAY);
-        Schema.FieldSchema vo_name = new Schema.FieldSchema("vo_name", DataType.CHARARRAY);
+        Schema.FieldSchema status = new Schema.FieldSchema("status", DataType.CHARARRAY);
+        Schema.FieldSchema vo = new Schema.FieldSchema("vo", DataType.CHARARRAY);
         Schema.FieldSchema vo_fqan = new Schema.FieldSchema("vo_fqan", DataType.CHARARRAY);
         Schema.FieldSchema summary = new Schema.FieldSchema("summary", DataType.CHARARRAY);
         Schema.FieldSchema message = new Schema.FieldSchema("message", DataType.CHARARRAY);
@@ -82,16 +88,16 @@ public class PrevState extends EvalFunc<Tuple> {
         Schema.FieldSchema date_int = new Schema.FieldSchema("date_int", DataType.INTEGER);
         Schema.FieldSchema time_int = new Schema.FieldSchema("time_int", DataType.INTEGER);
         
-        Schema status_detail = new Schema();
+       	Schema status_detail = new Schema();
         
         status_detail.add(timestamp);
         status_detail.add(roc);
-        status_detail.add(nagios_host );
-        status_detail.add(metric_type);
+        status_detail.add(monitoring_box);
+        status_detail.add(metric);
         status_detail.add(service_type);
         status_detail.add(hostname);
-        status_detail.add(metric_status);
-        status_detail.add(vo_name);
+        status_detail.add(status);
+        status_detail.add(vo);
         status_detail.add(vo_fqan);
         status_detail.add(summary);
         status_detail.add(message);
