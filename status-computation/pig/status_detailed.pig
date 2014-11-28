@@ -1,73 +1,55 @@
-
--- OUR CUSTOM UDF 
-REGISTER /usr/libexec/ar-compute/MyUDF.jar
--- FOR AVRO USAGE ANS SUPPORT
-REGISTER /usr/libexec/ar-compute/piggybank.jar
+REGISTER /usr/libexec/ar-compute/lib/piggybank.jar
 REGISTER /usr/libexec/ar-compute/lib/avro-1.7.4.jar
-REGISTER /usr/libexec/ar-compute/lib/jackson-mapper-asl-1.8.8.jar
 REGISTER /usr/libexec/ar-compute/lib/jackson-core-asl-1.8.8.jar
+REGISTER /usr/libexec/ar-compute/lib/jackson-mapper-asl-1.8.8.jar
 REGISTER /usr/libexec/ar-compute/lib/snappy-java-1.0.4.1.jar
 REGISTER /usr/libexec/ar-compute/lib/json-simple-1.1.jar
--- FOR MONGO USAGE ANS SUPPORT
+
 REGISTER /usr/libexec/ar-compute/lib/mongo-hadoop-core.jar
 REGISTER /usr/libexec/ar-compute/lib/mongo-hadoop-pig.jar
 REGISTER /usr/libexec/ar-compute/lib/mongo-java-driver-2.11.4.jar
 
--- DEFINE THE PREVIOUS STATE UDF 
-define PREVSTATE myudf.PrevState();
+REGISTER /usr/libexec/ar-compute/MyUDF.jar
 
--- LOAD YESTERDAYS STATUSES FROM AN AVRO FILE
-STATUS_OLD_R = LOAD '$prev_status' USING org.apache.pig.piggybank.storage.avro.AvroStorage();
--- KEEP ONLY RELEVANT FIELDS
-STATUS_OLD = foreach STATUS_OLD_R generate $0,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10;
+define PREVSTATE myudf.PrevState('$mongo_host','$mongo_port');
 
--- LOAD TODAYS STATUSES FROM AN AVRO FILE
-STATUS_R = LOAD '$daily_status' USING org.apache.pig.piggybank.storage.avro.AvroStorage();
--- KEEP ONLY RELEVANT FIELDS
-STATUS = foreach STATUS_R generate $0,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10;
+-- Load yesterday's statuses
+YESTERDAY_RAW = LOAD '$prev_status' using org.apache.pig.piggybank.storage.avro.AvroStorage();
+-- Load today's statuses 
+TODAY_RAW = LOAD '$today_status' using org.apache.pig.piggybank.storage.avro.AvroStorage();
 
--- GROUP YESTERDAYS COLLECTION BY HOSTNAME+SERVICE TYPE + METRIC AND ARRANGE ORDER ROWS BY TIMESTAMP
--- USE LIMIT 1 TO FIND THE LATEST STATUS REPORT FOR EACH METRIC
-LAST =	FOREACH  (GROUP STATUS_OLD BY (hostName,serviceType,metricName)) {
-	timeline = ORDER STATUS_OLD by timestamp DESC;
+-- Trim yesterday statuses keep relevant fields 
+YESTERDAY = FOREACH YESTERDAY_RAW GENERATE vo,vo_fqan,monitoring_box,roc,service_type,hostname,metric,timestamp,status,summary,message;
+-- Trim today's statuses keep relevant fields
+TODAY  = FOREACH TODAY_RAW GENERATE vo,vo_fqan,monitoring_box,roc,service_type,hostname,metric,timestamp,status,summary,message;
+
+-- Group yesterday statuses, order each metric by descending timestamp
+-- Select Latest metrics to calculate first previous state
+LAST =	FOREACH  (GROUP YESTERDAY BY (vo,vo_fqan,monitoring_box,roc,service_type,hostname,metric)) {
+	timeline = ORDER YESTERDAY by timestamp DESC;
 	big_t = limit timeline 1;
-	GENERATE FLATTEN(big_t) as (timestamp,ROC,nagios_host,metricName,serviceType,hostName,metricStatus,vo_name,vo_fqan,summary,message);
+	GENERATE FLATTEN(big_t) as (vo,vo_fqan,monitoring_box,roc,service_type,hostname,metric,timestamp,status,summary,message);
 
 };
 
--- ADD YESTERDAYS LAST STATUSES WITH TODAYS STATUSES BY PERFORMING A UNION
-STATUS_FULL = UNION STATUS , LAST;
--- ORDER DATA 
-STATUS_ORDER = ORDER STATUS_FULL BY hostName,serviceType,metricName,timestamp ASC;
+-- Union todays statuses with latest statuses from yesterday 
+STATUS_FULL = UNION LAST, TODAY;
 
--- CALL UDF FOR EACH ROW SEQUENTIALLY TO CALCULATE PREVIOUS STATES
-STATUS_PR = FOREACH STATUS_ORDER GENERATE FLATTEN(PREVSTATE(timestamp,ROC,nagios_host,metricName,serviceType,hostName,metricStatus,voName,voFqan,summary,message)) PARALLEL 1;
+-- Group by hostname,metric to create timelines
+STATUS_GROUP =	FOREACH  (GROUP STATUS_FULL BY (vo,vo_fqan,monitoring_box,roc,service_type,hostname,metric)) {
+	t = ORDER STATUS_FULL BY timestamp ASC; 
+	GENERATE  group.vo, group.vo_fqan, group.monitoring_box, group.roc, group.service_type, group.hostname, group.metric, t.(timestamp,status,summary,message);
+};
 
--- CLEAR YESTERDAYS' ROW ENTRIES
-STATUS_C = FILTER STATUS_PR BY date_int != (int)'$lastdate';
-
--- LOAD SITES FILE 
-SITES = LOAD '$sites' using PigStorage('\u0001') as (hostName:chararray,serviceType:chararray,production:chararray,monitored:chararray,scope:chararray,site:chararray,ngi:chararray,infrastructure:chararray,certificationStatus:chararray,sitescope:chararray);
--- KEEP ONLY THE FIELDS WE NEED FOR JOIN (HOSTNAME,SITE)
-SITES_S = FOREACH SITES GENERATE hostName,site;
-
-
--- PERFORM A JOIN OF STATUS ROWS WITH SITES_S BY HOSTNAME -- EACH STATUS ROW GETS THE SITE INFORMATION
-STATUS_SITE = JOIN STATUS_C by hostname LEFT OUTER, SITES_S by hostName;
-
--- PREPARE FIELDS FOR MONGO STORAGE (2-3 CHARS MAX)
-STATUS_FIN = FOREACH STATUS_SITE GENERATE STATUS_C::status_detail::timestamp as ts, STATUS_C::status_detail::roc as roc, 
-					 					  STATUS_C::status_detail::nagios_host as mb, STATUS_C::status_detail::metric_type as mn, 
-					 					  STATUS_C::status_detail::service_type as sf, STATUS_C::status_detail::hostname as sh, 
-					 					  STATUS_C::status_detail::metric_status as s, STATUS_C::status_detail::vo_name as vo, 
-					 					  STATUS_C::status_detail::vo_fqan as vof, STATUS_C::status_detail::summary as sum, 
-					 					  STATUS_C::status_detail::message as msg, STATUS_C::status_detail::date_int as di, 
-					 					  STATUS_C::status_detail::time_int as ti, STATUS_C::status_detail::prev_state as ps, 
-					 					  SITES_S::site as si;
-
-
-
--- STORE INTO MONGO
-STORE STATUS_FIN   INTO 'mongodb://$mongoServer/AR.new_status'     USING com.mongodb.hadoop.pig.MongoInsertStorage();
-
-
+-- Pass each timeline trough PREVSTATE function which calculates previous states and also assigns site info 
+STATUS_FL1 = FOREACH STATUS_GROUP GENERATE FLATTEN(PREVSTATE(*)); 
+-- Use flatten to unwind results (crossproduct)
+STATUS_FL2 = FOREACH STATUS_FL1 GENERATE $0 as vo, $1 as vo_fqan, $2 as monitor_box,$3 as roc, $8 as site, $4 as service, $5 as hostname, $6 as metric, FLATTEN($7) as (timestamp,status,summary,message,prevstate,date_int,time_int);
+-- Remove old dates 
+STATUS_NEW = FILTER STATUS_FL2 BY date_int != (int)'$last_date';
+-- Order results 
+STATUS_ORD = ORDER STATUS_NEW BY vo,vo_fqan,monitor_box,roc,site,hostname,metric,timestamp;
+-- Prepare for mongodb
+STATUS_MONGO = FOREACH STATUS_ORD GENERATE vo as vo, vo_fqan as vof, monitor_box as mb, roc as roc, site as st, service as srv, hostname as h, metric as m, timestamp as ts, status as s, summary as sum, message as msg, prevstate as ps, date_int as di, time_int as ti;
+-- Store to mongodb
+STORE STATUS_MONGO INTO 'mongodb://$mongo_host:$mongo_port/AR.status_metric'     USING com.mongodb.hadoop.pig.MongoInsertStorage();
