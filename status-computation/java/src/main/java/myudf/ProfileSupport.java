@@ -17,13 +17,12 @@ import com.mongodb.MongoClient;
 public class ProfileSupport extends FilterFunc {
 
 	
-	private static String mongo_host;
-	private static int mongo_port;
+	private static String mongo_server;
 	private Map<String , String> active_profiles = null;
     
-	public ProfileSupport(String inp_mongo_host, String inp_mongo_port){
-		mongo_host = inp_mongo_host;
-		mongo_port = Integer.parseInt(inp_mongo_port);
+	public ProfileSupport(String inp_mongo_server){
+		mongo_server = inp_mongo_server;
+		
 	}
 	
 	public ProfileSupport() {
@@ -33,7 +32,7 @@ public class ProfileSupport extends FilterFunc {
 		// Initialize hashmap structure
 		active_profiles = new HashMap<String, String>();
 		// Connect to the database and get site information
-		MongoClient mongoClient = new MongoClient(mongo_host, mongo_port);
+		MongoClient mongoClient = new MongoClient(mongo_server);
 		DB db = mongoClient.getDB( "AR" );
 		DBCollection coll = db.getCollection("active_profiles");
 		DBCursor cursor = coll.find();
