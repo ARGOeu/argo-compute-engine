@@ -196,7 +196,7 @@ cat $HEPS_FILE \
     > hepspec_sync_$RUN_DATE_UNDER.zip
 
 ### run calculator.pig
-echo pig ${LOCAL_FLAG} -useHCatalog -param in_date=$RUN_DATE \
+pig ${LOCAL_FLAG} -useHCatalog -param in_date=$RUN_DATE \
     -param mongoServer=$mongoDBServer \
     -param weights_file=hepspec_sync_$RUN_DATE_UNDER.zip \
     -param downtimes_file=downtimes_$RUN_DATE.zip \
