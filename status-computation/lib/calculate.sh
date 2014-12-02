@@ -24,6 +24,16 @@
 # the EGI-InSPIRE project through the European Commission's 7th
 # Framework Programme (contract # INFSO-RI-261323) 
 
+#CHECK TO SEE IF WE HAVE SERIALIZATION
+SERIALZ=$(grep --only-matching --perl-regex "(?<=serialization\=).*" /etc/ar-compute.conf)
+echo "serialization:" $SERIALZ
+if [[ $SERIALZ = "avro" ]]
+then
+  EXT="avro" #look for avro extension
+else
+  EXT="out" #look for simple text extension
+fi
+
 cd /var/lib/ar-sync/
 
 RUN_DATE=$1
@@ -42,13 +52,13 @@ echo "Delete $RUN_DATE from MongoDB"
 
 ### prepare poems
 echo "Prepare poems for $RUN_DATE"
-POEM_FILE=poem_sync_$RUN_DATE_UNDER.out
+POEM_FILE=poem_sync_$RUN_DATE_UNDER.$EXT
 if [ -e $POEM_FILE ] 
 then
   echo "Found Poem file for date $RUN_DATE"
 else
   echo "Could not locate a valid Poem file for date $RUN_DATE"
-  POEM_FILE=poem_sync_$RUN_DATE_M1D_UNDER.out
+  POEM_FILE=poem_sync_$RUN_DATE_M1D_UNDER.$EXT
   echo "Trying to use Poem file for date $RUN_DATE_M1D"
   if [ -e $POEM_FILE ]
   then
@@ -59,24 +69,42 @@ else
   fi
 fi
 
-cat $POEM_FILE \
+# If avro serialization is enabled select the avro file and decode it 
+if [[ $SERIALZ = "avro" ]]
+then
+  /usr/libexec/ar-compute/lib/avro/poem_decode.py $POEM_FILE
+  POEM_FILE=$POEM_FILE.dec
+  cat $POEM_FILE \
+    | sort -u \
+    | awk 'BEGIN {ORS="|"; RS="\r\n"} {print $0}' \
+    | gzip -c \
+    | base64 \
+    | awk 'BEGIN {ORS=""} {print $0}' \
+    > poem_sync_$RUN_DATE_UNDER.zip
+
+ else
+  cat $POEM_FILE \
     | cut -d $(echo -e '\x01') --output-delimiter=$(echo -e '\x01') -f "3 4 5 6" \
     | sort -u \
     | awk 'BEGIN {ORS="|"; RS="\n"} {print $0}' \
     | gzip -c \
     | base64 \
     | awk 'BEGIN {ORS=""} {print $0}' \
-    > poem_sync_$RUN_DATE_UNDER.out.clean
+    > poem_sync_$RUN_DATE_UNDER.zip
+
+fi
+
+
 
 ### prepare topology
 echo "Prepare topology for $RUN_DATE"
-TOPO_FILE=sites_$RUN_DATE_UNDER.out
+TOPO_FILE=sites_$RUN_DATE_UNDER.$EXT
 if [ -e $TOPO_FILE ]
 then
   echo "Found Topology file for date $RUN_DATE"
 else
   echo "Could not locate a valid Topology file for date $RUN_DATE"
-  TOPO_FILE=sites_$RUN_DATE_M1D_UNDER.out
+  TOPO_FILE=sites_$RUN_DATE_M1D_UNDER.$EXT
   echo "Trying to use Topology file for date $RUN_DATE_M1D"
   if [ -e $TOPO_FILE ]
   then
@@ -87,6 +115,13 @@ else
   fi
 fi
 
+# If avro serialization is enabled select the avro file and decode it 
+if [[ $SERIALZ = "avro" ]]
+then
+  /usr/libexec/ar-compute/lib/avro/sites_decode.py $TOPO_FILE
+  TOPO_FILE=$TOPO_FILE.dec 
+fi
+
 cat $TOPO_FILE | sort -u > sites_$RUN_DATE_UNDER.out.clean
 cat sites_$RUN_DATE_UNDER.out.clean | sed 's/\x01/ /g' | grep " SRM " | sed 's/ SRM / SRMv2 /g' | sed 's/ /\x01/g' >> sites_$RUN_DATE_UNDER.out.clean
 cat sites_$RUN_DATE_UNDER.out.clean | awk 'BEGIN {ORS="|"; RS="\r\n"} {print $0}' | gzip -c | base64 | awk 'BEGIN {ORS=""} {print $0}' > sites_$RUN_DATE_UNDER.zip
@@ -94,16 +129,29 @@ rm -f sites_$RUN_DATE_UNDER.out.clean
 split -b 30092 sites_$RUN_DATE_UNDER.zip sites_$RUN_DATE_UNDER.
 rm -f sites_$RUN_DATE_UNDER.zip
 
+
+
 ### prepare downtimes
+
+
 echo "Prepare downtimes for $RUN_DATE"
 /usr/libexec/ar-sync/downtime-sync -d $RUN_DATE
-cat downtimes_$RUN_DATE.out \
+DOWN_FILE=downtimes_$RUN_DATE.$EXT
+
+# If avro serialization is enabled select the avro file and decode it 
+if [[ $SERIALZ = "avro" ]]
+then
+  /usr/libexec/ar-compute/lib/avro/downtimes_decode.py $DOWN_FILE
+  DOWN_FILE=$DOWN_FILE.dec 
+fi
+
+cat $DOWN_FILE \
     | sed 's/\x01/ /g' \
     | grep " SRM " \
     | sed 's/ SRM / SRMv2 /g' \
     | sed 's/ /\x01/g' \
     > downtimes_cache_$RUN_DATE.out
-cat downtimes_$RUN_DATE.out >> downtimes_cache_$RUN_DATE.out
+cat $DOWN_FILE >> downtimes_cache_$RUN_DATE.out
 cat downtimes_cache_$RUN_DATE.out \
     | awk 'BEGIN {ORS="|"; RS="\r\n"} {print $0}' \
     | gzip -c \
@@ -113,14 +161,15 @@ cat downtimes_cache_$RUN_DATE.out \
 rm -f downtimes_cache_$RUN_DATE.out 
 
 ### prepare weights
+
 echo "Prepare HEPSPEC for $RUN_DATE"
-HEPS_FILE=hepspec_sync_$RUN_DATE_UNDER.out
+HEPS_FILE=hepspec_sync_$RUN_DATE_UNDER.$EXT
 if [ -e $HEPS_FILE ]
 then
   echo "Found Hepspec file for date $RUN_DATE"
 else
   echo "Could not locate a valid Hepspec file for date $RUN_DATE"
-  HEPS_FILE=hepspec_sync_$RUN_DATE_M1D_UNDER.out
+  HEPS_FILE=hepspec_sync_$RUN_DATE_M1D_UNDER.$EXT
   echo "Trying to use Hepspec file for date $RUN_DATE_M1D"
   if [ -e $HEPS_FILE ]
   then
@@ -130,6 +179,14 @@ else
     exit 1
   fi
 fi
+
+# If avro serialization is enabled select the avro file and decode it
+if [[ $SERIALZ = "avro" ]]
+then
+  /usr/libexec/ar-compute/lib/avro/hepspec_decode.py $HEPS_FILE
+  HEPS_FILE=$HEPS_FILE.dec
+fi
+
 
 cat $HEPS_FILE \
     | awk 'BEGIN {ORS="|"; RS="\r\n"} {print $0}' \
@@ -143,14 +200,18 @@ pig ${LOCAL_FLAG} -useHCatalog -param in_date=$RUN_DATE \
     -param mongoServer=$mongoDBServer \
     -param weights_file=hepspec_sync_$RUN_DATE_UNDER.zip \
     -param downtimes_file=downtimes_$RUN_DATE.zip \
-    -param poem_file=poem_sync_$RUN_DATE_UNDER.out.clean \
+    -param poem_file=poem_sync_$RUN_DATE_UNDER.zip \
     -param topology_file1=sites_$RUN_DATE_UNDER.aa \
     -param topology_file2=sites_$RUN_DATE_UNDER.ab \
     -param topology_file3=sites_$RUN_DATE_UNDER.ac \
     -param input_path=/var/lib/ar-sync/prefilter_ \
     -f /usr/libexec/ar-compute/pig/${LOCAL_PATH}calculator.pig
 
-rm -f poem_sync_$RUN_DATE_UNDER.out.clean
-rm -f downtimes_$RUN_DATE.zip
-rm -f hepspec_sync_$RUN_DATE_UNDER.zip
-rm -f sites_$RUN_DATE_UNDER.aa sites_$RUN_DATE_UNDER.ab sites_$RUN_DATE_UNDER.ac
+
+rm -f poem_sync_$RUN_DATE_UNDER.zip 
+rm -f downtimes_$RUN_DATE.zip 
+rm -f hepspec_sync_$RUN_DATE_UNDER.zip 
+rm -f sites_$RUN_DATE_UNDER.aa 
+rm -f sites_$RUN_DATE_UNDER.ab 
+rm -f sites_$RUN_DATE_UNDER.ac 
+rm -f *.dec 
