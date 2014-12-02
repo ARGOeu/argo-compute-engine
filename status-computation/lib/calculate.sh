@@ -214,4 +214,4 @@ rm -f hepspec_sync_$RUN_DATE_UNDER.zip
 rm -f sites_$RUN_DATE_UNDER.aa 
 rm -f sites_$RUN_DATE_UNDER.ab 
 rm -f sites_$RUN_DATE_UNDER.ac 
-rm -rf *.dec 
+rm -f *.dec 
