@@ -105,12 +105,10 @@ public class PrevState extends EvalFunc<Tuple> {
 			 cal.setTime(parsedDate);
 			
 					 
-			 int the_hours = cal.get(Calendar.HOUR);
-			 int am = cal.get(Calendar.AM_PM);
-			 if (am>0) the_hours = the_hours + 12;
+			 
 			 	    
 			 int date_int = (cal.get(Calendar.YEAR) * 10000 ) + ((cal.get(Calendar.MONTH) + 1)*100) + (cal.get(Calendar.DAY_OF_MONTH));
-			 int time_int = (the_hours * 10000) + ((cal.get(Calendar.MINUTE)*100)) + (cal.get(Calendar.SECOND));
+			 int time_int = (cal.get(Calendar.HOUR_OF_DAY) * 10000) + ((cal.get(Calendar.MINUTE)*100)) + (cal.get(Calendar.SECOND));
 			    
 			 item.append(date_int);
 			 item.append(time_int);
