@@ -50,6 +50,6 @@ STATUS_NEW = FILTER STATUS_FL2 BY date_int != (int)'$last_date';
 -- Order results 
 STATUS_ORD = ORDER STATUS_NEW BY vo,vo_fqan,monitor_box,roc,site,hostname,metric,timestamp;
 -- Prepare for mongodb
-STATUS_MONGO = FOREACH STATUS_ORD GENERATE vo as vo, vo_fqan as vof, monitor_box as mb, roc as roc, site as st, service as srv, hostname as h, metric as m, timestamp as ts, status as s, summary as sum, message as msg, prevstate as ps, date_int as di, time_int as ti;
+STATUS_MONGO = FOREACH STATUS_ORD GENERATE vo as vo, vo_fqan as vof, monitor_box as mb, roc as roc, site as site, service as srv, hostname as h, metric as m, timestamp as ts, status as s, summary as sum, message as msg, prevstate as ps, date_int as di, time_int as ti;
 -- Store to mongodb
 STORE STATUS_MONGO INTO 'mongodb://$mongo_host:$mongo_port/AR.status_metric'     USING com.mongodb.hadoop.pig.MongoInsertStorage();

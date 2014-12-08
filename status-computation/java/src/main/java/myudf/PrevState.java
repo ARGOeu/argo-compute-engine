@@ -31,6 +31,8 @@ public class PrevState extends EvalFunc<Tuple> {
 	
 	private static String mongo_host;
 	private static int mongo_port;
+	private Map<String , String> sites = null;
+	
 	
 	public PrevState(String inp_mongo_host, String inp_mongo_port){
 		mongo_host = inp_mongo_host;
@@ -41,7 +43,7 @@ public class PrevState extends EvalFunc<Tuple> {
     }
 	//private final TupleFactory mTupleFactory = TupleFactory.getInstance();
 	
-	private Map<String , String> sites = null;
+	
 	// THIS EVAL FUNCTION ACCEPTS 
 	// (vo,vo_fqan,monitoring_box,roc,service_type,hostname,metric{(timestamp,status,summary,message)...})
 	
@@ -83,7 +85,7 @@ public class PrevState extends EvalFunc<Tuple> {
 		Iterator<Tuple> myit = timeline.iterator();
 		Tuple item;
 		
-		String prevState = "LAST";
+		String prevState = "UNKNOWN";
 		
 		for (int i=0;i<timeline.size();i++)
 		{
@@ -91,7 +93,7 @@ public class PrevState extends EvalFunc<Tuple> {
 			 item.append(prevState);
 			 
 			 // Calculate integer of date and time
-			 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'");
+			 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 			 Date parsedDate = null;
 			 
 			 try {
@@ -101,6 +103,10 @@ public class PrevState extends EvalFunc<Tuple> {
 			 }
 			 Calendar cal = Calendar.getInstance();
 			 cal.setTime(parsedDate);
+			
+					 
+			 
+			 	    
 			 int date_int = (cal.get(Calendar.YEAR) * 10000 ) + ((cal.get(Calendar.MONTH) + 1)*100) + (cal.get(Calendar.DAY_OF_MONTH));
 			 int time_int = (cal.get(Calendar.HOUR_OF_DAY) * 10000) + ((cal.get(Calendar.MINUTE)*100)) + (cal.get(Calendar.SECOND));
 			    
@@ -160,7 +166,7 @@ public class PrevState extends EvalFunc<Tuple> {
         try {
             timelines = new Schema.FieldSchema("timelines", timeline, DataType.BAG);
         } catch (FrontendException ex) {
-            Logger.getLogger(AddTopology.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PrevState.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         status_metric.add(timelines);
