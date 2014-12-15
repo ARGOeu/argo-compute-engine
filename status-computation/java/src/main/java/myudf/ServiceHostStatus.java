@@ -1,19 +1,20 @@
 package myudf;
 
+
+
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.pig.EvalFunc;
+import org.apache.pig.data.BagFactory;
+import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.DefaultDataBag;
@@ -21,193 +22,125 @@ import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MongoClient;
+import utils.MetricProfileManager;
+import utils.Aggregator;
+import utils.Slot;
+
 
 
 public class ServiceHostStatus extends EvalFunc<Tuple> {
 	
 	private static String mongo_host;
 	private static int mongo_port;
+	private static int target_date;
 	
-	private class Slot{
-		
-		String timestamp ="";
-		String status ="";
-		String prevState = "";
-		int date_int = 0;
-		int time_int = 0;
-		
-	}
+	private static MetricProfileManager prof_mgr;
 	
 	
-	private Map<String , HashMap<String,ArrayList<String>>> poem_details = null;
 	
-	
-	public ServiceHostStatus(String inp_mongo_host, String inp_mongo_port){
+	public ServiceHostStatus(String inp_mongo_host, String inp_mongo_port, String inp_target_date) throws UnknownHostException{
 		mongo_host = inp_mongo_host;
 		mongo_port = Integer.parseInt(inp_mongo_port);
+		target_date = Integer.parseInt(inp_target_date);
+		// Initialize Metric Profile Manager
+		prof_mgr = new MetricProfileManager();
+		prof_mgr.loadFromMongo(mongo_host,mongo_port);
 	}
-	
-	public ServiceHostStatus() {
-    }
-	//private final TupleFactory mTupleFactory = TupleFactory.getInstance();
 	
 	// THIS EVAL FUNCTION ACCEPTS 
 	// (site,service,hostname{(metric,timestamp,status,prevstate,date_int,time_int)
 	
-	private void initPoemDetails() throws UnknownHostException{
-		// Initialize hashmap structure
-		poem_details = new HashMap<String, HashMap<String,ArrayList<String>>> ();
-		// Connect to the database and get site information
-		MongoClient mongoClient = new MongoClient(mongo_host, mongo_port);
-		DB db = mongoClient.getDB( "AR" );
-		DBCollection coll = db.getCollection("poem_details");
-		DBCursor cursor = coll.find();
-		DBObject item;
-		
-		while(cursor.hasNext()) {
-		   item = cursor.next();
-			   
-		   //unmarshal profile
-		   String profile = (String)item.get("p");
-		   String service = (String)item.get("s");
-		   String metric = (String)item.get("m");
-			   
-		   //Check if profile exists or else create it 
-		   if (poem_details.get(profile) == null) {
-			   poem_details.put(profile, new HashMap<String,ArrayList<String>>());
-			   poem_details.get(profile).put(service, new ArrayList<String>());
-			   poem_details.get(profile).get(service).add(metric);
-				   
-		   } else if (poem_details.get(profile).get(service) == null) {
-			   
-			   poem_details.get(profile).put(service,new ArrayList<String>());
-			   poem_details.get(profile).get(service).add(metric);
-			   
-		   } else if (poem_details.get(profile).get(service).contains(metric) == false){
-			   poem_details.get(profile).get(service).add(metric);
-		   }	   
-		}
-		
-	}
 	
 	@Override
 	public Tuple exec(Tuple input) throws IOException {
 		
+		TupleFactory tupFactory = TupleFactory.getInstance();
+	    BagFactory bagFactory = BagFactory.getInstance();
+
+	    MetricProfileManager mymgr = new MetricProfileManager();
+		mymgr.loadFromMongo("localhost",27017);
 		
-		if (poem_details==null)
-		{
-			initPoemDetails();
-		}
+		String site = (String) input.get(0);
+		String service = (String) input.get(1);
+		String host = (String) input.get(2);
+		DefaultDataBag bag =  (DefaultDataBag) input.get(3);
+		Iterator<Tuple> it_bag = bag.iterator();
 		
-		// parse input
-		//String site = (String)input.get(0);
-		String service = (String)input.get(1);
-		//String hostname = (String)input.get(2);
-		//String timeline = (String)input.get(3);
+
+		
+		Map<String,Aggregator> all = new HashMap<String,Aggregator>();
+		
+		// Set the default profiles
+	    for (String profile : mymgr.getProfiles())
+	    {
+	    	all.put(profile, new Aggregator());
+	    }
+		
+	  
+	    while (it_bag.hasNext()){
+	    	Tuple cur_item = it_bag.next();
+	    	if ((Integer)cur_item.get(4) != target_date) continue;
+	    	
+	    	for (String prof: all.keySet()){
+	    		//exists for this profile?
+	    		
+	    		if (mymgr.checkProfileServiceMetric(prof, service, (String)cur_item.get(0)) == true)
+	    		{
+	    			/*System.out.println(service);
+	    			System.out.println(prof);
+		    		System.out.println(cur_item.get(4));
+		    		System.out.println(cur_item.get(5));
+		    		System.out.println(cur_item.get(1));
+	    			System.out.println(cur_item.get(2));
+	    			System.out.println(cur_item.get(3));*/
+		    		
+	    			all.get(prof).insert(prof, (Integer)cur_item.get(5), (Integer)cur_item.get(4),(String) cur_item.get(1), (String)cur_item.get(2), (String)cur_item.get(3));
+	    		}
+	    	}
+	    }
+	    
+	    //Create output Tuple
+	    Tuple output = tupFactory.newTuple();
+	    DataBag outBag = bagFactory.newDefaultBag();
+	    
+	    output.append(site);
+	    output.append(service);
+	    output.append(host);
+	    
+	    
+	    
+	    
+	    for (String prof: all.keySet())
+		   {
+			  
 			
-		
-		// here we grab each profile 
-		
-		Map<String , HashMap<String,ArrayList<Slot>>> profile_metrics = null;
-		profile_metrics = new HashMap<String, HashMap<String,ArrayList<Slot>>>();
-		// init the structure for all available poems
-		// where _it means iterator like poem_it = poem iterator
-		Iterator<String> poem_it = poem_details.keySet().iterator();
-		while (poem_it.hasNext()!=false)
-		{
-			String poem_name = poem_it.next();
-			if (poem_details.get(poem_name).get(service) != null) { 
-				profile_metrics.put(poem_it.next(), new HashMap<String,ArrayList<Slot>>());
-			}
-		}
-		
-		ArrayList<Integer> timesplits = new ArrayList<Integer>();
-		
-		DefaultDataBag timeline = (DefaultDataBag)input.get(3);
-		Iterator<Tuple> metric_it = timeline.iterator(); //all the metrics
-		while (metric_it.hasNext() != false)
-		{
-			// Check if each profile contains the combination of service+metric
-			Tuple item = metric_it.next();
-			String metric_name= (String) item.get(0);
+			   
+			   all.get(prof).optimize();
+			   all.get(prof).project();
+			   all.get(prof).aggregateAND();
+			   all.get(prof).aggrPrevState();
+			   
+			   System.out.println(all.get(prof).aggr_tline.size());
+			   System.out.println(all.get(prof).tlines.size());
+			   
+			   for (Entry<Integer, Slot> item: all.get(prof).aggr_tline.entrySet())
+			   {
+				   Slot item_value = item.getValue();
+				   Tuple cur_tupl = tupFactory.newTuple();
+				   cur_tupl.append(prof); 
+				   cur_tupl.append(item.getValue().timestamp);
+				   cur_tupl.append(item.getValue().status);
+				   cur_tupl.append(item.getValue().prev_status);
+				   cur_tupl.append(item_value.date_int);
+				   cur_tupl.append(item_value.time_int);
+				   outBag.add(cur_tupl);
+			   }
 			
-			Slot temp = new Slot();
-			temp.timestamp = (String)item.get(1);
-			temp.status = (String)item.get(2);
-			temp.prevState = (String)item.get(3);
-			temp.date_int = (Integer)item.get(4);
-			temp.time_int = (Integer)item.get(5);
-			
-			poem_it = profile_metrics.keySet().iterator();
-			while (poem_it.hasNext()!=false)
-			{
-				String poem_name = poem_it.next();
-				// service does not belong to this profile
-				if (poem_details.get(poem_name).get(service) == null) continue;
-				// metric does not belong to this service of this profile 
-				if (poem_details.get(poem_name).get(service).contains(metric_name) == false) continue;
-				// metric belongs here but not initiated yet
-				if (profile_metrics.get(poem_name).get(metric_name) == null) {
-					
-					profile_metrics.get(poem_name).put(metric_name, new ArrayList<Slot>());
-					profile_metrics.get(poem_name).get(metric_name).add(temp);
-					//Introduce timesplit;
-					//if (timesplits.contains(temp.time_int) == false){
-					//	timesplits.add(temp.time_int);
-					//}
-					
-				}
-				// metric already initiated
-				profile_metrics.get(poem_name).get(metric_name).add(temp);
-				
-				//if (timesplits.contains(temp.time_int) == false){
-				//	timesplits.add(temp.time_int);
-				//}
-				
-			}			
-			
-		}// End of iteration
+		 }
+	    
+	    output.append(outBag);
 		
-		// Clean up and optimize metric timelines
-		
-		// Begin Iteration
-		poem_it = profile_metrics.keySet().iterator();
-		Iterator<String> prof_metric_it;
-		while (poem_it.hasNext()!=false){
-			// Get iterator of metric names
-			String poem_name = poem_it.next();
-			prof_metric_it = profile_metrics.get(poem_name).keySet().iterator();
-			
-			ArrayList<Slot> cur_list;
-			while (prof_metric_it.hasNext()!=false)
-			{
-				//Get the list
-				cur_list = profile_metrics.get(poem_name).get(prof_metric_it.next());
-				
-				//Set an iterator
-				Iterator<Slot> list_it = cur_list.iterator();
-				//Skip first item
-				list_it.next();
-				while (list_it.hasNext()){
-					if (cur_list.size()>2)
-					{
-						Slot temp = list_it.next();
-						if (temp.prevState == temp.status){
-							list_it.remove();
-						}
-					}
-				}	
-			}
-		}// end of metric iteration
-		
-		// Reiterate 
-	
-		return input;
+		return output;
 		
 	}
 	
@@ -222,8 +155,8 @@ public class ServiceHostStatus extends EvalFunc<Tuple> {
         
         Schema.FieldSchema profile = new Schema.FieldSchema("profile", DataType.CHARARRAY);
         Schema.FieldSchema timestamp = new Schema.FieldSchema("timestamp", DataType.CHARARRAY);
-        Schema.FieldSchema status = new Schema.FieldSchema("", DataType.CHARARRAY);
-        Schema.FieldSchema prev_state = new Schema.FieldSchema("message", DataType.CHARARRAY);
+        Schema.FieldSchema status = new Schema.FieldSchema("status", DataType.CHARARRAY);
+        Schema.FieldSchema prev_state = new Schema.FieldSchema("prev_state", DataType.CHARARRAY);
         Schema.FieldSchema date_int = new Schema.FieldSchema("date_int", DataType.INTEGER);
         Schema.FieldSchema time_int = new Schema.FieldSchema("time_int", DataType.INTEGER);
         
