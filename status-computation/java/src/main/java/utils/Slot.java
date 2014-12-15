@@ -1,10 +1,10 @@
 package utils;
 public class Slot{
-		int time_int;
-		int date_int;
-		String timestamp;
-		String status;
-		String prev_status;
+		public int time_int;
+		public int date_int;
+		public String timestamp;
+		public String status;
+		public String prev_status;
 		
 		public Slot(int _time_int, int _date_int, String _timestamp, String _status, String _prev_status){
 			this.time_int = _time_int;
