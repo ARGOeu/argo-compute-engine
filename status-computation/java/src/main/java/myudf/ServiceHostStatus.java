@@ -36,6 +36,8 @@ public class ServiceHostStatus extends EvalFunc<Tuple> {
 	
 	private static MetricProfileManager prof_mgr;
 	
+	TupleFactory tupFactory = TupleFactory.getInstance();
+    BagFactory bagFactory = BagFactory.getInstance();
 	
 	
 	public ServiceHostStatus(String inp_mongo_host, String inp_mongo_port, String inp_target_date) throws UnknownHostException{
@@ -54,8 +56,7 @@ public class ServiceHostStatus extends EvalFunc<Tuple> {
 	@Override
 	public Tuple exec(Tuple input) throws IOException {
 		
-		TupleFactory tupFactory = TupleFactory.getInstance();
-	    BagFactory bagFactory = BagFactory.getInstance();
+		
 
 	    MetricProfileManager mymgr = new MetricProfileManager();
 		mymgr.loadFromMongo("localhost",27017);
@@ -86,14 +87,7 @@ public class ServiceHostStatus extends EvalFunc<Tuple> {
 	    		
 	    		if (mymgr.checkProfileServiceMetric(prof, service, (String)cur_item.get(0)) == true)
 	    		{
-	    			/*System.out.println(service);
-	    			System.out.println(prof);
-		    		System.out.println(cur_item.get(4));
-		    		System.out.println(cur_item.get(5));
-		    		System.out.println(cur_item.get(1));
-	    			System.out.println(cur_item.get(2));
-	    			System.out.println(cur_item.get(3));*/
-		    		
+	    			   		
 	    			all.get(prof).insert(prof, (Integer)cur_item.get(5), (Integer)cur_item.get(4),(String) cur_item.get(1), (String)cur_item.get(2), (String)cur_item.get(3));
 	    		}
 	    	}
@@ -120,8 +114,7 @@ public class ServiceHostStatus extends EvalFunc<Tuple> {
 			   all.get(prof).aggregateAND();
 			   all.get(prof).aggrPrevState();
 			   
-			   System.out.println(all.get(prof).aggr_tline.size());
-			   System.out.println(all.get(prof).tlines.size());
+			  
 			   
 			   for (Entry<Integer, Slot> item: all.get(prof).aggr_tline.entrySet())
 			   {
@@ -140,6 +133,8 @@ public class ServiceHostStatus extends EvalFunc<Tuple> {
 	    
 	    output.append(outBag);
 		
+	   
+	    
 		return output;
 		
 	}
