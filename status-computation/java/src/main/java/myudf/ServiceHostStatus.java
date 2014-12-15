@@ -133,7 +133,7 @@ public class ServiceHostStatus extends EvalFunc<Tuple> {
 	    
 	    output.append(outBag);
 		
-	   
+	    if (outBag.size()==0) return null;
 	    
 		return output;
 		
