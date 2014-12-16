@@ -67,7 +67,7 @@ public class ServiceStatus extends EvalFunc<Tuple> {
 	    	String cur_status = (String)cur_item.get(2);
 	    	String cur_prevstate = (String)cur_item.get(3);
 	    	int cur_date_int = (Integer)cur_item.get(4);
-	    	int cur_time_int = (Integer)cur_item.get(4);
+	    	int cur_time_int = (Integer)cur_item.get(5);
 	    	
 	    	aggr.insert(cur_hostname, cur_time_int, cur_date_int, cur_timestamp, cur_status, cur_prevstate);
 	    
