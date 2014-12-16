@@ -127,9 +127,9 @@ public class ServiceHostStatus extends EvalFunc<Tuple> {
 				   Slot item_value = item.getValue();
 				   Tuple cur_tupl = tupFactory.newTuple();
 				   cur_tupl.append(prof); 
-				   cur_tupl.append(item.getValue().timestamp);
-				   cur_tupl.append(item.getValue().status);
-				   cur_tupl.append(item.getValue().prev_status);
+				   cur_tupl.append(item_value.timestamp);
+				   cur_tupl.append(item_value.status);
+				   cur_tupl.append(item_value.prev_status);
 				   cur_tupl.append(item_value.date_int);
 				   cur_tupl.append(item_value.time_int);
 				   outBag.add(cur_tupl);
