@@ -1,8 +1,8 @@
 package utils;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.TreeMap;
 
 
@@ -81,13 +81,57 @@ public class Aggregator {
 		return 0;
 	}
 	
-	public int get_AND_weights(String status)
-	{
+	public int aggregateOR()
+	{	
+		
+		for ( Entry<Integer, Slot> item : aggr_tline.entrySet()){
+			int cur_time_int = item.getKey();
+			int cur_date_int = 0;
+			String cur_timestamp="";
+			String cur_status="";
+			String cur_prev_status="";
+			int first_pick = 1;
+			for (Entry<String,CTimeline> citem: tlines.entrySet()) {
+				
+				if (first_pick == 1) {
+					cur_date_int = citem.getValue().getDate(cur_time_int);
+					cur_timestamp = citem.getValue().getTimeStamp(cur_time_int);
+					cur_status = citem.getValue().getStatus(cur_time_int);
+					cur_prev_status = citem.getValue().getPrevStatus(cur_time_int);
+					first_pick = 0; //turn of first pick flag
+					continue;
+				}
+				
+				cur_status = get_OR_status(cur_status, citem.getValue().getStatus(cur_time_int));
+				
+				
+			}
+			
+			item.setValue(new Slot(cur_time_int,cur_date_int,cur_timestamp,cur_status,cur_prev_status));
+			
+			
+		} 
+		return 0;
+	}
+	
+	public int get_AND_weights(String status) {
+		
 		if (status.equals("OK")) return 1;
 		if (status.equals("WARNING")) return 2;
 		if (status.equals("UKNOWN")) return 3;
 		if (status.equals("MISSING")) return 4;
 		if (status.equals("CRITICAL")) return 5;
+		
+		return -1;
+	}
+	
+	public int get_OR_WEIGHTS(String status) {
+		
+		if (status.equals("MISSING")) return 1;
+		if (status.equals("UKNOWN")) return 2;
+		if (status.equals("CRITICAL")) return 3;
+		if (status.equals("WARNING")) return 4;
+		if (status.equals("OK")) return 5;
 		
 		return -1;
 	}
@@ -137,6 +181,26 @@ public class Aggregator {
 		if (weight_res == 3) return "UNKNOWN";
 		if (weight_res == 4) return "MISSING";
 		if (weight_res == 5) return "CRITICAL";
+		
+		return null;
+	}
+	
+	public String get_OR_status(String status_a, String status_b) {
+		//Assign weights
+		
+		int weight_a = get_AND_weights(status_a);
+		int weight_b = get_AND_weights(status_b);
+		int weight_res;
+		
+		if (weight_a> weight_b) weight_res = weight_a;
+		else weight_res = weight_b;
+		
+		//Return Status string from number
+		if (weight_res == 1) return "MISSING";
+		if (weight_res == 2) return "UNKNOWN";
+		if (weight_res == 3) return "CRITICAL";
+		if (weight_res == 4) return "WARNING";
+		if (weight_res == 5) return "OK";
 		
 		return null;
 	}
