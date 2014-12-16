@@ -58,7 +58,7 @@ public class ServiceHostStatus extends EvalFunc<Tuple> {
 		
 
 	    MetricProfileManager mymgr = new MetricProfileManager();
-		mymgr.loadFromMongo("localhost",27017);
+		mymgr.loadFromMongo(mongo_host,mongo_port);
 		
 		String roc = (String) input.get(0);
 		String site = (String) input.get(1);
