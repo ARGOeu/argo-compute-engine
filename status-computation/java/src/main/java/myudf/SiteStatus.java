@@ -56,7 +56,7 @@ public class SiteStatus extends EvalFunc<Tuple> {
 	    String profile = (String) input.get(0);		
 		String roc = (String) input.get(1);
 		String site = (String) input.get(2);
-		DefaultDataBag bag =  (DefaultDataBag) input.get(4);
+		DefaultDataBag bag =  (DefaultDataBag) input.get(3);
 		Iterator<Tuple> it_bag = bag.iterator();
 		
 		//Create Group Aggregators
