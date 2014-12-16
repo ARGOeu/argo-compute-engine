@@ -16,10 +16,13 @@ import org.bson.types.BasicBSONList;
 public class AvProfileManager {
 	
 	private Map<String,HashMap<String,ArrayList<String>>>  profileList;
-
+	
+	
 	public AvProfileManager(){
 		profileList = new HashMap<String,HashMap<String,ArrayList<String>>>();
 	}
+	
+	
 	
 	public int insertProfile(String profile) {
 		if (!profileList.containsKey(profile)) {
@@ -68,14 +71,41 @@ public class AvProfileManager {
 			BasicBSONList grp_list = (BasicBSONList)cur_item.get("groups");
 	        for (i=0;i<grp_list.size();i++)
 	        {
-	        	this.insertService(cur_item.get("name").toString(), "group_"+i,grp_list.get(i).toString());
 	        	
+	        	ArrayList el_list = (ArrayList)grp_list.get(i);
+	        	int j=0;
+	        	for (j=0;j<el_list.size();j++){
+	        		this.insertService(cur_item.get("name").toString(), "group_"+i,el_list.get(j).toString());
+	        	}
+	        	
+
 	        }
 			
 		}
 		
 		return 0;
 	}
+	
+	public String getServiceGroup(String profile, String service)
+	{
+		if (profileList.containsKey(profile)) 
+		{
+			
+			for (String item: profileList.get(profile).keySet())
+			{
+				
+				if (profileList.get(profile).get(item).contains(service))
+				{
+					return item;
+				}
+				
+			}
+		}
+		
+		return "";
+	}
+	
+	
 	
 	public int insertService(String profile, String group, String service){
 		if (profileList.containsKey(profile)) {
@@ -86,12 +116,14 @@ public class AvProfileManager {
 				}
 				// Metric doesn't exist and must be added
 				profileList.get(profile).get(group).add(service);
+				
 				return 0;
 			} 
 			else { 
 				// Create the service and the metric
 				profileList.get(profile).put(group, new ArrayList<String>());
 				profileList.get(profile).get(group).add(service);
+				
 				return 0;
 			}
 			
@@ -100,6 +132,7 @@ public class AvProfileManager {
 		profileList.put(profile, new HashMap<String,ArrayList<String>>());
 		profileList.get(profile).put(group, new ArrayList<String>());
 		profileList.get(profile).get(group).add(service);
+		
 		return 0;
 		
 	}
