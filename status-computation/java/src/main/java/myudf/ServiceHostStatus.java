@@ -110,17 +110,11 @@ public class ServiceHostStatus extends EvalFunc<Tuple> {
 	    
 	    
 	    
-	    for (String prof: all.keySet())
-		   {
-			  
-			
-			   
+	    for (String prof: all.keySet())  {
 			   all.get(prof).optimize();
 			   all.get(prof).project();
 			   all.get(prof).aggregateAND();
 			   all.get(prof).aggrPrevState();
-			   
-			  
 			   
 			   for (Entry<Integer, Slot> item: all.get(prof).aggr_tline.entrySet())
 			   {
