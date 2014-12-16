@@ -16,10 +16,13 @@ import org.bson.types.BasicBSONList;
 public class AvProfileManager {
 	
 	private Map<String,HashMap<String,ArrayList<String>>>  profileList;
+	private Map<String,String> ap_to_metric;
 	
 	
 	public AvProfileManager(){
 		profileList = new HashMap<String,HashMap<String,ArrayList<String>>>();
+		ap_to_metric = new HashMap<String,String>();
+		
 	}
 	
 	
@@ -80,10 +83,19 @@ public class AvProfileManager {
 	        	
 
 	        }
+	        
+	        BasicBSONList metric_list = (BasicBSONList)cur_item.get("poems");
+	        ap_to_metric.put(metric_list.get(0).toString(), cur_item.get("name").toString());
+	        
 			
 		}
 		
 		return 0;
+	}
+	
+	public String getAPbyMetric(String metric_profile)
+	{
+		return ap_to_metric.get(metric_profile);
 	}
 	
 	public String getServiceGroup(String profile, String service)

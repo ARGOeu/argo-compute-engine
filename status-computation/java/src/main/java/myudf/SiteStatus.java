@@ -66,10 +66,10 @@ public class SiteStatus extends EvalFunc<Tuple> {
 		Aggregator aggr = new Aggregator();
 		
 	    //Populate with groups available
-		 for (String group_item : ap_mgr.getProfileGroups(profile))
-		 {
-		    	all.put(group_item, new Aggregator());
-		 }
+		for (String group_item : ap_mgr.getProfileGroups(ap_mgr.getAPbyMetric(profile)))
+		{
+		   	all.put(group_item, new Aggregator());
+		}
 	
 	    while (it_bag.hasNext()){
 	    	Tuple cur_item = it_bag.next();
@@ -83,7 +83,7 @@ public class SiteStatus extends EvalFunc<Tuple> {
 	    	int cur_time_int = (Integer)cur_item.get(5);
 	    	
 	    	//get the correct group
-	    	String cur_group = ap_mgr.getServiceGroup(profile, cur_service);
+	    	String cur_group = ap_mgr.getServiceGroup(ap_mgr.getAPbyMetric(profile), cur_service);
 	    	all.get(cur_group).insert(cur_service, cur_time_int, cur_date_int, cur_timestamp, cur_status, cur_prevstate);
 	    	
 	    }
@@ -109,7 +109,7 @@ public class SiteStatus extends EvalFunc<Tuple> {
 	    // aggregate for the whole site at last	    
 	    aggr.optimize();
 	    aggr.project();
-	    aggr.aggregateAND();
+	    aggr.aggregateOR();
 	    aggr.aggrPrevState();
 	    
 	    //Create output Tuple

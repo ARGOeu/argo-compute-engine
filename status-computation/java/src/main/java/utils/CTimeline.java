@@ -116,10 +116,7 @@ public class CTimeline {
 	
 	
 	public String getPrevStatus(int _time){
-		if (tline.ceilingEntry(_time).getValue() == null)
-		{
-			System.out.println("YO");
-		}
+	
 		if	(hasAtLeast(_time)){
 			return  tline.floorEntry(_time).getValue().prev_status;
 		}
