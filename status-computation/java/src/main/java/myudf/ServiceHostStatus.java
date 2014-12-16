@@ -49,8 +49,7 @@ public class ServiceHostStatus extends EvalFunc<Tuple> {
 		prof_mgr.loadFromMongo(mongo_host,mongo_port);
 	}
 	
-	// THIS EVAL FUNCTION ACCEPTS 
-	// (site,service,hostname{(metric,timestamp,status,prevstate,date_int,time_int)
+	
 	
 	
 	@Override
@@ -61,13 +60,11 @@ public class ServiceHostStatus extends EvalFunc<Tuple> {
 	    MetricProfileManager mymgr = new MetricProfileManager();
 		mymgr.loadFromMongo("localhost",27017);
 		
-		String vo = (String) input.get(0);
-		String vo_fqan = (String) input.get(1);
-		String roc = (String) input.get(2);
-		String site = (String) input.get(3);
-		String service = (String) input.get(4);
-		String host = (String) input.get(5);
-		DefaultDataBag bag =  (DefaultDataBag) input.get(6);
+		String roc = (String) input.get(0);
+		String site = (String) input.get(1);
+		String service = (String) input.get(2);
+		String host = (String) input.get(3);
+		DefaultDataBag bag =  (DefaultDataBag) input.get(4);
 		Iterator<Tuple> it_bag = bag.iterator();
 		
 
@@ -100,8 +97,6 @@ public class ServiceHostStatus extends EvalFunc<Tuple> {
 	    Tuple output = tupFactory.newTuple();
 	    DataBag outBag = bagFactory.newDefaultBag();
 	    
-	    output.append(vo);
-	    output.append(vo_fqan);
 	    output.append(roc);
 	    output.append(site);
 	    output.append(service);
@@ -133,7 +128,7 @@ public class ServiceHostStatus extends EvalFunc<Tuple> {
 	    
 	    output.append(outBag);
 		
-	    if (outBag.size()==0) return null;
+	    //if (outBag.size()==0) return null;
 	    
 		return output;
 		
@@ -144,8 +139,6 @@ public class ServiceHostStatus extends EvalFunc<Tuple> {
 	@Override
     public Schema outputSchema(Schema input) {
         
-		Schema.FieldSchema vo = new Schema.FieldSchema("vo", DataType.CHARARRAY);
-		Schema.FieldSchema vo_fqan = new Schema.FieldSchema("vo_fqan", DataType.CHARARRAY);
 		Schema.FieldSchema roc = new Schema.FieldSchema("roc", DataType.CHARARRAY);
 		Schema.FieldSchema site = new Schema.FieldSchema("site", DataType.CHARARRAY);
 		Schema.FieldSchema service = new Schema.FieldSchema("service", DataType.CHARARRAY);
@@ -161,8 +154,6 @@ public class ServiceHostStatus extends EvalFunc<Tuple> {
         Schema service_host = new Schema();
         Schema timeline = new Schema();
         
-        service_host.add(vo);
-        service_host.add(vo_fqan);
         service_host.add(roc);
         service_host.add(site);
         service_host.add(service);

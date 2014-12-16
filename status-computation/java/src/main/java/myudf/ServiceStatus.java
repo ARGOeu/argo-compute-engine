@@ -3,11 +3,8 @@ package myudf;
 
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,7 +19,6 @@ import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
-import utils.MetricProfileManager;
 import utils.Aggregator;
 import utils.Slot;
 
@@ -48,12 +44,10 @@ public class ServiceStatus extends EvalFunc<Tuple> {
 		
 
 	    String profile = (String) input.get(0);		
-		String vo = (String) input.get(1);
-		String vo_fqan = (String) input.get(2);
-		String roc = (String) input.get(3);
-		String site = (String) input.get(4);
-		String service = (String) input.get(5);
-		DefaultDataBag bag =  (DefaultDataBag) input.get(6);
+		String roc = (String) input.get(1);
+		String site = (String) input.get(2);
+		String service = (String) input.get(3);
+		DefaultDataBag bag =  (DefaultDataBag) input.get(4);
 		Iterator<Tuple> it_bag = bag.iterator();
 		
 		Aggregator aggr = new Aggregator();
@@ -83,8 +77,6 @@ public class ServiceStatus extends EvalFunc<Tuple> {
 	    DataBag outBag = bagFactory.newDefaultBag();
 	    
 	    output.append(profile);
-	    output.append(vo);
-	    output.append(vo_fqan);
 	    output.append(roc);
 	    output.append(site);
 	    output.append(service);
@@ -117,15 +109,15 @@ public class ServiceStatus extends EvalFunc<Tuple> {
 	
 	@Override
     public Schema outputSchema(Schema input) {
-        
-		Schema.FieldSchema vo = new Schema.FieldSchema("vo", DataType.CHARARRAY);
-		Schema.FieldSchema vo_fqan = new Schema.FieldSchema("vo_fqan", DataType.CHARARRAY);
+   
+		
+		Schema.FieldSchema profile = new Schema.FieldSchema("profile", DataType.CHARARRAY);
 		Schema.FieldSchema roc = new Schema.FieldSchema("roc", DataType.CHARARRAY);
 		Schema.FieldSchema site = new Schema.FieldSchema("site", DataType.CHARARRAY);
 		Schema.FieldSchema service = new Schema.FieldSchema("service", DataType.CHARARRAY);
-		Schema.FieldSchema hostname = new Schema.FieldSchema("hostname", DataType.CHARARRAY); 
+	 
         
-        Schema.FieldSchema profile = new Schema.FieldSchema("profile", DataType.CHARARRAY);
+      
         Schema.FieldSchema timestamp = new Schema.FieldSchema("timestamp", DataType.CHARARRAY);
         Schema.FieldSchema status = new Schema.FieldSchema("status", DataType.CHARARRAY);
         Schema.FieldSchema prev_state = new Schema.FieldSchema("prev_state", DataType.CHARARRAY);
@@ -135,14 +127,13 @@ public class ServiceStatus extends EvalFunc<Tuple> {
         Schema service_host = new Schema();
         Schema timeline = new Schema();
         
-        service_host.add(vo);
-        service_host.add(vo_fqan);
+        service_host.add(profile);
         service_host.add(roc);
         service_host.add(site);
         service_host.add(service);
-        service_host.add(hostname);
+       
         
-        timeline.add(profile);
+     
         timeline.add(timestamp);
         timeline.add(status);
         timeline.add(prev_state);
