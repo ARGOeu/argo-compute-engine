@@ -70,6 +70,8 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute-engine.conf
 
 %changelog
+* Wed Dec 17 2014 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.0-2%{?dist}
+- Add support for producing status result aggregations. S
 * Wed Dec 03 2014 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.0-1%{?dist}
 - Add support for producing status results. Add Support for handling avro files
 * Thu Nov 13 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.4.6-1%{?dist}
