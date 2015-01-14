@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+
+# Gather MongoDB info
+MONGO_HOST=$(grep --only-matching --perl-regex "(?<=mongo_host\=).*" /etc/ar-compute-engine.conf)
+MONGO_PORT=$(grep --only-matching --perl-regex "(?<=mongo_port\=).*" /etc/ar-compute-engine.conf)
+
 # Create or ensure empty /tmp/avro directory
 echo "clean /tmp/avro"
 mkdir -p /tmp/avro
@@ -42,8 +47,8 @@ echo "Launch site info upload"
 
 pig \
 -param site_date=./tmp/avro/sites_$DAY_BEFORE_UNDER.out \
--param mongo_host="localhost" \
--param mongo_port=27017 \
+-param mongo_host=$MONGO_HOST \
+-param mongo_port=$MONGO_PORT \
 -f /usr/libexec/ar-compute/pig/sites.pig
 
 # Pig launch for statuses
@@ -54,7 +59,7 @@ pig  \
 -param target_file=./tmp/avro/ar-consumer_log_$DAY_TARGET.avro \
 -param prev_date=$DAY_BEFORE_INT \
 -param target_date=$DAY_TARGET_INT \
--param mongo_host="localhost" \
--param mongo_port=27017 \
+-param mongo_host=$MONGO_HOST \
+-param mongo_port=$MONGO_PORT \
 -f /usr/libexec/ar-compute/pig/status_detailed.pig
 
