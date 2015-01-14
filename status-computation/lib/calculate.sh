@@ -25,7 +25,7 @@
 # Framework Programme (contract # INFSO-RI-261323) 
 
 #CHECK TO SEE IF WE HAVE SERIALIZATION
-SERIALZ=$(grep --only-matching --perl-regex "(?<=serialization\=).*" /etc/ar-compute.conf)
+SERIALZ=$(grep --only-matching --perl-regex "(?<=serialization\=).*" /etc/ar-compute-engine.conf)
 echo "serialization:" $SERIALZ
 if [[ $SERIALZ = "avro" ]]
 then
