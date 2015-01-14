@@ -214,4 +214,7 @@ rm -f hepspec_sync_$RUN_DATE_UNDER.zip
 rm -f sites_$RUN_DATE_UNDER.aa 
 rm -f sites_$RUN_DATE_UNDER.ab 
 rm -f sites_$RUN_DATE_UNDER.ac 
-rm -f *.dec 
+rm -f *.dec
+
+### produce status results along with computations
+/usr/libexec/ar-compute/avro/prep_status_files.sh $(/bin/date --utc +\%Y-\%m-\%d) 
