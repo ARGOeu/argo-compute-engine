@@ -85,11 +85,12 @@ public class PrevState extends EvalFunc<Tuple> {
 		Tuple item;
 		
 		String prevState = "UNKNOWN";
-		
+		String prevTs = "";
 		for (int i=0;i<timeline.size();i++)
 		{
 			 item = myit.next();
 			 item.append(prevState);
+			 item.append(prevTs);
 			 
 			 // Calculate integer of date and time
 			 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -113,6 +114,7 @@ public class PrevState extends EvalFunc<Tuple> {
 			 item.append(time_int);
 			 
 			 prevState = (String) item.get(1);
+			 prevTs = (String) item.get(0);
 		}
 		input.append((String)sites.get(hostname));
 		return input;
@@ -139,6 +141,7 @@ public class PrevState extends EvalFunc<Tuple> {
         Schema.FieldSchema summary = new Schema.FieldSchema("summary", DataType.CHARARRAY);
         Schema.FieldSchema message = new Schema.FieldSchema("message", DataType.CHARARRAY);
         Schema.FieldSchema prev_state = new Schema.FieldSchema("prev_state", DataType.CHARARRAY);
+        Schema.FieldSchema prev_ts = new Schema.FieldSchema("prev_ts",DataType.CHARARRAY);
         Schema.FieldSchema date_int = new Schema.FieldSchema("date_int", DataType.INTEGER);
         Schema.FieldSchema time_int = new Schema.FieldSchema("time_int", DataType.INTEGER);
         
@@ -158,6 +161,7 @@ public class PrevState extends EvalFunc<Tuple> {
         timeline.add(summary);
         timeline.add(message);
         timeline.add(prev_state);
+        timeline.add(prev_ts);
         timeline.add(date_int);
         timeline.add(time_int);
         
