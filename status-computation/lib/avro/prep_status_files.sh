@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # Create or ensure empty /tmp/avro directory
-set -x
 echo "clean /tmp/avro"
 mkdir -p /tmp/avro
 rm -f /tmp/avro/*
@@ -11,6 +10,7 @@ echo "Target day will be $DAY_TARGET"
 DAY_BEFORE=$(date -d "$DAY_TARGET -1 day" +%Y-%m-%d)
 DAY_BEFORE_UNDER=`echo $DAY_BEFORE | sed 's/-/_/g'`
 DAY_BEFORE_INT=`echo $DAY_BEFORE | sed 's/-//g'`
+DAY_TARGET_INT=`echo $DAY_TARGET | sed 's/-//g'`
 echo "Day before will be $DAY_BEFORE"
 # Remove duplicates for target day and day before consumer files
 echo "Remove consumer data duplicates for day $DAY_BEFORE"
@@ -19,9 +19,9 @@ echo "Remove consumer data duplicates for day $DAY_TARGET"
 cat /var/lib/ar-consumer/ar-consumer_log_details_$DAY_TARGET.txt | sort -u > /tmp/avro/ar-consumer_log_$DAY_TARGET.min
 # Encode in avro format
 echo "Encode avro file for day $DAY_BEFORE"
-java -jar avro_encoder.jar consumer_detail.avsc /tmp/avro/ar-consumer_log_$DAY_BEFORE.min /tmp/avro/ar-consumer_log_$DAY_BEFORE.avro
+java -jar /usr/libexec/ar-compute/avro/avro_encoder.jar /usr/libexec/ar-compute/avro/consumer_detail.avsc /tmp/avro/ar-consumer_log_$DAY_BEFORE.min /tmp/avro/ar-consumer_log_$DAY_BEFORE.avro
 echo "Encode avro file for day $DAY_TARGET"
-java -jar avro_encoder.jar consumer_detail.avsc /tmp/avro/ar-consumer_log_$DAY_TARGET.min /tmp/avro/ar-consumer_log_$DAY_TARGET.avro
+java -jar /usr/libexec/ar-compute/avro/avro_encoder.jar /usr/libexec/ar-compute/avro/consumer_detail.avsc /tmp/avro/ar-consumer_log_$DAY_TARGET.min /tmp/avro/ar-consumer_log_$DAY_TARGET.avro
 # Clean HDFS directory 
 echo "clean HDFS ../tmp/avro"
 hadoop fs -mkdir -p ./tmp/avro
@@ -35,13 +35,14 @@ hadoop fs -put /tmp/avro/ar-consumer_log_$DAY_BEFORE.avro ./tmp/avro
 hadoop fs -put /tmp/avro/ar-consumer_log_$DAY_TARGET.avro ./tmp/avro
 # Clean MongoDB from data
 echo "MongoDB: Delete status_metric data for day $DAY_TARGET"
-/usr/libexec/ar-compute/lib/mongo-date-delete.py $DAY_TARGET
+/usr/libexec/ar-compute/avro/mongo_status_date_delete.py $DAY_TARGET
+
 # Pig launch for sites
 echo "Launch site info upload"
 
 pig \
 -param site_date=./tmp/avro/sites_$DAY_BEFORE_UNDER.out \
--param mongo_host="192.168.0.99" \
+-param mongo_host="localhost" \
 -param mongo_port=27017 \
 -f /usr/libexec/ar-compute/pig/sites.pig
 
@@ -52,7 +53,8 @@ pig  \
 -param prev_file=./tmp/avro/ar-consumer_log_$DAY_BEFORE.avro \
 -param target_file=./tmp/avro/ar-consumer_log_$DAY_TARGET.avro \
 -param prev_date=$DAY_BEFORE_INT \
--param mongo_host="192.168.0.99" \
+-param target_date=$DAY_TARGET_INT \
+-param mongo_host="localhost" \
 -param mongo_port=27017 \
 -f /usr/libexec/ar-compute/pig/status_detailed.pig
 
