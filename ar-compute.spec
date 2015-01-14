@@ -70,7 +70,7 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute-engine.conf
 
 %changelog
-* Wed Jan 14 2014 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.0.-3%{?dist}
+* Wed Jan 14 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.0.-3%{?dist}
 - Add support for Previous timestamp. Various Fixes
 * Wed Dec 17 2014 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.0-2%{?dist}
 - Add support for producing status result aggregations.
