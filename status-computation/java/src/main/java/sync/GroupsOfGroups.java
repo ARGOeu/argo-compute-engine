@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
@@ -16,45 +15,42 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
 
 
-public class GroupEndpointSync {
+public class GroupsOfGroups {
 
-	private ArrayList<GroupEndpoint> list;
+private ArrayList<Group> list;
 	
 	
-	private class GroupEndpoint
+	private class Group
 	{
 		String type; 	  //type of group
 		String group; 	  // name of the group
-		String service;   //type of the service
-		String hostname;  //type of hostname
-		Map<String,String> tags; //Tag list
+		String subgroup;   //type of the service
+		HashMap<String,String> tags; //Tag list
 		
-		public GroupEndpoint(){
+		public Group(){
 			// Initializations
 			this.type=""; 
 			this.group=""; 	  
-			this.service="";   
-			this.hostname="";  
+			this.subgroup="";   
 			this.tags = new HashMap<String,String>();
 		}
 		
-		public GroupEndpoint(String _type, String _group, String _service, String _hostname, HashMap<String,String> _tags){
+		public Group(String _type, String _group, String _subgroup, HashMap<String,String> _tags){
 			this.type = _type;
 			this.group = _group;
-			this.service = _service;
-			this.hostname = _hostname;
+			this.subgroup = _subgroup;
 			this.tags = _tags;
 
 		}
 		
 	}
 	
-	public GroupEndpointSync(){
-		list = new ArrayList<GroupEndpoint>();
+	public GroupsOfGroups(){
+		list = new ArrayList<Group>();
 	}
 	
-    public int insert(String _type, String _group, String _service, String _hostname, HashMap<String,String> _tags){
-    	GroupEndpoint new_item = new GroupEndpoint(_type,_group,_service,_hostname,_tags);
+    public int insert(String _type, String _group, String _subgroup, HashMap<String,String> _tags){
+    	Group new_item = new Group(_type,_group,_subgroup,_tags);
     	this.list.add(new_item);
     	return 0; //All good
     }
@@ -103,11 +99,11 @@ public class GroupEndpointSync {
 			// Grab 1st level mandatory fields
 			String type = avro_row.get("type").toString();
 			String group = avro_row.get("group").toString();
-			String service = avro_row.get("service").toString();
-			String hostname = avro_row.get("hostname").toString();
+			String service = avro_row.get("subgroup").toString();
+			
 			
 			// Insert data to list
-			this.insert(type,group,service,hostname,tag_map);
+			this.insert(type,group,service,tag_map);
 			
 		} // end of avro rows
 	
@@ -115,5 +111,6 @@ public class GroupEndpointSync {
 		
 		return 0; // allgood
 	}
+	
 	
 }

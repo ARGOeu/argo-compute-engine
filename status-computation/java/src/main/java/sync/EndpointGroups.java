@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
@@ -15,42 +16,45 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
 
 
-public class GroupSync {
+public class EndpointGroups {
 
-private ArrayList<Group> list;
+	private ArrayList<GroupEndpoint> list;
 	
 	
-	private class Group
+	private class GroupEndpoint
 	{
 		String type; 	  //type of group
 		String group; 	  // name of the group
-		String subgroup;   //type of the service
+		String service;   //type of the service
+		String hostname;  //type of hostname
 		HashMap<String,String> tags; //Tag list
 		
-		public Group(){
+		public GroupEndpoint(){
 			// Initializations
 			this.type=""; 
 			this.group=""; 	  
-			this.subgroup="";   
+			this.service="";   
+			this.hostname="";  
 			this.tags = new HashMap<String,String>();
 		}
 		
-		public Group(String _type, String _group, String _subgroup, HashMap<String,String> _tags){
+		public GroupEndpoint(String _type, String _group, String _service, String _hostname, HashMap<String,String> _tags){
 			this.type = _type;
 			this.group = _group;
-			this.subgroup = _subgroup;
+			this.service = _service;
+			this.hostname = _hostname;
 			this.tags = _tags;
 
 		}
 		
 	}
 	
-	public GroupSync(){
-		list = new ArrayList<Group>();
+	public EndpointGroups(){
+		list = new ArrayList<GroupEndpoint>();
 	}
 	
-    public int insert(String _type, String _group, String _subgroup, HashMap<String,String> _tags){
-    	Group new_item = new Group(_type,_group,_subgroup,_tags);
+    public int insert(String _type, String _group, String _service, String _hostname, HashMap<String,String> _tags){
+    	GroupEndpoint new_item = new GroupEndpoint(_type,_group,_service,_hostname,_tags);
     	this.list.add(new_item);
     	return 0; //All good
     }
@@ -99,11 +103,11 @@ private ArrayList<Group> list;
 			// Grab 1st level mandatory fields
 			String type = avro_row.get("type").toString();
 			String group = avro_row.get("group").toString();
-			String service = avro_row.get("subgroup").toString();
-			
+			String service = avro_row.get("service").toString();
+			String hostname = avro_row.get("hostname").toString();
 			
 			// Insert data to list
-			this.insert(type,group,service,tag_map);
+			this.insert(type,group,service,hostname,tag_map);
 			
 		} // end of avro rows
 	
@@ -111,6 +115,5 @@ private ArrayList<Group> list;
 		
 		return 0; // allgood
 	}
-	
 	
 }
