@@ -23,10 +23,10 @@ public class EndpointGroups {
 	
 	private class EndpointItem
 	{
-		String type; 	  //type of group
-		String group; 	  // name of the group
-		String service;   //type of the service
-		String hostname;  //type of hostname
+		String type; 	  			//type of group
+		String group; 	  			// name of the group
+		String service;   			//type of the service
+		String hostname;  			// name of host
 		HashMap<String,String> tags; //Tag list
 		
 		public EndpointItem(){

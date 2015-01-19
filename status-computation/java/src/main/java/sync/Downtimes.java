@@ -24,10 +24,10 @@ private ArrayList<DowntimeItem> list;
 	
 	private class DowntimeItem
 	{
-		String hostname; 	  //type of group
-		String service; 	  // name of the group
-		String start_time;   //type of the service
-		String end_time;   //type of the service
+		String hostname; 	  // name of host
+		String service; 	  // name of service
+		String start_time;    // declare start time of downtime 
+		String end_time;      // declare end time of downtime
 		
 		
 		public DowntimeItem(){

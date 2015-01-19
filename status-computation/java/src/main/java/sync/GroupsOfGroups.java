@@ -22,9 +22,9 @@ private ArrayList<GroupItem> list;
 	
 	private class GroupItem
 	{
-		String type; 	  //type of group
-		String group; 	  // name of the group
-		String subgroup;   //type of the service
+		String type; 	  			//type of group
+		String group; 	  			// name of the group
+		String subgroup;   			// name of sub-group
 		HashMap<String,String> tags; //Tag list
 		
 		public GroupItem(){
