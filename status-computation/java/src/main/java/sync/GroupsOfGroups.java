@@ -17,17 +17,17 @@ import org.apache.avro.io.DatumReader;
 
 public class GroupsOfGroups {
 
-private ArrayList<GroupofGroup> list;
+private ArrayList<GroupItem> list;
 	
 	
-	private class GroupofGroup
+	private class GroupItem
 	{
 		String type; 	  //type of group
 		String group; 	  // name of the group
 		String subgroup;   //type of the service
 		HashMap<String,String> tags; //Tag list
 		
-		public GroupofGroup(){
+		public GroupItem(){
 			// Initializations
 			this.type=""; 
 			this.group=""; 	  
@@ -35,7 +35,7 @@ private ArrayList<GroupofGroup> list;
 			this.tags = new HashMap<String,String>();
 		}
 		
-		public GroupofGroup(String _type, String _group, String _subgroup, HashMap<String,String> _tags){
+		public GroupItem(String _type, String _group, String _subgroup, HashMap<String,String> _tags){
 			this.type = _type;
 			this.group = _group;
 			this.subgroup = _subgroup;
@@ -46,11 +46,11 @@ private ArrayList<GroupofGroup> list;
 	}
 	
 	public GroupsOfGroups(){
-		list = new ArrayList<GroupofGroup>();
+		list = new ArrayList<GroupItem>();
 	}
 	
     public int insert(String _type, String _group, String _subgroup, HashMap<String,String> _tags){
-    	GroupofGroup new_item = new GroupofGroup(_type,_group,_subgroup,_tags);
+    	GroupItem new_item = new GroupItem(_type,_group,_subgroup,_tags);
     	this.list.add(new_item);
     	return 0; //All good
     }

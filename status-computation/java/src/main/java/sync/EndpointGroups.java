@@ -18,10 +18,10 @@ import org.apache.avro.io.DatumReader;
 
 public class EndpointGroups {
 
-	private ArrayList<EndpointGroup> list;
+	private ArrayList<EndpointItem> list;
 	
 	
-	private class EndpointGroup
+	private class EndpointItem
 	{
 		String type; 	  //type of group
 		String group; 	  // name of the group
@@ -29,7 +29,7 @@ public class EndpointGroups {
 		String hostname;  //type of hostname
 		HashMap<String,String> tags; //Tag list
 		
-		public EndpointGroup(){
+		public EndpointItem(){
 			// Initializations
 			this.type=""; 
 			this.group=""; 	  
@@ -38,7 +38,7 @@ public class EndpointGroups {
 			this.tags = new HashMap<String,String>();
 		}
 		
-		public EndpointGroup(String _type, String _group, String _service, String _hostname, HashMap<String,String> _tags){
+		public EndpointItem(String _type, String _group, String _service, String _hostname, HashMap<String,String> _tags){
 			this.type = _type;
 			this.group = _group;
 			this.service = _service;
@@ -50,11 +50,11 @@ public class EndpointGroups {
 	}
 	
 	public EndpointGroups(){
-		list = new ArrayList<EndpointGroup>();
+		list = new ArrayList<EndpointItem>();
 	}
 	
     public int insert(String _type, String _group, String _service, String _hostname, HashMap<String,String> _tags){
-    	EndpointGroup new_item = new EndpointGroup(_type,_group,_service,_hostname,_tags);
+    	EndpointItem new_item = new EndpointItem(_type,_group,_service,_hostname,_tags);
     	this.list.add(new_item);
     	return 0; //All good
     }

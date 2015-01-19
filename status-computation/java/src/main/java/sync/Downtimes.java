@@ -19,10 +19,10 @@ import org.apache.avro.io.DatumReader;
 public class Downtimes {
 	
 
-private ArrayList<Downtime> list;
+private ArrayList<DowntimeItem> list;
 	
 	
-	private class Downtime
+	private class DowntimeItem
 	{
 		String hostname; 	  //type of group
 		String service; 	  // name of the group
@@ -30,7 +30,7 @@ private ArrayList<Downtime> list;
 		String end_time;   //type of the service
 		
 		
-		public Downtime(){
+		public DowntimeItem(){
 			// Initializations
 			this.hostname=""; 
 			this.service=""; 	  
@@ -38,7 +38,7 @@ private ArrayList<Downtime> list;
 			this.end_time="";
 		}
 		
-		public Downtime(String _hostname, String _service, String _start_time, String _end_time){
+		public DowntimeItem(String _hostname, String _service, String _start_time, String _end_time){
 			this.hostname = _hostname;
 			this.service = _service;
 			this.start_time = _start_time;
@@ -49,11 +49,11 @@ private ArrayList<Downtime> list;
 	}
 	
 	public Downtimes(){
-		list = new ArrayList<Downtime>();
+		list = new ArrayList<DowntimeItem>();
 	}
 	
     public int insert(String _hostname, String _service, String _start_time,  String _end_time){
-    	Downtime new_item = new Downtime(_hostname,_service,_start_time,_end_time);
+    	DowntimeItem new_item = new DowntimeItem(_hostname,_service,_start_time,_end_time);
     	this.list.add(new_item);
     	return 0; //All good
     }

@@ -7,17 +7,17 @@ import java.util.Map;
 
 public class MetricProfiles {
 	
-	private ArrayList<MetricProfile> list;
+	private ArrayList<ProfileItem> list;
 	private Map<String,HashMap<String,ArrayList<String>>>  index;
 	
-	private class MetricProfile
+	private class ProfileItem
 	{
 		String profile;	//Name of the profile
 		String service; //Name of the service type
 		String metric;  //Name of the metric
 		HashMap<String,String> tags; //Tag list
 		
-		public MetricProfile(){
+		public ProfileItem(){
 			// Initializations
 			this.profile="";
 			this.service="";
@@ -25,7 +25,7 @@ public class MetricProfiles {
 			this.tags = new HashMap<String,String>();
 		}
 		
-		public MetricProfile(String _profile, String _service, String _metric, HashMap<String,String> _tags)
+		public ProfileItem(String _profile, String _service, String _metric, HashMap<String,String> _tags)
 		{
 			this.profile = _profile;
 			this.service = _service;
@@ -35,13 +35,13 @@ public class MetricProfiles {
 	}
 	
 	public MetricProfiles(){
-		this.list = new ArrayList<MetricProfile>();
+		this.list = new ArrayList<ProfileItem>();
 		this.index = new HashMap<String,HashMap<String,ArrayList<String>>>();
 	}
 	
 	// Clear all profile data (both list and indexes)
 	public void clear(){
-		this.list = new ArrayList<MetricProfile>();
+		this.list = new ArrayList<ProfileItem>();
 		this.index = new HashMap<String,HashMap<String,ArrayList<String>>>();
 	}
 	
