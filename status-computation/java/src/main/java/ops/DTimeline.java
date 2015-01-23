@@ -61,12 +61,31 @@ public class DTimeline {
 		
 		int total_minutes = (cal.get(Calendar.HOUR_OF_DAY) * 60) + cal.get(Calendar.MINUTE);
 		
-		return  total_minutes/this.s_interval;
+		return  (total_minutes/this.s_interval) -1; //Normalize for array indexing
 	}
 	
 	public void insertState(String _timestamp, int _state ) throws ParseException{
 		int slot = this.timestampToSlot(_timestamp);
 		this.input_states.put(slot,_state);
+	}
+	
+	public void applyStates()
+	{
+		int prev_state = this.start_state;
+		int prev_slot = 0;
+		for (int item : this.input_states.keySet())
+		{
+			this.samples[item] = this.input_states.get(item);
+			// fill previous states
+			for (int i=prev_slot;i<item;i++)
+			{
+				this.samples[i] = prev_state;
+			}
+			// set the prev_state and prev_slot
+			prev_state = this.input_states.get(item);
+			prev_slot = item + 1;
+		}
+		
 	}
 	
 
