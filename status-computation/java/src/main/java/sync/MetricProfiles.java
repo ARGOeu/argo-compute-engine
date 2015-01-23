@@ -1,9 +1,20 @@
 package sync;
 
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import org.apache.avro.Schema;
+import org.apache.avro.Schema.Field;
+import org.apache.avro.file.DataFileReader;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericDatumReader;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.io.DatumReader;
 
 public class MetricProfiles {
 	
@@ -52,6 +63,13 @@ public class MetricProfiles {
 			return 0;
 		}
 		return -1;
+	}
+	
+	public void insert(String profile, String service, String metric, HashMap<String,String> tags )
+	{
+		ProfileItem tmpProfile = new ProfileItem(profile,service,metric,tags);
+		this.list.add(tmpProfile);
+		this.indexInsertMetric(profile, service, metric);
 	}
 	
 	public int indexInsertService(String profile, String service){
@@ -141,6 +159,60 @@ public class MetricProfiles {
 		return false;
 	}
 	
+	public int loadAvro(File avroFile) throws IOException{
+		
+		
+		// Prepare Avro File Readers
+		DatumReader<GenericRecord> datumReader = new GenericDatumReader<GenericRecord>();
+		DataFileReader<GenericRecord> dataFileReader = new DataFileReader<GenericRecord>(avroFile, datumReader);
+		
+		// Grab avro schema 
+		Schema avroSchema = dataFileReader.getSchema();
+		
+		// Generate 1st level generic record reader (rows)
+		GenericRecord avroRow = new GenericData.Record(avroSchema);
+		
+		// For all rows in file repeat
+		while (dataFileReader.hasNext()) {
+			// read the row
+			avroRow = dataFileReader.next(avroRow);
+			HashMap<String,String> tagMap = new HashMap<String,String>();
+			System.out.println(avroRow); 
+			// Generate 2nd level generic record reader (tags)
+			GenericRecord tags = (GenericRecord) avroRow.get("tags");
+			// Grab all available tag fields
+			if (tags != null)
+			{
+				List<Field> tagList = tags.getSchema().getFields();
+				// Prepare Hashmap
+				
+				// Iterate over tag fields & values 
+				for (Field item : tagList)
+				{
+					String fieldName = item.name(); // grab field name
+					String fieldValue = null;  
+					// if field value not null store it as string value 
+					if (tags.get(fieldName) != null)
+					{
+						fieldValue = tags.get(fieldName).toString();
+					}
+					tagMap.put(fieldName, fieldValue); // update the tag hashmap
+				}
+			}
+			// Grab 1st level mandatory fields
+			String profile = avroRow.get("profile").toString();
+			String service = avroRow.get("service").toString();
+			String metric = avroRow.get("metric").toString();
+			
+			
+			// Insert data to list
+			this.insert(profile,service,metric,tagMap);
+			
+		} // end of avro rows
 	
+		dataFileReader.close();
+		
+		return 0; // allgood
+	}
 
 }
