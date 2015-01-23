@@ -18,88 +18,88 @@ public class OpsManager {
 	
 	private HashMap<String,Integer> states;
 	private HashMap<String,Integer> ops;
-	private ArrayList<String> reverse_states;
-	private ArrayList<String> reverse_ops;
+	private ArrayList<String> revStates;
+	private ArrayList<String> revOps;
 	
-	private int[][][] truth_table;
+	private int[][][] truthTable;
 	
 	private boolean order;
 	
 	OpsManager(){
-		states = new HashMap<String,Integer>();
-		ops = new HashMap<String,Integer>();
-		reverse_states = new ArrayList<String>();
-		reverse_ops = new ArrayList<String>();
+		this.states = new HashMap<String,Integer>();
+		this.ops = new HashMap<String,Integer>();
+		this.revStates = new ArrayList<String>();
+		this.revOps = new ArrayList<String>();
 		
-		truth_table = null;
+		this.truthTable = null;
 		
-		order = false;;
+		this.order = false;;
 	}
 	
 	OpsManager(boolean _order){
-		states = new HashMap<String,Integer>();
-		ops = new HashMap<String,Integer>();
-		reverse_states = new ArrayList<String>();
-		reverse_ops = new ArrayList<String>();
-		order = _order;
+		this.states = new HashMap<String,Integer>();
+		this.ops = new HashMap<String,Integer>();
+		this.revStates = new ArrayList<String>();
+		this.revOps = new ArrayList<String>();
+		this.order = _order;
 		
-		truth_table = null;
+		this.truthTable = null;
 	}
 	
 	public void clear()
 	{
-		states = new HashMap<String,Integer>();
-		ops = new HashMap<String,Integer>();
-		reverse_states = new ArrayList<String>();
-		reverse_ops = new ArrayList<String>();
+		this.states = new HashMap<String,Integer>();
+		this.ops = new HashMap<String,Integer>();
+		this.revStates = new ArrayList<String>();
+		this.revOps = new ArrayList<String>();
 		
-		truth_table = null;
+		this.truthTable = null;
 	}
 	
 	public int opInt(int op,int a, int b)
 	{
-		return this.truth_table[op][a][b];
+		return this.truthTable[op][a][b];
 	}
 	
 	public int opInt(String op,String a, String b)
 	{
-		int op_int = this.ops.get(op);
-		int a_int = this.states.get(a);
-		int b_int = this.states.get(b);
+		int opInt = this.ops.get(op);
+		int aInt = this.states.get(a);
+		int bInt = this.states.get(b);
 		
-		return this.truth_table[op_int][a_int][b_int];
+		return this.truthTable[opInt][aInt][bInt];
 	}
 	
 	
 	
 	public String op(int op,int a, int b)
 	{
-		return this.reverse_states.get(this.truth_table[op][a][b]);
+		return this.revStates.get(this.truthTable[op][a][b]);
 	}
 	
 	public String op(String op,String a, String b)
 	{
-		int op_int = this.ops.get(op);
-		int a_int = this.states.get(a);
-		int b_int = this.states.get(b);
+		int opInt = this.ops.get(op);
+		int aInt = this.states.get(a);
+		int bInt = this.states.get(b);
 		
-		return this.reverse_states.get(this.truth_table[op_int][a_int][b_int]);
+		return this.revStates.get(this.truthTable[opInt][aInt][bInt]);
 	}
 	
-	public String getStatus(int _status){
-		return this.reverse_states.get(_status);
+	public String getStatus(int status){
+		return this.revStates.get(status);
 	}
 	
-	public int getStatus(String _status){
-		return this.states.get(_status);
+	public int getStatus(String status){
+		return this.states.get(status);
 	}
 	
-	public String getOperations(int _status){
-		return this.reverse_states.get(_status);
+	public String getOperations(int status){
+		return this.revStates.get(status);
 	}
 	
-	public int getOperations(String _status){
-		return this.states.get(_status);
+	public int getOperations(String status){
+		return this.states.get(status);
 	}
 	
 	
@@ -121,7 +121,7 @@ public class OpsManager {
 		for (int i=0;i<j_states.size();i++)
 		{
 			this.states.put(j_states.get(i).getAsString(),i);
-			this.reverse_states.add(j_states.get(i).getAsString());
+			this.revStates.add(j_states.get(i).getAsString());
 			
 		}
 		
@@ -130,15 +130,15 @@ public class OpsManager {
 		for (Entry<String,JsonElement> item : j_ops.entrySet())
 		{
 			this.ops.put(item.getKey(), i);
-			this.reverse_ops.add(item.getKey());
+			this.revOps.add(item.getKey());
 			i++;
 		}
 		// Initialize the truthtable
-		int num_ops = this.reverse_ops.size();
-		int num_states = this.reverse_states.size();
-		this.truth_table = new int[num_ops][num_states][num_states];
+		int num_ops = this.revOps.size();
+		int num_states = this.revStates.size();
+		this.truthTable = new int[num_ops][num_states][num_states];
 		
-		for (int[][] surface : this.truth_table) {
+		for (int[][] surface : this.truthTable) {
 	        for (int[] line : surface) {
 	            Arrays.fill(line, -1);
 	        }
@@ -164,10 +164,10 @@ public class OpsManager {
 				//Fill in truth table
 				// Check if order sensitivity is off so to insert two truth values 
 				// ...[a][b] and [b][a]
-				this.truth_table[op_val][a_val][b_val] = x_val;
+				this.truthTable[op_val][a_val][b_val] = x_val;
 				if (!this.order)
 				{
-					this.truth_table[op_val][b_val][a_val] = x_val;
+					this.truthTable[op_val][b_val][a_val] = x_val;
 				}
 			}
 		}
