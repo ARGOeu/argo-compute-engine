@@ -26,87 +26,85 @@ private ArrayList<DowntimeItem> list;
 	{
 		String hostname; 	  // name of host
 		String service; 	  // name of service
-		String start_time;    // declare start time of downtime 
-		String end_time;      // declare end time of downtime
+		String startTime;    // declare start time of downtime 
+		String endTime;      // declare end time of downtime
 		
 		
 		public DowntimeItem(){
 			// Initializations
 			this.hostname=""; 
 			this.service=""; 	  
-			this.start_time="";   
-			this.end_time="";
+			this.startTime="";   
+			this.endTime="";
 		}
 		
-		public DowntimeItem(String _hostname, String _service, String _start_time, String _end_time){
-			this.hostname = _hostname;
-			this.service = _service;
-			this.start_time = _start_time;
-			this.end_time = _end_time;
-
+		public DowntimeItem(String hostname, String service, String startTime, String endTime){
+			this.hostname = hostname;
+			this.service = service;
+			this.startTime = startTime;
+			this.endTime = endTime;
 		}
 		
 	}
 	
 	public Downtimes(){
-		list = new ArrayList<DowntimeItem>();
+		this.list = new ArrayList<DowntimeItem>();
 	}
 	
-    public int insert(String _hostname, String _service, String _start_time,  String _end_time){
-    	DowntimeItem new_item = new DowntimeItem(_hostname,_service,_start_time,_end_time);
-    	this.list.add(new_item);
+    public int insert(String hostname, String service, String startTime,  String endTime){
+    	DowntimeItem tmpItem = new DowntimeItem(hostname,service,startTime,endTime);
+    	this.list.add(tmpItem);
     	return 0; //All good
     }
     
 	
-	public int loadAvro(File avro_file) throws IOException{
-		
+	public int loadAvro(File avroFile) throws IOException{
 	
 		// Prepare Avro File Readers
 		DatumReader<GenericRecord> datumReader = new GenericDatumReader<GenericRecord>();
-		DataFileReader<GenericRecord> dataFileReader = new DataFileReader<GenericRecord>(avro_file, datumReader);
+		DataFileReader<GenericRecord> dataFileReader = new DataFileReader<GenericRecord>(avroFile, datumReader);
 		
 		// Grab avro schema 
-		Schema avro_schema = dataFileReader.getSchema();
+		Schema avroSchema = dataFileReader.getSchema();
 		
 		// Generate 1st level generic record reader (rows)
-		GenericRecord avro_row = new GenericData.Record(avro_schema);
+		GenericRecord avroRow = new GenericData.Record(avroSchema);
 		
 		// For all rows in file repeat
 		while (dataFileReader.hasNext()) {
 			// read the row
-			avro_row = dataFileReader.next(avro_row);
-			HashMap<String,String> tag_map = new HashMap<String,String>();
-			System.out.println(avro_row); 
+			avroRow = dataFileReader.next(avroRow);
+			HashMap<String,String> tagMap = new HashMap<String,String>();
+			System.out.println(avroRow); 
 			// Generate 2nd level generic record reader (tags)
-			GenericRecord tags = (GenericRecord) avro_row.get("tags");
+			GenericRecord tags = (GenericRecord) avroRow.get("tags");
 			// Grab all available tag fields
 			if (tags != null)
 			{
-				List<Field> tag_list = tags.getSchema().getFields();
+				List<Field> tagList = tags.getSchema().getFields();
 				// Prepare Hashmap
 				
 				// Iterate over tag fields & values 
-				for (Field item : tag_list)
+				for (Field item : tagList)
 				{
-					String field_name = item.name(); // grab field name
-					String field_value = null;  
+					String fieldName = item.name(); // grab field name
+					String fieldValue = null;  
 					// if field value not null store it as string value 
-					if (tags.get(field_name) != null)
+					if (tags.get(fieldName) != null)
 					{
-						field_value = tags.get(field_name).toString();
+						fieldValue = tags.get(fieldName).toString();
 					}
-					tag_map.put(field_name, field_value); // update the tag hashmap
+					tagMap.put(fieldName, fieldValue); // update the tag hashmap
 				}
 			}
 			// Grab 1st level mandatory fields
-			String hostname = avro_row.get("hostname").toString();
-			String service = avro_row.get("service").toString();
-			String start_time = avro_row.get("start_time").toString();
-			String end_time = avro_row.get("end_time").toString();
+			String hostname = avroRow.get("hostname").toString();
+			String service = avroRow.get("service").toString();
+			String startTime = avroRow.get("start_time").toString();
+			String endTime = avroRow.get("end_time").toString();
 			
 			// Insert data to list
-			this.insert(hostname,service,start_time,end_time);
+			this.insert(hostname,service,startTime,endTime);
 			
 		} // end of avro rows
 	

@@ -35,11 +35,11 @@ private ArrayList<GroupItem> list;
 			this.tags = new HashMap<String,String>();
 		}
 		
-		public GroupItem(String _type, String _group, String _subgroup, HashMap<String,String> _tags){
-			this.type = _type;
-			this.group = _group;
-			this.subgroup = _subgroup;
-			this.tags = _tags;
+		public GroupItem(String type, String group, String subgroup, HashMap<String,String> tags){
+			this.type = type;
+			this.group = group;
+			this.subgroup = subgroup;
+			this.tags = tags;
 
 		}
 		
@@ -49,61 +49,61 @@ private ArrayList<GroupItem> list;
 		list = new ArrayList<GroupItem>();
 	}
 	
-    public int insert(String _type, String _group, String _subgroup, HashMap<String,String> _tags){
-    	GroupItem new_item = new GroupItem(_type,_group,_subgroup,_tags);
+    public int insert(String type, String group, String subgroup, HashMap<String,String> tags){
+    	GroupItem new_item = new GroupItem(type,group,subgroup,tags);
     	this.list.add(new_item);
     	return 0; //All good
     }
     
 	
-	public int loadAvro(File avro_file) throws IOException{
+	public int loadAvro(File avroFile) throws IOException{
 		
 	
 		// Prepare Avro File Readers
 		DatumReader<GenericRecord> datumReader = new GenericDatumReader<GenericRecord>();
-		DataFileReader<GenericRecord> dataFileReader = new DataFileReader<GenericRecord>(avro_file, datumReader);
+		DataFileReader<GenericRecord> dataFileReader = new DataFileReader<GenericRecord>(avroFile, datumReader);
 		
 		// Grab avro schema 
-		Schema avro_schema = dataFileReader.getSchema();
+		Schema avroSchema = dataFileReader.getSchema();
 		
 		// Generate 1st level generic record reader (rows)
-		GenericRecord avro_row = new GenericData.Record(avro_schema);
+		GenericRecord avroRow = new GenericData.Record(avroSchema);
 		
 		// For all rows in file repeat
 		while (dataFileReader.hasNext()) {
 			// read the row
-			avro_row = dataFileReader.next(avro_row);
-			HashMap<String,String> tag_map = new HashMap<String,String>();
-			System.out.println(avro_row); 
+			avroRow = dataFileReader.next(avroRow);
+			HashMap<String,String> tagMap = new HashMap<String,String>();
+			System.out.println(avroRow); 
 			// Generate 2nd level generic record reader (tags)
-			GenericRecord tags = (GenericRecord) avro_row.get("tags");
+			GenericRecord tags = (GenericRecord) avroRow.get("tags");
 			// Grab all available tag fields
 			if (tags != null)
 			{
-				List<Field> tag_list = tags.getSchema().getFields();
+				List<Field> tagList = tags.getSchema().getFields();
 				// Prepare Hashmap
 				
 				// Iterate over tag fields & values 
-				for (Field item : tag_list)
+				for (Field item : tagList)
 				{
-					String field_name = item.name(); // grab field name
-					String field_value = null;  
+					String fieldName = item.name(); // grab field name
+					String fieldValue = null;  
 					// if field value not null store it as string value 
-					if (tags.get(field_name) != null)
+					if (tags.get(fieldName) != null)
 					{
-						field_value = tags.get(field_name).toString();
+						fieldValue = tags.get(fieldName).toString();
 					}
-					tag_map.put(field_name, field_value); // update the tag hashmap
+					tagMap.put(fieldName, fieldValue); // update the tag hashmap
 				}
 			}
 			// Grab 1st level mandatory fields
-			String type = avro_row.get("type").toString();
-			String group = avro_row.get("group").toString();
-			String service = avro_row.get("subgroup").toString();
+			String type = avroRow.get("type").toString();
+			String group = avroRow.get("group").toString();
+			String service = avroRow.get("subgroup").toString();
 			
 			
 			// Insert data to list
-			this.insert(type,group,service,tag_map);
+			this.insert(type,group,service,tagMap);
 			
 		} // end of avro rows
 	

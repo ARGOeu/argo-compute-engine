@@ -25,12 +25,12 @@ public class MetricProfiles {
 			this.tags = new HashMap<String,String>();
 		}
 		
-		public ProfileItem(String _profile, String _service, String _metric, HashMap<String,String> _tags)
+		public ProfileItem(String profile, String service, String metric, HashMap<String,String> tags)
 		{
-			this.profile = _profile;
-			this.service = _service;
-			this.metric = _metric;
-			this.tags = _tags;
+			this.profile = profile;
+			this.service = service;
+			this.metric = metric;
+			this.tags = tags;
 		}
 	}
 	

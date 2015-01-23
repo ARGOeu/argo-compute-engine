@@ -38,12 +38,12 @@ public class EndpointGroups {
 			this.tags = new HashMap<String,String>();
 		}
 		
-		public EndpointItem(String _type, String _group, String _service, String _hostname, HashMap<String,String> _tags){
-			this.type = _type;
-			this.group = _group;
-			this.service = _service;
-			this.hostname = _hostname;
-			this.tags = _tags;
+		public EndpointItem(String type, String group, String service, String hostname, HashMap<String,String> tags){
+			this.type = type;
+			this.group = group;
+			this.service = service;
+			this.hostname = hostname;
+			this.tags = tags;
 
 		}
 		
@@ -53,61 +53,60 @@ public class EndpointGroups {
 		list = new ArrayList<EndpointItem>();
 	}
 	
-    public int insert(String _type, String _group, String _service, String _hostname, HashMap<String,String> _tags){
-    	EndpointItem new_item = new EndpointItem(_type,_group,_service,_hostname,_tags);
+    public int insert(String type, String group, String service, String hostname, HashMap<String,String> tags){
+    	EndpointItem new_item = new EndpointItem(type,group,service,hostname,tags);
     	this.list.add(new_item);
     	return 0; //All good
     }
     
 	
-	public int loadAvro(File avro_file) throws IOException{
-		
+	public int loadAvro(File avroFile) throws IOException{
 	
 		// Prepare Avro File Readers
 		DatumReader<GenericRecord> datumReader = new GenericDatumReader<GenericRecord>();
-		DataFileReader<GenericRecord> dataFileReader = new DataFileReader<GenericRecord>(avro_file, datumReader);
+		DataFileReader<GenericRecord> dataFileReader = new DataFileReader<GenericRecord>(avroFile, datumReader);
 		
-		// Grab avro schema 
-		Schema avro_schema = dataFileReader.getSchema();
+		// Grab Avro schema 
+		Schema avroSchema = dataFileReader.getSchema();
 		
 		// Generate 1st level generic record reader (rows)
-		GenericRecord avro_row = new GenericData.Record(avro_schema);
+		GenericRecord avroRow = new GenericData.Record(avroSchema);
 		
 		// For all rows in file repeat
 		while (dataFileReader.hasNext()) {
 			// read the row
-			avro_row = dataFileReader.next(avro_row);
-			HashMap<String,String> tag_map = new HashMap<String,String>();
-			System.out.println(avro_row); 
+			avroRow = dataFileReader.next(avroRow);
+			HashMap<String,String> tagMap = new HashMap<String,String>();
+			System.out.println(avroRow); 
 			// Generate 2nd level generic record reader (tags)
-			GenericRecord tags = (GenericRecord) avro_row.get("tags");
+			GenericRecord tags = (GenericRecord) avroRow.get("tags");
 			// Grab all available tag fields
 			if (tags != null)
 			{
-				List<Field> tag_list = tags.getSchema().getFields();
+				List<Field> tagList = tags.getSchema().getFields();
 				// Prepare Hashmap
 				
 				// Iterate over tag fields & values 
-				for (Field item : tag_list)
+				for (Field item : tagList)
 				{
-					String field_name = item.name(); // grab field name
-					String field_value = null;  
+					String fieldName = item.name(); // grab field name
+					String fieldValue = null;  
 					// if field value not null store it as string value 
-					if (tags.get(field_name) != null)
+					if (tags.get(fieldName) != null)
 					{
-						field_value = tags.get(field_name).toString();
+						fieldValue = tags.get(fieldName).toString();
 					}
-					tag_map.put(field_name, field_value); // update the tag hashmap
+					tagMap.put(fieldName, fieldValue); // update the tag hashmap
 				}
 			}
 			// Grab 1st level mandatory fields
-			String type = avro_row.get("type").toString();
-			String group = avro_row.get("group").toString();
-			String service = avro_row.get("service").toString();
-			String hostname = avro_row.get("hostname").toString();
+			String type = avroRow.get("type").toString();
+			String group = avroRow.get("group").toString();
+			String service = avroRow.get("service").toString();
+			String hostname = avroRow.get("hostname").toString();
 			
 			// Insert data to list
-			this.insert(type,group,service,hostname,tag_map);
+			this.insert(type,group,service,hostname,tagMap);
 			
 		} // end of avro rows
 	
