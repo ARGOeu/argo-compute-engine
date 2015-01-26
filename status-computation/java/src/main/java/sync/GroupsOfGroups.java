@@ -15,6 +15,8 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
 
 
+
+
 public class GroupsOfGroups {
 
 private ArrayList<GroupItem> list;
@@ -53,6 +55,19 @@ private ArrayList<GroupItem> list;
     	GroupItem new_item = new GroupItem(type,group,subgroup,tags);
     	this.list.add(new_item);
     	return 0; //All good
+    }
+    
+    public String getGroup(String type, String subgroup)
+    {
+    	for (GroupItem item : list)
+    	{
+    		if (item.type.equals(type) && item.subgroup.equals(subgroup))
+    		{
+    			return item.group; 
+    		}
+    	}
+    	
+    	return null;
     }
     
 	
