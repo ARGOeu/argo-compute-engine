@@ -28,6 +28,17 @@ public class EndpointGroupsTest {
 		// Test loading file
 		ge.loadAvro(avroFile);
 		assertNotNull("File Loaded",ge);
+		
+		// Test Check if service endpoint exists in topology
+		assertTrue(ge.checkEndpoint("storage1.grid.upjs.sk", "ARC-CE"));
+		assertTrue(ge.checkEndpoint("storage1.grid.upjs.sk", "ARC-CE"));
+		assertTrue(ge.checkEndpoint("grid-perfsonar.hpc.susx.ac.uk", "net.perfSONAR.Latency"));
+		
+		assertEquals(ge.getGroup("SITES", "gt3.pnpi.nw.ru", "CREAM-CE"),"ru-PNPI");
+		
+		assertEquals(ge.getGroup("SITES", "wms02.afroditi.hellasgrid.gr", "WMS"),"HG-03-AUTH");
+		
+		
 	}
 
 }
