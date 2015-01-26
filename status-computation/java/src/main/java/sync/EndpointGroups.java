@@ -59,6 +59,20 @@ public class EndpointGroups {
     	return 0; //All good
     }
     
+    public boolean checkEndpoint(String hostname, String service)
+    {
+    	for (EndpointItem item : list)
+    	{
+    		if (item.hostname.equals(hostname) && item.service.equals(service))
+    		{
+    			return true;
+    		}
+    	}
+    	
+    	return false;
+    }
+    
+    
 	
 	public int loadAvro(File avroFile) throws IOException{
 	
