@@ -62,6 +62,7 @@ private ArrayList<DowntimeItem> list;
 		
     	for (DowntimeItem item : this.list)
     	{
+    		
     		if (item.hostname.equals(hostname))
     		{
     			if (item.service.equals(service))
@@ -96,7 +97,7 @@ private ArrayList<DowntimeItem> list;
 			// read the row
 			avroRow = dataFileReader.next(avroRow);
 			HashMap<String,String> tagMap = new HashMap<String,String>();
-			System.out.println(avroRow); 
+			
 			// Generate 2nd level generic record reader (tags)
 			GenericRecord tags = (GenericRecord) avroRow.get("tags");
 			// Grab all available tag fields
