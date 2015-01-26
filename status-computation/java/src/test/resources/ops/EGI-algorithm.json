@@ -3,11 +3,10 @@
   "states":
   [
     "OK",
-    "CRITICAL",
     "WARNING",
-    "MISSING",
-    "DOWNTIME",
     "UNKNOWN",
+    "MISSING",
+    "CRITICAL",
     "DOWNTIME"
   ],
   
@@ -19,7 +18,7 @@
       { "A":"OK",       "B":"WARNING",  "X":"WARNING"  },
       { "A":"OK",       "B":"UNKNOWN",  "X":"UNKNOWN"  },
       { "A":"OK",       "B":"MISSING",  "X":"MISSING"  },
-      { "A":"OK",       "B":"CRITICAL", "X":"CRICITAL" },
+      { "A":"OK",       "B":"CRITICAL", "X":"CRITICAL" },
       { "A":"OK",       "B":"DOWNTIME", "X":"DOWNTIME" },
       { "A":"WARNING",  "B":"WARNING",  "X":"WARNING"  },
       { "A":"WARNING",  "B":"UNKNOWN",  "X":"UNKNOWN"  },
@@ -60,7 +59,7 @@
       { "A":"MISSING",  "B":"CRITICAL", "X":"CRITICAL" },
       { "A":"MISSING",  "B":"DOWNTIME", "X":"MISSING"  },
       { "A":"CRITICAL", "B":"CRITICAL", "X":"CRITICAL" },
-      { "A":"CRITICAL", "B":"DOWNTIME", "X":"CRITICAL" },
+      { "A":"CRITICAL", "B":"DOWNTIME", "X":"DOWNTIME" },
       { "A":"DOWNTIME", "B":"DOWNTIME", "X":"DOWNTIME" }
     ]
   } 
