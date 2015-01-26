@@ -56,14 +56,14 @@ public class WeightGroups {
     	return 0; //All good
     }
     
-    public float getWeight(String type, String group)
+    public int getWeight(String type, String group)
     {
     	if (list.containsKey(type)){
     		for (WeightItem item : list.get(type))
     		{
     			if (item.group.equals(group))
     			{
-    				return Float.parseFloat(item.weight);
+    				return Integer.parseInt(item.weight);
     			}
     		}
     	}
@@ -91,7 +91,7 @@ public class WeightGroups {
 			// read the row
 			avroRow = dataFileReader.next(avroRow);
 			HashMap<String,String> tagMap = new HashMap<String,String>();
-			System.out.println(avroRow); 
+			
 			// Generate 2nd level generic record reader (tags)
 			GenericRecord tags = (GenericRecord) avroRow.get("tags");
 			// Grab all available tag fields
