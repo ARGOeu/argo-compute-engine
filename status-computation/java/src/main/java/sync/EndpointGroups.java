@@ -72,7 +72,18 @@ public class EndpointGroups {
     	return false;
     }
     
-    
+    public String getGroup(String type, String hostname, String service)
+    {
+    	for (EndpointItem item : list)
+    	{
+    		if (item.type.equals(type) && item.hostname.equals(hostname) && item.service.equals(service))
+    		{
+    			return item.group; 
+    		}
+    	}
+    	
+    	return null;
+    }
 	
 	public int loadAvro(File avroFile) throws IOException{
 	
