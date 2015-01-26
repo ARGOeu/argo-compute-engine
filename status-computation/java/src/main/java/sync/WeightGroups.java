@@ -18,41 +18,41 @@ import org.apache.avro.io.DatumReader;
 
 public class WeightGroups {
 
-	private ArrayList<WeightItem> list;
+	private HashMap<String,ArrayList<WeightItem>> list;
 	
 	
 	private class WeightItem
 	{
-		String type; 	  //type of group
 		String group; 	  //name of the group
 		String weight;    //weight value
 		
-		
-		
 		public WeightItem(){
 			// Initializations
-			this.type=""; 
 			this.group=""; 	  
 			this.weight="";   
 			
 		}
 		
-		public WeightItem(String type, String group, String weight ){
-			this.type = type;
+		public WeightItem(String group, String weight ){
 			this.group = group;
 			this.weight = weight;
-			
 		}
-		
 	}
 	
 	public WeightGroups(){
-		list = new ArrayList<WeightItem>();
+		list = new HashMap<String,ArrayList<WeightItem>>();
 	}
 	
     public int insert(String type, String group, String weight){
-    	WeightItem new_item = new WeightItem(type,group,weight);
-    	this.list.add(new_item);
+    	WeightItem tmpItem = new WeightItem(group,weight);
+    	if (this.list.containsKey(type)){
+    		this.list.get(type).add(tmpItem);
+    	}else
+    	{
+    		this.list.put(type, new ArrayList<WeightItem>());
+    		this.list.get(type).add(tmpItem);
+    	}
+    
     	return 0; //All good
     }
     
