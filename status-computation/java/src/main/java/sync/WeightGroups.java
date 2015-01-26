@@ -56,6 +56,22 @@ public class WeightGroups {
     	return 0; //All good
     }
     
+    public float getWeight(String type, String group)
+    {
+    	if (list.containsKey(type)){
+    		for (WeightItem item : list.get(type))
+    		{
+    			if (item.group.equals(group))
+    			{
+    				return Float.parseFloat(item.weight);
+    			}
+    		}
+    	}
+    	
+    	return -1;
+    	
+    }
+    
 	
 	public int loadAvro(File avroFile) throws IOException{
 		
@@ -99,7 +115,7 @@ public class WeightGroups {
 			}
 			// Grab 1st level mandatory fields
 			String type = avroRow.get("type").toString();
-			String group = avroRow.get("group").toString();
+			String group = avroRow.get("site").toString();
 			String weight = avroRow.get("weight").toString();
 			
 			
