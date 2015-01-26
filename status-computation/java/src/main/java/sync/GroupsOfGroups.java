@@ -89,7 +89,7 @@ private ArrayList<GroupItem> list;
 			// read the row
 			avroRow = dataFileReader.next(avroRow);
 			HashMap<String,String> tagMap = new HashMap<String,String>();
-			System.out.println(avroRow); 
+			
 			// Generate 2nd level generic record reader (tags)
 			GenericRecord tags = (GenericRecord) avroRow.get("tags");
 			// Grab all available tag fields
