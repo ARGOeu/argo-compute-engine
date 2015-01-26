@@ -22,7 +22,7 @@ public class GroupsOfGroupsTest {
 	@Test
 	public void test() throws URISyntaxException, IOException {
 		//Prepare Resource File
-		URL resAvroFile = EndpointGroupsTest.class.getResource("/avro/group_groups_test.avro");
+		URL resAvroFile = GroupsOfGroupsTest.class.getResource("/avro/group_groups_test.avro");
 		File avroFile = new File(resAvroFile.toURI());
 		// Instatiate class
 		GroupsOfGroups gg = new GroupsOfGroups();

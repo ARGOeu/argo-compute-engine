@@ -16,7 +16,7 @@ public class DowntimesTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Assert that files are present
-		assertNotNull("Test file missing", MetricProfilesTest.class.getResource("/avro/downtimes_test.avro"));
+		assertNotNull("Test file missing", DowntimesTest.class.getResource("/avro/downtimes_test.avro"));
 	}
 	
 	@Test

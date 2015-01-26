@@ -16,7 +16,7 @@ public class WeightGroupsTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Assert that files are present
-		assertNotNull("Test file missing", MetricProfilesTest.class.getResource("/avro/weights_sync_test.avro"));
+		assertNotNull("Test file missing", WeightGroupsTest.class.getResource("/avro/weights_sync_test.avro"));
 	}
 	
 	@Test
