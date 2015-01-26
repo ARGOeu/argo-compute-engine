@@ -57,6 +57,27 @@ private ArrayList<DowntimeItem> list;
     	return 0; //All good
     }
     
+    public ArrayList<String> getPeriod(String hostname, String service){
+    	ArrayList<String> period = new ArrayList<String>();
+		
+    	for (DowntimeItem item : this.list)
+    	{
+    		if (item.hostname.equals(hostname))
+    		{
+    			if (item.service.equals(service))
+    			{
+    				period.add(item.startTime);
+    				period.add(item.endTime);
+    				return period;
+    			}
+    		}
+    	}
+    	
+    	return null;
+    	
+    	
+    	
+    }
 	
 	public int loadAvro(File avroFile) throws IOException{
 	
