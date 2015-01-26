@@ -29,6 +29,13 @@ public class GroupsOfGroupsTest {
 		// Test loading file
 		gg.loadAvro(avroFile);
 		assertNotNull("File Loaded",gg);
+		
+		// Test retrieve group by subgroup name and group type
+		assertEquals(gg.getGroup("NGI", "UNI-BONN"),"NGI_DE");
+		assertEquals(gg.getGroup("NGI", "MSFG-OPEN"),"NGI_FRANCE");
+		assertEquals(gg.getGroup("NGI", "HG-02-IASA"),"NGI_GRNET");
+		assertEquals(gg.getGroup("NGI", "NIIFI_SC"),"NGI_HU");
+		
 	}
 
 }
