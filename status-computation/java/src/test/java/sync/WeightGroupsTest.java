@@ -22,7 +22,7 @@ public class WeightGroupsTest {
 	@Test
 	public void test() throws IOException, URISyntaxException {
 		//Prepare Resource File
-		URL resAvroFile = MetricProfilesTest.class.getResource("/avro/weights_sync_test.avro");
+		URL resAvroFile =  WeightGroupsTest.class.getResource("/avro/weights_sync_test.avro");
 		File avroFile = new File(resAvroFile.toURI());
 		// Instatiate class
 		WeightGroups wg = new WeightGroups();

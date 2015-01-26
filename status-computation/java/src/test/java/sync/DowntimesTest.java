@@ -22,7 +22,7 @@ public class DowntimesTest {
 	@Test
 	public void test() throws IOException, URISyntaxException {
 		//Prepare Resource File
-		URL resAvroFile = MetricProfilesTest.class.getResource("/avro/downtimes_test.avro");
+		URL resAvroFile = DowntimesTest.class.getResource("/avro/downtimes_test.avro");
 		File avroFile = new File(resAvroFile.toURI());
 		// Instatiate class
 		Downtimes dt = new Downtimes();
