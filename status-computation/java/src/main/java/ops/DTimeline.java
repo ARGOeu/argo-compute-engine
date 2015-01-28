@@ -18,7 +18,7 @@ public class DTimeline {
 	private int sPeriod;       // sampling period measured in minutes
 	private int sInterval;   	// sampling interval measured in minutes;
 	
-	int[] samples;				// array of samples based on sampling frequency		
+	public int[] samples;				// array of samples based on sampling frequency		
 	
 	DTimeline()	{
 		this.startState = -1;
@@ -39,7 +39,6 @@ public class DTimeline {
 	public void clearSamples(){
 		samples = new int[this.sPeriod/this.sInterval];
 	}
-	
 	
 	public void clearTimestamps(){
 		startState = -1;
