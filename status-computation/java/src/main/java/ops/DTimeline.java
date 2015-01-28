@@ -38,16 +38,23 @@ public class DTimeline {
 	
 	public void clearSamples(){
 		samples = new int[this.sPeriod/this.sInterval];
+		Arrays.fill(samples, -1);
 	}
 	
 	public void clearTimestamps(){
 		startState = -1;
 		inputStates.clear();
 	}
+
 	
-	public void firstState(int state)
+	public void setStartState(int state)
 	{
 		this.startState = state;
+	}
+	
+	public int getStartState()
+	{
+		return this.startState;
 	}
 	
 	public int tsInt(String timestamp) throws ParseException{

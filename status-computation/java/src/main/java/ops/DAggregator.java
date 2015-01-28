@@ -6,7 +6,6 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import utils.CTimeline;
 
 public class DAggregator {
 	
@@ -28,22 +27,38 @@ public class DAggregator {
 	
 	public void insert(String name, String timestamp, String status) throws ParseException {
 		// Get the integer value of the specified status string
-		int statusInt = opsMgr.getStatus(status);
+		int statusInt = opsMgr.getIntStatus(status);
 		
 		// Check if time-line exists or else create it
 		if (timelines.containsKey(name) == false) {
 			DTimeline tempTimeline = new DTimeline();
 			tempTimeline.insert(timestamp, statusInt);
+			timelines.put(name, tempTimeline);
 		}
 		else {
 			timelines.get(name).insert(timestamp, statusInt);
 		}
 		
 	}
+	
+	public void setStartState(String name, String status)
+	{
+		// Get the integer value of the specified status string
+		int statusInt = opsMgr.getIntStatus(status);
+		// Check if time-line exists or else create it
+		if (timelines.containsKey(name) == false) {
+			DTimeline tempTimeline = new DTimeline();
+			tempTimeline.setStartState(statusInt);
+			timelines.put(name, tempTimeline);
+		}
+		else {
+			timelines.get(name).setStartState(statusInt);
+		}
+	}
 
 	public void aggregate(String opType) {
 		
-		int opTypeInt = this.opsMgr.getOperation(opType);
+		int opTypeInt = this.opsMgr.getIntOperation(opType);
 		
 		
 		for (int i=0;i<this.aggregation.samples.length;i++) {

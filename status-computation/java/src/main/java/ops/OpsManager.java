@@ -86,19 +86,19 @@ public class OpsManager {
 		return this.revStates.get(this.truthTable[opInt][aInt][bInt]);
 	}
 	
-	public String getStatus(int status){
+	public String getStrStatus(int status){
 		return this.revStates.get(status);
 	}
 	
-	public int getStatus(String status){
+	public int getIntStatus(String status){
 		return this.states.get(status);
 	}
 	
-	public String getOperation(int op){
+	public String getStrOperation(int op){
 		return this.revOps.get(op);
 	}
 	
-	public int getOperation(String op){
+	public int getIntOperation(String op){
 		return this.ops.get(op);
 	}
 
