@@ -94,12 +94,12 @@ public class OpsManager {
 		return this.states.get(status);
 	}
 	
-	public String getOperation(int status){
-		return this.revStates.get(status);
+	public String getOperation(int op){
+		return this.revOps.get(op);
 	}
 	
-	public int getOperation(String status){
-		return this.states.get(status);
+	public int getOperation(String op){
+		return this.ops.get(op);
 	}
 
 	public ArrayList<String> availableStates()
