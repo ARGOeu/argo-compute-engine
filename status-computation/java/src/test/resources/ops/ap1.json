@@ -23,7 +23,7 @@
         },
        "operation":"OR"
     },
-    "accounting": {
+    "information": {
       "services":{
         "Site-BDII":"AND"
         },
