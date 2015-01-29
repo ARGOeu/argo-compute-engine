@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map.Entry;
 
 import com.google.gson.JsonElement;
@@ -70,6 +72,119 @@ public class AvailabilityProfiles {
 		this.list.clear();
 	}
 	
+	// Return the available Group Names of a profile
+	public ArrayList<String> getProfileGroups(String avProfile) {
+			
+		if (this.list.containsKey(avProfile))
+		{
+			ArrayList<String> result = new ArrayList<String>();
+			Iterator<String> groupIterator = this.list.get(avProfile).groups.keySet().iterator();
+			
+			while (groupIterator.hasNext()) {
+				result.add(groupIterator.next());
+			}
+			
+			return result;
+		}
+		
+		return null;
+	}
+	
+	// Return the available group operation
+	public String getProfileGroupOp(String avProfile, String groupName)
+	{
+		if (this.list.containsKey(avProfile))
+		{
+			if (this.list.get("avProfile").groups.containsKey(groupName))
+			{
+				return this.list.get("avProfile").groups.get(groupName).op;
+			}
+		}
+		
+		return null;
+	}
+	
+	public ArrayList<String> getProfileGroupServices(String avProfile, String groupName){
+		if (this.list.containsKey(avProfile))
+		{
+			if (this.list.get(avProfile).groups.containsKey(groupName))
+			{
+				ArrayList<String> result = new ArrayList<String>();
+				Iterator<String> srvIterator = this.list.get(avProfile).groups.get(groupName).services.keySet().iterator();
+                
+				while (srvIterator.hasNext()) {
+					result.add(srvIterator.next());
+				}
+				
+				return result;
+			}
+		}
+		
+		return null;
+	}
+	
+	public String getProfileGroupServiceOp(String avProfile, String groupName, String service){
+		if (this.list.containsKey(avProfile))
+		{
+			if (this.list.get(avProfile).groups.containsKey(groupName))
+			{
+				if (this.list.get(avProfile).groups.get(groupName).services.containsKey(service))
+				{
+					return this.list.get(avProfile).groups.get(groupName).services.get(service);
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	public ArrayList<String> getAvProfiles(){
+		
+		if (this.list.size() > 0) {
+			ArrayList<String> result = new ArrayList<String>();
+			Iterator<String> avpIterator = this.list.keySet().iterator();
+			while (avpIterator.hasNext()) {
+				result.add(avpIterator.next());
+			}
+			
+			return result;
+			
+		}
+		
+		return null;
+	}
+	
+	public String getProfileNamespace(String avProfile){
+		
+		if (this.list.containsKey(avProfile))
+		{
+			return this.list.get(avProfile).namespace;
+		}
+		
+		return null;
+	}
+	
+	public String getProfileMetricProfile(String avProfile){
+		
+		if (this.list.containsKey(avProfile))
+		{
+			return this.list.get(avProfile).metricProfile;
+		}
+		
+		return null;
+	}
+	
+	public String getProfileGroupType(String avProfile){
+		
+		if (this.list.containsKey(avProfile))
+		{
+			return this.list.get(avProfile).groupType;
+		}
+		
+		return null;
+	}
+	
+	
 	public void loadProfileJson(File jsonFile) throws FileNotFoundException{
 		
 		BufferedReader br = new BufferedReader(new FileReader(jsonFile));
@@ -83,7 +198,7 @@ public class AvailabilityProfiles {
 		AvProfileItem tmpAvp = new AvProfileItem();
 		
 		tmpAvp.name= jRootObj.get("name").getAsString();
-		tmpAvp.namespace = jRootObj.get("group_type").getAsString();
+		tmpAvp.namespace = jRootObj.get("namespace").getAsString();
 		tmpAvp.metricProfile = jRootObj.get("metric_profile").getAsString();
 		tmpAvp.groupType = jRootObj.get("group_type").getAsString();
 		tmpAvp.op = jRootObj.get("operation").getAsString();
@@ -103,6 +218,9 @@ public class AvailabilityProfiles {
 			
 			
 		}
+		
+		//Add profile to the list
+		this.list.put(tmpAvp.name, tmpAvp);
 		
 		
 	}
