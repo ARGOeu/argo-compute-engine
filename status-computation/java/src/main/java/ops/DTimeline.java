@@ -9,11 +9,9 @@ import java.util.TreeMap;
 
 public class DTimeline {
 	
-	
-	
+
 	private int startState;	// state to define the beginning of the timeline  
 	private TreeMap<Integer,Integer> inputStates; // input states with the timestamp converted to slots
-	
 	
 	private int sPeriod;       // sampling period measured in minutes
 	private int sInterval;   	// sampling interval measured in minutes;
@@ -29,7 +27,6 @@ public class DTimeline {
 		Arrays.fill(samples, -1);
 	}
 	
-
 	public void setSampling(int period, int interval) {
 		this.sPeriod = period;
 		this.sInterval = interval;
@@ -45,7 +42,6 @@ public class DTimeline {
 		startState = -1;
 		inputStates.clear();
 	}
-
 	
 	public void setStartState(int state)
 	{
@@ -99,7 +95,6 @@ public class DTimeline {
 		{
 			this.samples[i] = prev_state;
 		}
-		
 		
 	}
 	

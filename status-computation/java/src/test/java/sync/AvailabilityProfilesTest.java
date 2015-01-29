@@ -76,7 +76,7 @@ public class AvailabilityProfilesTest {
 		expServices.add("Site-BDII");
 		assertEquals("accounting  list",avp.getProfileGroupServices("ap1", "information"),expServices);
 		
-		// Check Varuous Service Instances operation
+		// Check Various Service Instances operation
 		assertEquals("group compute: CREAM-CE op",avp.getProfileGroupServiceOp("ap1", "compute", "CREAM-CE"),"AND");
 		assertEquals("group compute: ARC-CE op",avp.getProfileGroupServiceOp("ap1", "compute", "ARC-CE"),"AND");
 		assertEquals("group storage: SRMv2 op",avp.getProfileGroupServiceOp("ap1", "storage", "SRM"),"AND");
