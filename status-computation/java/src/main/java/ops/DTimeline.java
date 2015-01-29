@@ -64,9 +64,11 @@ public class DTimeline {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(parsedDate);
 		
-		int total_minutes = (cal.get(Calendar.HOUR_OF_DAY) * 60) + cal.get(Calendar.MINUTE);
+		int total_seconds = (cal.get(Calendar.HOUR_OF_DAY) * 3600) + (cal.get(Calendar.MINUTE) * 60) + cal.get(Calendar.SECOND);
 		
-		return  (total_minutes/this.sInterval) -1; //Normalize for array indexing
+		double total_minutes = Math.round(total_seconds/60.0);
+		double result = Math.round(total_minutes/this.sInterval);
+		return (int)result;
 	}
 	
 	public void insert(String timestamp, int state ) throws ParseException{
@@ -80,16 +82,24 @@ public class DTimeline {
 		int prev_slot = 0;
 		for (int item : this.inputStates.keySet())
 		{
+			
 			this.samples[item] = this.inputStates.get(item);
 			// fill previous states
-			for (int i=prev_slot;i<item;i++)
+			for (int i=prev_slot;i<item-1;i++)
 			{
 				this.samples[i] = prev_state;
 			}
 			// set the prev_state and prev_slot
 			prev_state = this.inputStates.get(item);
-			prev_slot = item + 1;
+			prev_slot = item-1;
 		}
+		
+		// Fill the rest of the array with the last state
+		for (int i=prev_slot;i<this.samples.length;i++)
+		{
+			this.samples[i] = prev_state;
+		}
+		
 		
 	}
 	
