@@ -9,12 +9,12 @@ import java.util.Map.Entry;
 
 public class DAggregator {
 	
-	private HashMap<String,DTimeline> timelines;
-	private DTimeline aggregation;
+	public HashMap<String,DTimeline> timelines;
+	public DTimeline aggregation;
 	
-	private OpsManager opsMgr;
+	public OpsManager opsMgr;
 	
-	DAggregator(){
+	public DAggregator(){
 		
 		this.timelines = new HashMap<String,DTimeline>();
 		this.aggregation = new DTimeline();
@@ -38,8 +38,9 @@ public class DAggregator {
 		else {
 			timelines.get(name).insert(timestamp, statusInt);
 		}
-		
 	}
+	
+	
 	
 	public void setStartState(String name, String status)
 	{
@@ -56,29 +57,35 @@ public class DAggregator {
 		}
 	}
 
+	public void finalizeAll()
+	{
+		for (Entry<String, DTimeline> item : timelines.entrySet())
+		{
+			item.getValue().finalize();
+		}
+	}
+	
 	public void aggregate(String opType) {
 		
 		int opTypeInt = this.opsMgr.getIntOperation(opType);
 		
-		
 		for (int i=0;i<this.aggregation.samples.length;i++) {
 			
-			boolean first_item = true;
+			boolean firstItem = true;
 			
 			for (Entry<String, DTimeline> item : timelines.entrySet()) {
 				
-				if (first_item) {
+				if (firstItem) {
 					this.aggregation.samples[i] = item.getValue().samples[i];
+					firstItem = false;
 				}
 				else {
 					int a = this.aggregation.samples[i];
 					int b = item.getValue().samples[i];
 					this.aggregation.samples[i] = this.opsMgr.opInt(opTypeInt,a, b);
-				}
-				
+				}		
 			}
 		}
-		
 	}
 	
 		

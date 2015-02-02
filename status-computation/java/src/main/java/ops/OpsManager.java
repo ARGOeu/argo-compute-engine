@@ -25,7 +25,7 @@ public class OpsManager {
 	
 	private boolean order;
 	
-	OpsManager(){
+	public OpsManager(){
 		this.states = new HashMap<String,Integer>();
 		this.ops = new HashMap<String,Integer>();
 		this.revStates = new ArrayList<String>();
@@ -36,7 +36,7 @@ public class OpsManager {
 		this.order = false;;
 	}
 	
-	OpsManager(boolean _order){
+	public OpsManager(boolean _order){
 		this.states = new HashMap<String,Integer>();
 		this.ops = new HashMap<String,Integer>();
 		this.revStates = new ArrayList<String>();
@@ -58,11 +58,22 @@ public class OpsManager {
 	
 	public int opInt(int op,int a, int b)
 	{
-		return this.truthTable[op][a][b];
+		int result=-1;
+		try
+		{
+			result = this.truthTable[op][a][b];
+		}
+		catch (IndexOutOfBoundsException ex)
+		{
+			result = -1;
+		}
+		
+		return result;
 	}
 	
 	public int opInt(String op,String a, String b)
 	{
+		
 		int opInt = this.ops.get(op);
 		int aInt = this.states.get(a);
 		int bInt = this.states.get(b);

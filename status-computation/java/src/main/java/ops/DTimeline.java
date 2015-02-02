@@ -9,18 +9,16 @@ import java.util.TreeMap;
 
 public class DTimeline {
 	
-	
-	
+
 	private int startState;	// state to define the beginning of the timeline  
 	private TreeMap<Integer,Integer> inputStates; // input states with the timestamp converted to slots
-	
 	
 	private int sPeriod;       // sampling period measured in minutes
 	private int sInterval;   	// sampling interval measured in minutes;
 	
 	public int[] samples;				// array of samples based on sampling frequency		
 	
-	DTimeline()	{
+	public DTimeline()	{
 		this.startState = -1;
 		this.sPeriod = 1440;			// 1 day = 24 hours = 24 * 60 minutes = 1440 minutes
 		this.sInterval = 5;				// every 5 minutes;
@@ -29,7 +27,6 @@ public class DTimeline {
 		Arrays.fill(samples, -1);
 	}
 	
-
 	public void setSampling(int period, int interval) {
 		this.sPeriod = period;
 		this.sInterval = interval;
@@ -45,7 +42,6 @@ public class DTimeline {
 		startState = -1;
 		inputStates.clear();
 	}
-
 	
 	public void setStartState(int state)
 	{
@@ -68,7 +64,13 @@ public class DTimeline {
 		
 		double total_minutes = Math.round(total_seconds/60.0);
 		double result = Math.round(total_minutes/this.sInterval);
-		return (int)result;
+		
+		if ((int) result == samples.length){
+			return (int) result-1;
+		} else
+		{
+			return (int)result;
+		}
 	}
 	
 	public void insert(String timestamp, int state ) throws ParseException{
@@ -82,7 +84,11 @@ public class DTimeline {
 		int prev_slot = 0;
 		for (int item : this.inputStates.keySet())
 		{
-			
+			if (item==0)
+			{
+				this.samples[item] = this.inputStates.get(item);
+				continue;
+			}
 			this.samples[item] = this.inputStates.get(item);
 			// fill previous states
 			for (int i=prev_slot;i<item-1;i++)
@@ -99,7 +105,6 @@ public class DTimeline {
 		{
 			this.samples[i] = prev_state;
 		}
-		
 		
 	}
 	
