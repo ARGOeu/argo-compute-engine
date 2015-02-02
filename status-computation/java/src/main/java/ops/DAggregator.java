@@ -14,7 +14,7 @@ public class DAggregator {
 	
 	public OpsManager opsMgr;
 	
-	DAggregator(){
+	public DAggregator(){
 		
 		this.timelines = new HashMap<String,DTimeline>();
 		this.aggregation = new DTimeline();
@@ -57,6 +57,14 @@ public class DAggregator {
 		}
 	}
 
+	public void finalizeAll()
+	{
+		for (Entry<String, DTimeline> item : timelines.entrySet())
+		{
+			item.getValue().finalize();
+		}
+	}
+	
 	public void aggregate(String opType) {
 		
 		int opTypeInt = this.opsMgr.getIntOperation(opType);
