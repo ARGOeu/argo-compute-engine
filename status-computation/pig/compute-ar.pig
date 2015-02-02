@@ -44,9 +44,6 @@ metric_tline_raw  = FOREACH (GROUP mdata_full BY (service,hostname,metric)){
 	generate group.service, group.hostname, group.metric, t.(status);
 }
 
-store metric_tline_raw into './log/metric_tline_raw';
-
-/*
 
 metric_tlines = FOREACH (GROUP mdata_full BY (service,hostname,metric)){
 	t = ORDER mdata_full by timestamp ASC;
@@ -62,4 +59,3 @@ endpoints =	FOREACH  (GROUP mdata_full BY (service,hostname)) {
 store metric_tline_raw into './log/metric_tline_raw';
 store metric_tlines into './log/metric_tlines';
 store endpoints into './log/endpoints';
-*/
