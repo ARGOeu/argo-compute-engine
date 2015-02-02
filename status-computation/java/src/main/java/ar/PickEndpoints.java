@@ -14,8 +14,8 @@ import sync.MetricProfiles;
 
 public class PickEndpoints extends FilterFunc {
     
-	public EndpointGroups endpoint_mgr;
-	public MetricProfiles metric_mgr;
+	public EndpointGroups endpointMgr;
+	public MetricProfiles metricMgr;
 	
 	public String fnEndpointGroups;
 	public String fnMetricProfiles;
@@ -27,15 +27,15 @@ public class PickEndpoints extends FilterFunc {
 		this.fnEndpointGroups = fnEndpointGroups;
 		this.fnMetricProfiles = fnMetricProfiles;
 		// set the Structures
-		this.endpoint_mgr=new EndpointGroups();
-		this.metric_mgr = new MetricProfiles();
+		this.endpointMgr=new EndpointGroups();
+		this.metricMgr = new MetricProfiles();
 		
 	}
 	
 	public void init() throws IOException
 	{
-		this.endpoint_mgr.loadAvro(new File("./endpoint_groups"));
-		this.metric_mgr.loadAvro(new File("./metric_profiles"));
+		this.endpointMgr.loadAvro(new File("./endpoint_groups"));
+		this.metricMgr.loadAvro(new File("./metric_profiles"));
 		this.initialized=true;
 	}
 	
@@ -61,12 +61,11 @@ public class PickEndpoints extends FilterFunc {
         String metric = (String)input.get(2);
         
         //Only 1 profile per job
-        String prof = metric_mgr.getProfiles().get(0);
-        //Filter By profile First
-        if (metric_mgr.checkProfileServiceMetric(prof, service, metric) == false ) return null;
-        // Filter By topology
-        if (endpoint_mgr.checkEndpoint(hostname, service) == false) return null;
-        
+        String prof = metricMgr.getProfiles().get(0);
+        //Filter By profile first
+        if (metricMgr.checkProfileServiceMetric(prof, service, metric) == false ) return null;
+        //Filter By topology
+        if (endpointMgr.checkEndpoint(hostname, service) == false) return null;
         
         //Filter in the future by tags
         
