@@ -79,5 +79,53 @@ public class DAggregatorTest {
 		assertArrayEquals("Aggregation check",expected,dAgg.aggregation.samples);
 		
 		
+		
+		
+		
+		
+	}
+	
+	@Test
+	public void test2() throws URISyntaxException, FileNotFoundException, ParseException {
+		
+		URL resJsonFile = OpsManagerTest.class.getResource("/ops/EGI-algorithm.json");
+		File jsonFile = new File(resJsonFile.toURI());
+		
+		DAggregator dAgg = new DAggregator();
+		dAgg.loadOpsFile(jsonFile);
+		
+		dAgg.setStartState("m1", "OK");
+		dAgg.setStartState("m2", "OK");
+		dAgg.setStartState("m3", "OK");
+		dAgg.setStartState("m4", "OK");
+		dAgg.insert("m1", "2014-01-15T00:00:00Z", "CRITICAL");
+		dAgg.insert("m1", "2014-01-15T04:33:44Z", "CRITICAL");
+		dAgg.insert("m1", "2014-01-15T06:33:44Z", "CRITICAL");
+		dAgg.insert("m1", "2014-01-15T12:33:44Z", "CRITICAL");
+		dAgg.insert("m1", "2014-01-15T22:11:44Z", "CRITICAL");
+		dAgg.insert("m2", "2014-01-15T01:33:44Z", "CRITICAL");
+		dAgg.insert("m2", "2014-01-15T05:33:44Z", "CRITICAL");
+		dAgg.insert("m2", "2014-01-15T06:33:44Z", "CRITICAL");
+		dAgg.insert("m2", "2014-01-15T22:33:44Z", "CRITICAL");
+		dAgg.insert("m3", "2014-01-15T01:33:44Z", "CRITICAL");
+		dAgg.insert("m3", "2014-01-15T05:33:44Z", "CRITICAL");
+		dAgg.insert("m3", "2014-01-15T11:33:44Z", "CRITICAL");
+		dAgg.insert("m4", "2014-01-15T01:33:44Z", "WARNING");
+		dAgg.insert("m4", "2014-01-15T02:33:44Z", "OK");
+		dAgg.insert("m4", "2014-01-15T24:59:59Z", "CRITICAL");
+		
+	
+		
+		dAgg.finalizeAll();
+		dAgg.aggregate("AND");
+		
+		System.out.println(Arrays.toString(dAgg.aggregation.samples));
+		
+		
+		
+		
+		
+		
+		
 	}
 }
