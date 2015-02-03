@@ -34,7 +34,6 @@ install --directory %{buildroot}/usr/libexec/ar-compute/lib/avro
 install --directory %{buildroot}/var/lib/ar-compute
 install --directory %{buildroot}/var/log/ar-compute
 install --directory %{buildroot}/etc
-install --directory %{buildroot}/etc/cron.d
 
 install --mode 755 helpers/ar-compute.py                        %{buildroot}/usr/libexec/ar-compute/
 install --mode 644 status-computation/pig/*                     %{buildroot}/usr/libexec/ar-compute/pig/
@@ -43,9 +42,6 @@ install --mode 644 status-computation/lib/*.jar                 %{buildroot}/usr
 install --mode 644 status-computation/lib/*.sh                  %{buildroot}/usr/libexec/ar-compute/lib/
 install --mode 644 status-computation/lib/*.py                  %{buildroot}/usr/libexec/ar-compute/lib/
 install --mode 644 status-computation/java/target/MyUDF-1.0.jar %{buildroot}/usr/libexec/ar-compute/MyUDF.jar
-install --mode 644 cronjobs/ar-compute-hourly                   %{buildroot}/etc/cron.d
-install --mode 644 cronjobs/ar-compute-daily                    %{buildroot}/etc/cron.d
-install --mode 644 cronjobs/ar-compute-monthly                  %{buildroot}/etc/cron.d
 install --mode 644 conf/ar-compute-engine.conf                  %{buildroot}/etc/
 
 %clean
@@ -60,13 +56,11 @@ mvn clean
 %attr(0755,root,root) /usr/libexec/ar-compute/pig/local_calculator.pig
 %attr(0755,root,root) /usr/libexec/ar-compute/pig/sites.pig
 %attr(0755,root,root) /usr/libexec/ar-compute/pig/status_detailed.pig
+%attr(0755,root,root) /usr/libexec/ar-compute/pig/compute-ar.pig
 %attr(0755,root,root) /usr/libexec/ar-compute/lib/*
 %attr(0755,root,root) /usr/libexec/ar-compute/MyUDF.jar
 %attr(0750,root,root) /var/lib/ar-compute
 %attr(0750,root,root) /var/log/ar-compute
-%attr(0644,root,root) /etc/cron.d/ar-compute-hourly
-%attr(0644,root,root) /etc/cron.d/ar-compute-daily
-%attr(0644,root,root) /etc/cron.d/ar-compute-monthly
 %attr(0644,root,root) /etc/ar-compute-engine.conf
 
 %changelog
