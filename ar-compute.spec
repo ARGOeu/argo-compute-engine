@@ -64,7 +64,7 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute-engine.conf
 
 %changelog
-* Tue Jan 03 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-1%{?dist}
+* Tue Feb 03 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-1%{?dist}
 - Add support for Custom Metric Statuses, Operations and Availability Profiles
 * Fri Jan 16 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-0%{?dist}
 - Adding support for reading avro files from consumer and sync components
