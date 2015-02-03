@@ -1,6 +1,6 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.6.0
+Version: 1.6.1
 Release: 0%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
@@ -70,6 +70,8 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute-engine.conf
 
 %changelog
+* Tue Jan 03 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-1%{?dist}
+- Add support for Custom Metric Statuses, Operations and Availability Profiles
 * Fri Jan 16 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-0%{?dist}
 - Adding support for reading avro files from consumer and sync components
 * Wed Jan 14 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.0.-3%{?dist}
