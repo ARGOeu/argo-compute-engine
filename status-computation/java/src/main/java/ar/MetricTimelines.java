@@ -119,7 +119,7 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 		//Append the timeline
 	    for (int i=0;i<this.dtl.samples.length;i++)  {
 	    	Tuple cur_tupl = tupFactory.newTuple();
-	    	cur_tupl.append(i);
+	    	//cur_tupl.append(i);
 			cur_tupl.append(this.dtl.samples[i]);
 			outBag.add(cur_tupl);
 		}
@@ -144,8 +144,8 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 		Schema.FieldSchema hostname = new Schema.FieldSchema("hostname", DataType.CHARARRAY);
 		Schema.FieldSchema metric = new Schema.FieldSchema("metric", DataType.CHARARRAY);
 		
-		Schema.FieldSchema slot = new Schema.FieldSchema("slot", DataType.INTEGER);
-		Schema.FieldSchema statusInt = new Schema.FieldSchema("status", DataType.INTEGER);
+		//Schema.FieldSchema slot = new Schema.FieldSchema("slot", DataType.INTEGER);
+		Schema.FieldSchema statusInt = new Schema.FieldSchema("status", DataType.CHARARRAY);
         
         Schema metricTl = new Schema();
         Schema timeline = new Schema();
@@ -154,7 +154,7 @@ public class MetricTimelines extends EvalFunc<Tuple> {
         metricTl.add(hostname);
         metricTl.add(metric);
         
-        timeline.add(slot);
+        //timeline.add(slot);
         timeline.add(statusInt);
 
         Schema.FieldSchema tl = null;

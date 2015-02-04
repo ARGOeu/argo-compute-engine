@@ -131,7 +131,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 		//Append the timeline
 	    for (int i=0;i<this.endpointAggr.aggregation.samples.length;i++)  {
 	    	Tuple cur_tupl = tupFactory.newTuple();
-	    	cur_tupl.append(i);
+	    	//cur_tupl.append(i);
 			cur_tupl.append(this.endpointAggr.aggregation.samples[i]);
 			outBag.add(cur_tupl);
 		}
@@ -154,7 +154,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 		Schema.FieldSchema service = new Schema.FieldSchema("service", DataType.CHARARRAY);
 		Schema.FieldSchema hostname = new Schema.FieldSchema("hostname", DataType.CHARARRAY);
 		
-		Schema.FieldSchema slot = new Schema.FieldSchema("slot", DataType.INTEGER);
+		//Schema.FieldSchema slot = new Schema.FieldSchema("slot", DataType.INTEGER);
 		Schema.FieldSchema statusInt = new Schema.FieldSchema("status", DataType.INTEGER);
         
         Schema endpoint = new Schema();
@@ -163,7 +163,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
         endpoint.add(service);
         endpoint.add(hostname);
         
-        timeline.add(slot);
+        //timeline.add(slot);
         timeline.add(statusInt);
 
         Schema.FieldSchema tl = null;
