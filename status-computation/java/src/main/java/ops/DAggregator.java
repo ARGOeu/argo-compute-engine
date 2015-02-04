@@ -25,6 +25,18 @@ public class DAggregator {
 		this.opsMgr.openFile(opsFile);
 	}
 	
+	public void insertSlot(String name, int slot, int statusInt)
+	{
+		if (timelines.containsKey(name) == false) {
+			DTimeline tempTimeline = new DTimeline();
+			tempTimeline.samples[slot] = statusInt;
+		}
+		else {
+			timelines.get(name).samples[slot] = statusInt;
+		}
+		
+	}
+	
 	public void insert(String name, String timestamp, String status) throws ParseException {
 		// Get the integer value of the specified status string
 		int statusInt = opsMgr.getIntStatus(status);
@@ -57,6 +69,12 @@ public class DAggregator {
 		}
 	}
 
+	public void clear()
+	{
+		this.timelines.clear();
+		this.aggregation.clear();
+	}
+	
 	public void finalizeAll()
 	{
 		for (Entry<String, DTimeline> item : timelines.entrySet())

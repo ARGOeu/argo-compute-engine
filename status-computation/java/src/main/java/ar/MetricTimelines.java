@@ -26,8 +26,8 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 	private String fnOps; 
 	private String targetDate;
 	
-	private DTimeline dtl;
-	private OpsManager opsMgr;
+	public DTimeline dtl;
+	public OpsManager opsMgr;
 	
 	private TupleFactory tupFactory; 
     private BagFactory bagFactory;
@@ -68,11 +68,16 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 	
 	public Tuple exec(Tuple input) throws IOException {
 		
+		
+		
 		// Check if cache files have been opened 
 		if (this.initialized==false)
         {
-        	this.init(); // If not open them 
+        	this.init(); // If not open them
+			this.initialized = true;
         }
+		// Clear timeline
+		this.dtl.clear();
 		
 		if (input == null || input.size() == 0) return null;
 		
@@ -106,6 +111,11 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 	    	
 		}
 		
+		
+	
+	    
+	    
+		
 		this.dtl.finalize();
 		
 		//Create output Tuple
@@ -116,9 +126,12 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 	    output.append(hostname);
 	    output.append(metric);
 	    
+	    
+	    
 		//Append the timeline
 	    for (int i=0;i<this.dtl.samples.length;i++)  {
 	    	Tuple cur_tupl = tupFactory.newTuple();
+	    	
 	    	//cur_tupl.append(i);
 			cur_tupl.append(this.dtl.samples[i]);
 			outBag.add(cur_tupl);

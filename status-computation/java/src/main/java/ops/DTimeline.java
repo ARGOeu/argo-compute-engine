@@ -33,6 +33,12 @@ public class DTimeline {
 		samples = new int[this.sPeriod/this.sInterval];
 	}
 	
+	public void clear()
+	{
+		clearSamples();
+		clearTimestamps();
+	}
+	
 	public void clearSamples(){
 		samples = new int[this.sPeriod/this.sInterval];
 		Arrays.fill(samples, -1);

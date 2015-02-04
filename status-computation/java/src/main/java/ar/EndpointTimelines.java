@@ -34,9 +34,6 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	
 	private TupleFactory tupFactory; 
     private BagFactory bagFactory;
-	
-    private DTimeline mt;
-    
     
 	public String fnMetricProfiles;
 	public String fnOps;
@@ -88,6 +85,8 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
         }
 		
 		if (input == null || input.size() == 0) return null;
+
+		this.endpointAggr.clear();
 		
 		///Grab endpoint info
 		String service = (String)input.get(0);
@@ -107,7 +106,6 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	    		this.endpointAggr.setStartState(metric, status);
 	    		continue;
 	    	}
-	    	
 	    	try {
 			
 	    		this.endpointAggr.insert(metric, ts, status);
