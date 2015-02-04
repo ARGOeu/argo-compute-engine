@@ -84,11 +84,45 @@ public class DTimelineTest {
 	    
 	    for (int i=150;i<expected.length;i++) expected[i] = opsMgr.getIntStatus("UNKNOWN");
 	    
-	    for (int i=0;i<dtl.samples.length;i++)
-	    {
-	    	assertEquals("Check Timeline item",dtl.samples[i],expected[i]);
-	    }
+	    assertArrayEquals("Aggregation check",expected,dtl.samples);
 	    
+	    // New Timeline 
+	    DTimeline dt2 = new DTimeline();
+	    dt2.setStartState(opsMgr.getIntStatus("OK"));
+	    
+	    dt2.insert("2015-01-24T00:35:21Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T01:35:23Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T02:35:22Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T03:35:24Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T04:35:22Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T05:35:18Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T06:35:23Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T07:35:22Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T08:35:18Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T10:35:17Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T11:35:24Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T12:35:19Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T13:35:23Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T14:35:22Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T15:35:22Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T16:35:23Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T17:35:22Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T18:35:26Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T19:35:27Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T20:35:22Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T21:35:26Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T22:35:21Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T22:45:51Z",opsMgr.getIntStatus("OK"));
+	    dt2.insert("2015-01-24T23:45:52Z",opsMgr.getIntStatus("OK"));
+	    
+	    dt2.finalize();
+	    
+	    int[] expected2 = new int[288];
+	    for (int i=0;i<288;i++) expected2[i] =0;
+	    
+	    
+	    
+	    assertArrayEquals("Aggregation check",expected2,dt2.samples);
 	    
 		
 		
