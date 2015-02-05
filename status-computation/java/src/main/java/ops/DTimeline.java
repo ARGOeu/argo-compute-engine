@@ -27,6 +27,8 @@ public class DTimeline {
 		Arrays.fill(samples, -1);
 	}
 	
+	
+	
 	public void setSampling(int period, int interval) {
 		this.sPeriod = period;
 		this.sInterval = interval;

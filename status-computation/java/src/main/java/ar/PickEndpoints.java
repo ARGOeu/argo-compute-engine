@@ -17,12 +17,14 @@ public class PickEndpoints extends FilterFunc {
 	public EndpointGroups endpointMgr;
 	public MetricProfiles metricMgr;
 	
-	public String fnEndpointGroups;
-	public String fnMetricProfiles;
+	private String fnEndpointGroups;
+	private String fnMetricProfiles;
 	
-	public boolean initialized = false;
+	private String fsUsed; // local,hdfs,cache (distrubuted_cache)
 	
-	public PickEndpoints(String fnEndpointGroups, String fnMetricProfiles) throws IOException{
+	private boolean initialized = false;
+	
+	public PickEndpoints(String fnEndpointGroups, String fnMetricProfiles, String fsUsed) throws IOException{
 		// set first the filenames
 		this.fnEndpointGroups = fnEndpointGroups;
 		this.fnMetricProfiles = fnMetricProfiles;
@@ -30,12 +32,17 @@ public class PickEndpoints extends FilterFunc {
 		this.endpointMgr=new EndpointGroups();
 		this.metricMgr = new MetricProfiles();
 		
+		this.fsUsed = fsUsed;
+		
 	}
 	
 	public void init() throws IOException
 	{
-		this.endpointMgr.loadAvro(new File("./endpoint_groups"));
-		this.metricMgr.loadAvro(new File("./metric_profiles"));
+		if (this.fsUsed.equalsIgnoreCase("cache")){
+			this.endpointMgr.loadAvro(new File("./endpoint_groups"));
+			this.metricMgr.loadAvro(new File("./metric_profiles"));
+		}
+		
 		this.initialized=true;
 	}
 	

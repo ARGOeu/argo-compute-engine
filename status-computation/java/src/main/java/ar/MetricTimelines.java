@@ -26,6 +26,8 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 	private String fnOps; 
 	private String targetDate;
 	
+	private String fsUsed; //local,hdfs,cache (distrubuted_cache)
+	
 	public DTimeline dtl;
 	public OpsManager opsMgr;
 	
@@ -34,9 +36,11 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 	
 	private boolean initialized;
 	
-	public MetricTimelines ( String fnOps, String targetDate) throws IOException{
+	public MetricTimelines ( String fnOps, String targetDate, String fsUsed ) throws IOException{
 		// set first the filenames
 		this.fnOps = fnOps;
+		
+		this.fsUsed = fsUsed;
 		
 		// set the targetDate var
 		this.targetDate = targetDate;
@@ -54,7 +58,10 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 	public void init() throws IOException
 	{
 		// Open Files from distributed cache
-		this.opsMgr.openFile(new File("./ops"));
+		if (this.fsUsed.equalsIgnoreCase("cache")){
+			
+			this.opsMgr.openFile(new File("./ops"));
+		}
 		this.initialized=true;
 		System.out.println("Initialized!");
 	}
@@ -73,7 +80,8 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 		// Check if cache files have been opened 
 		if (this.initialized==false)
         {
-        	this.init(); // If not open them
+        	
+			this.init(); // If not open them
 			this.initialized = true;
         }
 		// Clear timeline

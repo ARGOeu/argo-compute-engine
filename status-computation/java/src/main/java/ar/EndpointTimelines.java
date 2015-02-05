@@ -35,16 +35,21 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	private TupleFactory tupFactory; 
     private BagFactory bagFactory;
     
-	public String fnMetricProfiles;
-	public String fnOps;
+	private String fnMetricProfiles;
+	private String fnOps;
 	
-	public String targetDate;
+	private String targetDate;
 	
-	public boolean initialized;
+	private String fsUsed;  // local,hdfs,cache (distrubuted_cache)
 	
-	public EndpointTimelines( String fnOps, String targetDate) throws IOException{
+	private boolean initialized;
+	
+	public EndpointTimelines( String fnOps, String targetDate, String fsUsed) throws IOException{
 		// set first the filenames
 		this.fnOps = fnOps;
+		
+		// set distribute cache flag
+		this.fsUsed = fsUsed;
 		
 		// set the targetDate var
 		this.targetDate = targetDate;
@@ -62,10 +67,12 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	
 	public void init() throws IOException
 	{
-		// Open Files from distributed cache
-		this.endpointAggr.opsMgr.openFile(new File("./ops"));
+		if (this.fsUsed.equalsIgnoreCase("cache")){
+			this.endpointAggr.opsMgr.openFile(new File("./ops"));
+		}
+		
 		this.initialized=true;
-		System.out.println("Initialized!");
+		
 	}
 	
 	public List<String> getCacheFiles() { 
