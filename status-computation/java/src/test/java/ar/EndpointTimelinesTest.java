@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import ops.OpsManager;
 import ops.OpsManagerTest;
 
 import org.apache.commons.io.IOUtils;
@@ -41,7 +42,9 @@ public class EndpointTimelinesTest {
 		Tuple inpTuple = JsonToPig.jsonToTuple(jsonStr);
 		EndpointTimelines et = new EndpointTimelines("","","local");
 	   
-		et.endpointAggr.opsMgr.openFile(jsonFile);
+		
+		
+		et.opsMgr.openFile(jsonFile);
 		cur = et.exec(inpTuple);
 		
 		

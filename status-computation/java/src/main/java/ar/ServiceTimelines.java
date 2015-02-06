@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import ops.DAggregator;
+import ops.OpsManager;
 
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.BagFactory;
@@ -23,6 +24,8 @@ import org.apache.pig.impl.logicalLayer.schema.Schema;
 public class ServiceTimelines extends EvalFunc<Tuple> {
 
     public DAggregator serviceAggr;
+    public OpsManager opsMgr;
+    
 	
 	private TupleFactory tupFactory; 
     private BagFactory bagFactory;
@@ -48,7 +51,7 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 	
 		// set the Structures
 		this.serviceAggr = new DAggregator();
-		
+		this.opsMgr = new OpsManager();
 		// set up factories
 		this.tupFactory = TupleFactory.getInstance();
 		this.bagFactory = BagFactory.getInstance();
@@ -60,7 +63,7 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 	public void init() throws IOException
 	{
 		if (this.fsUsed.equalsIgnoreCase("cache")){
-			this.serviceAggr.opsMgr.openFile(new File("./ops"));
+			this.opsMgr.openFile(new File("./ops"));
 		}
 		
 		this.initialized=true;
@@ -118,7 +121,7 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 		}
 		
 		
-		this.serviceAggr.aggregate("OR"); // should be supplied on outside file
+		this.serviceAggr.aggregate("OR",this.opsMgr); // should be supplied on outside file
 		
 		//Create output Tuple
 	    Tuple output = tupFactory.newTuple();

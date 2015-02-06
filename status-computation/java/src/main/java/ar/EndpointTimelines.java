@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import myudf.AddTopology;
 import ops.DAggregator;
 import ops.DTimeline;
+import ops.OpsManager;
 
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.BagFactory;
@@ -31,7 +32,8 @@ import utils.Slot;
 public class EndpointTimelines extends EvalFunc<Tuple> {
 
     public DAggregator endpointAggr;
-	
+	public OpsManager opsMgr;
+    
 	private TupleFactory tupFactory; 
     private BagFactory bagFactory;
     
@@ -56,7 +58,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	
 		// set the Structures
 		this.endpointAggr = new DAggregator();
-		
+		this.opsMgr = new OpsManager();
 		// set up factories
 		this.tupFactory = TupleFactory.getInstance();
 		this.bagFactory = BagFactory.getInstance();
@@ -68,7 +70,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	public void init() throws IOException
 	{
 		if (this.fsUsed.equalsIgnoreCase("cache")){
-			this.endpointAggr.opsMgr.openFile(new File("./ops"));
+			this.opsMgr.openFile(new File("./ops"));
 		}
 		
 		this.initialized=true;
@@ -110,12 +112,12 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	    	String ts = (String) cur_item.get(1);
 	    	String status = (String) cur_item.get(2);
 	    	if (! ( ts.substring(0, ts.indexOf("T")).equals(this.targetDate)) ) {
-	    		this.endpointAggr.setStartState(metric, status);
+	    		this.endpointAggr.setStartState(metric, this.opsMgr.getIntStatus(status));
 	    		continue;
 	    	}
 	    	try {
 			
-	    		this.endpointAggr.insert(metric, ts, status);
+	    		this.endpointAggr.insert(metric, ts, this.opsMgr.getIntStatus(status));
 			
 	    	} catch (ParseException e) {
 				e.printStackTrace();
@@ -124,7 +126,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 		}
 		
 		this.endpointAggr.finalizeAll();
-		this.endpointAggr.aggregate("AND"); // should be supplied on outside file
+		this.endpointAggr.aggregate("AND",this.opsMgr); // should be supplied on outside file
 		
 		//Create output Tuple
 	    Tuple output = tupFactory.newTuple();

@@ -27,7 +27,9 @@ public class DAggregatorTest {
 		File jsonFile = new File(resJsonFile.toURI());
 		
 		DAggregator dAgg = new DAggregator();
-		dAgg.loadOpsFile(jsonFile);
+		OpsManager opsMgr = new OpsManager();
+		
+		opsMgr.openFile(jsonFile);
 		
 		//Create 3 Timelines
 		DTimeline t1 = new DTimeline();
@@ -41,27 +43,27 @@ public class DAggregatorTest {
 		dAgg.aggregation.setSampling(1440, 120);
 		
 		//Set First States
-		t1.setStartState(dAgg.opsMgr.getIntStatus("OK"));
-		t2.setStartState(dAgg.opsMgr.getIntStatus("UNKNOWN"));
-		t3.setStartState(dAgg.opsMgr.getIntStatus("OK"));
+		t1.setStartState(opsMgr.getIntStatus("OK"));
+		t2.setStartState(opsMgr.getIntStatus("UNKNOWN"));
+		t3.setStartState(opsMgr.getIntStatus("OK"));
 		
 		//Add some timestamps int timeline 1
-		t1.insert("2014-01-15T01:33:44Z", dAgg.opsMgr.getIntStatus("CRITICAL"));
-		t1.insert("2014-01-15T05:33:01Z", dAgg.opsMgr.getIntStatus("OK"));
-		t1.insert("2014-01-15T12:50:42Z", dAgg.opsMgr.getIntStatus("WARNING"));
-		t1.insert("2014-01-15T15:33:44Z", dAgg.opsMgr.getIntStatus("OK"));
+		t1.insert("2014-01-15T01:33:44Z", opsMgr.getIntStatus("CRITICAL"));
+		t1.insert("2014-01-15T05:33:01Z", opsMgr.getIntStatus("OK"));
+		t1.insert("2014-01-15T12:50:42Z", opsMgr.getIntStatus("WARNING"));
+		t1.insert("2014-01-15T15:33:44Z", opsMgr.getIntStatus("OK"));
 		
 		//Add some timestamps int timeline 2
-		t2.insert("2014-01-15T05:33:44Z", dAgg.opsMgr.getIntStatus("OK"));
-		t2.insert("2014-01-15T08:33:01Z", dAgg.opsMgr.getIntStatus("MISSING"));
-		t2.insert("2014-01-15T12:50:42Z", dAgg.opsMgr.getIntStatus("CRITICAL"));
-		t2.insert("2014-01-15T19:33:44Z", dAgg.opsMgr.getIntStatus("UNKNOWN"));
+		t2.insert("2014-01-15T05:33:44Z", opsMgr.getIntStatus("OK"));
+		t2.insert("2014-01-15T08:33:01Z", opsMgr.getIntStatus("MISSING"));
+		t2.insert("2014-01-15T12:50:42Z", opsMgr.getIntStatus("CRITICAL"));
+		t2.insert("2014-01-15T19:33:44Z", opsMgr.getIntStatus("UNKNOWN"));
 		
 		//Add some timestamps int timeline 2
-		t3.insert("2014-01-15T04:00:44Z", dAgg.opsMgr.getIntStatus("WARNING"));
-		t3.insert("2014-01-15T09:33:01Z", dAgg.opsMgr.getIntStatus("CRITICAL"));
-		t3.insert("2014-01-15T12:50:42Z", dAgg.opsMgr.getIntStatus("OK"));
-		t3.insert("2014-01-15T16:33:44Z", dAgg.opsMgr.getIntStatus("WARNING"));
+		t3.insert("2014-01-15T04:00:44Z", opsMgr.getIntStatus("WARNING"));
+		t3.insert("2014-01-15T09:33:01Z", opsMgr.getIntStatus("CRITICAL"));
+		t3.insert("2014-01-15T12:50:42Z", opsMgr.getIntStatus("OK"));
+		t3.insert("2014-01-15T16:33:44Z", opsMgr.getIntStatus("WARNING"));
 		
 		t1.finalize();
 		t2.finalize();
@@ -72,7 +74,7 @@ public class DAggregatorTest {
 		dAgg.timelines.put("timeline3", t3);
 		
 		
-		dAgg.aggregate("OR");
+		dAgg.aggregate("OR",opsMgr);
 		
 		int[] expected = {0,1,0,0,0,0,0,0,0,0,0,0};
 		// Check the arrays
@@ -94,30 +96,33 @@ public class DAggregatorTest {
 		DAggregator dAgg = new DAggregator();
 		dAgg.loadOpsFile(jsonFile);
 		
-		dAgg.setStartState("m1", "OK");
-		dAgg.setStartState("m2", "OK");
-		dAgg.setStartState("m3", "OK");
-		dAgg.setStartState("m4", "OK");
-		dAgg.insert("m1", "2014-01-15T00:00:00Z", "CRITICAL");
-		dAgg.insert("m1", "2014-01-15T04:33:44Z", "CRITICAL");
-		dAgg.insert("m1", "2014-01-15T06:33:44Z", "CRITICAL");
-		dAgg.insert("m1", "2014-01-15T12:33:44Z", "CRITICAL");
-		dAgg.insert("m1", "2014-01-15T22:11:44Z", "CRITICAL");
-		dAgg.insert("m2", "2014-01-15T01:33:44Z", "CRITICAL");
-		dAgg.insert("m2", "2014-01-15T05:33:44Z", "CRITICAL");
-		dAgg.insert("m2", "2014-01-15T06:33:44Z", "CRITICAL");
-		dAgg.insert("m2", "2014-01-15T22:33:44Z", "CRITICAL");
-		dAgg.insert("m3", "2014-01-15T01:33:44Z", "CRITICAL");
-		dAgg.insert("m3", "2014-01-15T05:33:44Z", "CRITICAL");
-		dAgg.insert("m3", "2014-01-15T11:33:44Z", "CRITICAL");
-		dAgg.insert("m4", "2014-01-15T01:33:44Z", "WARNING");
-		dAgg.insert("m4", "2014-01-15T02:33:44Z", "OK");
-		dAgg.insert("m4", "2014-01-15T24:59:59Z", "CRITICAL");
+		OpsManager opsMgr = new OpsManager();
+		opsMgr.openFile(jsonFile);
+		
+		dAgg.setStartState("m1", opsMgr.getIntStatus("OK"));
+		dAgg.setStartState("m2", opsMgr.getIntStatus("OK"));
+		dAgg.setStartState("m3", opsMgr.getIntStatus("OK"));
+		dAgg.setStartState("m4", opsMgr.getIntStatus("OK"));
+		dAgg.insert("m1", "2014-01-15T00:00:00Z", opsMgr.getIntStatus("CRITICAL"));
+		dAgg.insert("m1", "2014-01-15T04:33:44Z", opsMgr.getIntStatus("CRITICAL"));
+		dAgg.insert("m1", "2014-01-15T06:33:44Z", opsMgr.getIntStatus("CRITICAL"));
+		dAgg.insert("m1", "2014-01-15T12:33:44Z", opsMgr.getIntStatus("CRITICAL"));
+		dAgg.insert("m1", "2014-01-15T22:11:44Z", opsMgr.getIntStatus("CRITICAL"));
+		dAgg.insert("m2", "2014-01-15T01:33:44Z", opsMgr.getIntStatus("CRITICAL"));
+		dAgg.insert("m2", "2014-01-15T05:33:44Z", opsMgr.getIntStatus("CRITICAL"));
+		dAgg.insert("m2", "2014-01-15T06:33:44Z", opsMgr.getIntStatus("CRITICAL"));
+		dAgg.insert("m2", "2014-01-15T22:33:44Z", opsMgr.getIntStatus("CRITICAL"));
+		dAgg.insert("m3", "2014-01-15T01:33:44Z", opsMgr.getIntStatus("CRITICAL"));
+		dAgg.insert("m3", "2014-01-15T05:33:44Z", opsMgr.getIntStatus("CRITICAL"));
+		dAgg.insert("m3", "2014-01-15T11:33:44Z", opsMgr.getIntStatus("CRITICAL"));
+		dAgg.insert("m4", "2014-01-15T01:33:44Z", opsMgr.getIntStatus("WARNING"));
+		dAgg.insert("m4", "2014-01-15T02:33:44Z", opsMgr.getIntStatus("OK"));
+		dAgg.insert("m4", "2014-01-15T24:59:59Z", opsMgr.getIntStatus("CRITICAL"));
 		
 	
 		
 		dAgg.finalizeAll();
-		dAgg.aggregate("AND");
+		dAgg.aggregate("AND",opsMgr);
 		
 		System.out.println(Arrays.toString(dAgg.aggregation.samples));
 		

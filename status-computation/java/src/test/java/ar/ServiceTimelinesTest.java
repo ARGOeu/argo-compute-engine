@@ -42,7 +42,7 @@ public class ServiceTimelinesTest {
 		Tuple inpTuple = JsonToPig.jsonToTuple(jsonStr);
 		ServiceTimelines st = new ServiceTimelines("","","local");
 	   
-		st.serviceAggr.opsMgr.openFile(jsonFile);
+		st.opsMgr.openFile(jsonFile);
 		cur = st.exec(inpTuple);
 		
 		Tuple expTuple = tf.newTuple();
