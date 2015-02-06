@@ -12,22 +12,35 @@ public class DAggregator {
 	public HashMap<String,DTimeline> timelines;
 	public DTimeline aggregation;
 	
-	public OpsManager opsMgr;
+	//public OpsManager opsMgr;
 	
 	public DAggregator(){
 		
 		this.timelines = new HashMap<String,DTimeline>();
 		this.aggregation = new DTimeline();
-		this.opsMgr = new OpsManager();
+		//this.opsMgr = new OpsManager();
 	}
 	
 	public void loadOpsFile(File opsFile) throws FileNotFoundException{
-		this.opsMgr.openFile(opsFile);
+		//this.opsMgr.openFile(opsFile);
 	}
 	
-	public void insert(String name, String timestamp, String status) throws ParseException {
+	public void insertSlot(String name, int slot, int statusInt)
+	{
+		if (timelines.containsKey(name) == false) {
+			DTimeline tempTimeline = new DTimeline();
+			tempTimeline.samples[slot] = statusInt;
+			timelines.put(name, tempTimeline);
+		}
+		else {
+			timelines.get(name).samples[slot] = statusInt;
+		}
+		
+	}
+	
+	public void insert(String name, String timestamp, int statusInt) throws ParseException {
 		// Get the integer value of the specified status string
-		int statusInt = opsMgr.getIntStatus(status);
+		
 		
 		// Check if time-line exists or else create it
 		if (timelines.containsKey(name) == false) {
@@ -42,10 +55,10 @@ public class DAggregator {
 	
 	
 	
-	public void setStartState(String name, String status)
+	public void setStartState(String name, int statusInt)
 	{
 		// Get the integer value of the specified status string
-		int statusInt = opsMgr.getIntStatus(status);
+		
 		// Check if time-line exists or else create it
 		if (timelines.containsKey(name) == false) {
 			DTimeline tempTimeline = new DTimeline();
@@ -57,6 +70,12 @@ public class DAggregator {
 		}
 	}
 
+	public void clear()
+	{
+		this.timelines.clear();
+		this.aggregation.clear();
+	}
+	
 	public void finalizeAll()
 	{
 		for (Entry<String, DTimeline> item : timelines.entrySet())
@@ -65,9 +84,9 @@ public class DAggregator {
 		}
 	}
 	
-	public void aggregate(String opType) {
+	public void aggregate(String opType, OpsManager opsMgr) {
 		
-		int opTypeInt = this.opsMgr.getIntOperation(opType);
+		int opTypeInt = opsMgr.getIntOperation(opType);
 		
 		for (int i=0;i<this.aggregation.samples.length;i++) {
 			
@@ -82,7 +101,7 @@ public class DAggregator {
 				else {
 					int a = this.aggregation.samples[i];
 					int b = item.getValue().samples[i];
-					this.aggregation.samples[i] = this.opsMgr.opInt(opTypeInt,a, b);
+					this.aggregation.samples[i] = opsMgr.opInt(opTypeInt,a, b);
 				}		
 			}
 		}

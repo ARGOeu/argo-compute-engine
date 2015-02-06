@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import myudf.AddTopology;
 import ops.DAggregator;
 import ops.DTimeline;
+import ops.OpsManager;
 
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.BagFactory;
@@ -31,30 +32,33 @@ import utils.Slot;
 public class EndpointTimelines extends EvalFunc<Tuple> {
 
     public DAggregator endpointAggr;
-	
+	public OpsManager opsMgr;
+    
 	private TupleFactory tupFactory; 
     private BagFactory bagFactory;
-	
-    private DTimeline mt;
     
-    
-	public String fnMetricProfiles;
-	public String fnOps;
+	private String fnMetricProfiles;
+	private String fnOps;
 	
-	public String targetDate;
+	private String targetDate;
 	
-	public boolean initialized;
+	private String fsUsed;  // local,hdfs,cache (distrubuted_cache)
 	
-	public EndpointTimelines( String fnOps, String targetDate) throws IOException{
+	private boolean initialized;
+	
+	public EndpointTimelines( String fnOps, String targetDate, String fsUsed) throws IOException{
 		// set first the filenames
 		this.fnOps = fnOps;
+		
+		// set distribute cache flag
+		this.fsUsed = fsUsed;
 		
 		// set the targetDate var
 		this.targetDate = targetDate;
 	
 		// set the Structures
 		this.endpointAggr = new DAggregator();
-		
+		this.opsMgr = new OpsManager();
 		// set up factories
 		this.tupFactory = TupleFactory.getInstance();
 		this.bagFactory = BagFactory.getInstance();
@@ -65,10 +69,12 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	
 	public void init() throws IOException
 	{
-		// Open Files from distributed cache
-		this.endpointAggr.opsMgr.openFile(new File("./ops"));
+		if (this.fsUsed.equalsIgnoreCase("cache")){
+			this.opsMgr.openFile(new File("./ops"));
+		}
+		
 		this.initialized=true;
-		System.out.println("Initialized!");
+		
 	}
 	
 	public List<String> getCacheFiles() { 
@@ -88,6 +94,8 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
         }
 		
 		if (input == null || input.size() == 0) return null;
+
+		this.endpointAggr.clear();
 		
 		///Grab endpoint info
 		String service = (String)input.get(0);
@@ -104,13 +112,12 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	    	String ts = (String) cur_item.get(1);
 	    	String status = (String) cur_item.get(2);
 	    	if (! ( ts.substring(0, ts.indexOf("T")).equals(this.targetDate)) ) {
-	    		this.endpointAggr.setStartState(metric, status);
+	    		this.endpointAggr.setStartState(metric, this.opsMgr.getIntStatus(status));
 	    		continue;
 	    	}
-	    	
 	    	try {
 			
-	    		this.endpointAggr.insert(metric, ts, status);
+	    		this.endpointAggr.insert(metric, ts, this.opsMgr.getIntStatus(status));
 			
 	    	} catch (ParseException e) {
 				e.printStackTrace();
@@ -119,7 +126,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 		}
 		
 		this.endpointAggr.finalizeAll();
-		this.endpointAggr.aggregate("AND"); // should be supplied on outside file
+		this.endpointAggr.aggregate("AND",this.opsMgr); // should be supplied on outside file
 		
 		//Create output Tuple
 	    Tuple output = tupFactory.newTuple();
@@ -131,7 +138,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 		//Append the timeline
 	    for (int i=0;i<this.endpointAggr.aggregation.samples.length;i++)  {
 	    	Tuple cur_tupl = tupFactory.newTuple();
-	    	cur_tupl.append(i);
+	    	//cur_tupl.append(i);
 			cur_tupl.append(this.endpointAggr.aggregation.samples[i]);
 			outBag.add(cur_tupl);
 		}
@@ -154,7 +161,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 		Schema.FieldSchema service = new Schema.FieldSchema("service", DataType.CHARARRAY);
 		Schema.FieldSchema hostname = new Schema.FieldSchema("hostname", DataType.CHARARRAY);
 		
-		Schema.FieldSchema slot = new Schema.FieldSchema("slot", DataType.INTEGER);
+		//Schema.FieldSchema slot = new Schema.FieldSchema("slot", DataType.INTEGER);
 		Schema.FieldSchema statusInt = new Schema.FieldSchema("status", DataType.INTEGER);
         
         Schema endpoint = new Schema();
@@ -163,7 +170,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
         endpoint.add(service);
         endpoint.add(hostname);
         
-        timeline.add(slot);
+        //timeline.add(slot);
         timeline.add(statusInt);
 
         Schema.FieldSchema tl = null;

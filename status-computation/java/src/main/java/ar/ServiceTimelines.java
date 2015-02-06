@@ -2,13 +2,11 @@ package ar;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import ops.DAggregator;
-import ops.DTimeline;
 import ops.OpsManager;
 
 import org.apache.pig.EvalFunc;
@@ -21,49 +19,55 @@ import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
-public class MetricTimelines extends EvalFunc<Tuple> {
 
-	private String fnOps; 
-	private String targetDate;
-	
-	private String fsUsed; //local,hdfs,cache (distrubuted_cache)
-	
-	public DTimeline dtl;
-	public OpsManager opsMgr;
+
+public class ServiceTimelines extends EvalFunc<Tuple> {
+
+    public DAggregator serviceAggr;
+    public OpsManager opsMgr;
+    
 	
 	private TupleFactory tupFactory; 
     private BagFactory bagFactory;
+    
+	private String fnMetricProfiles;
+	private String fnOps;
+	
+	private String targetDate;
+	
+	private String fsUsed;  // local,hdfs,cache (distrubuted_cache)
 	
 	private boolean initialized;
 	
-	public MetricTimelines ( String fnOps, String targetDate, String fsUsed ) throws IOException{
+	public ServiceTimelines( String fnOps, String targetDate, String fsUsed) throws IOException{
 		// set first the filenames
 		this.fnOps = fnOps;
 		
+		// set distribute cache flag
 		this.fsUsed = fsUsed;
 		
 		// set the targetDate var
 		this.targetDate = targetDate;
 	
 		// set the Structures
-		this.dtl = new DTimeline();
+		this.serviceAggr = new DAggregator();
 		this.opsMgr = new OpsManager();
 		// set up factories
 		this.tupFactory = TupleFactory.getInstance();
 		this.bagFactory = BagFactory.getInstance();
+		
 		// this is not yet initialized because we need files from distributed cache
 		this.initialized = false;
 	}
 	
 	public void init() throws IOException
 	{
-		// Open Files from distributed cache
 		if (this.fsUsed.equalsIgnoreCase("cache")){
-			
 			this.opsMgr.openFile(new File("./ops"));
 		}
+		
 		this.initialized=true;
-		System.out.println("Initialized!");
+		
 	}
 	
 	public List<String> getCacheFiles() { 
@@ -73,75 +77,64 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 	} 
 	
 	
+	@Override
 	public Tuple exec(Tuple input) throws IOException {
-		
-		
 		
 		// Check if cache files have been opened 
 		if (this.initialized==false)
         {
-        	
-			this.init(); // If not open them
-			this.initialized = true;
+        	this.init(); // If not open them 
         }
-		// Clear timeline
-		this.dtl.clear();
 		
 		if (input == null || input.size() == 0) return null;
+
+		this.serviceAggr.clear();
 		
 		///Grab endpoint info
-		String service = (String)input.get(0);
-		String hostname = (String)input.get(1);
-		String metric = (String)input.get(2);
+		String groupname = (String)input.get(0);
+		String service = (String)input.get(1);
 		// Get timeline info
-		DefaultDataBag bag =  (DefaultDataBag) input.get(3);
+		DefaultDataBag bag =  (DefaultDataBag) input.get(2);
 		// Iterate the whole timeline
-		Iterator<Tuple> itBag = bag.iterator();
+		Iterator<Tuple> it_bag = bag.iterator();
 		
-		while (itBag.hasNext()){
-	    	Tuple curItem = itBag.next();
+		while (it_bag.hasNext()){
+	    	Tuple cur_item = it_bag.next();
 	    	//Get timeline item info
+	    	String hostname = (String) cur_item.get(0);
+	    	DefaultDataBag bag2 = (DefaultDataBag) cur_item.get(1);
 	    	
-	    	String ts = (String) curItem.get(0);
-	    	String status = (String) curItem.get(1);
-	    	if (! ( ts.substring(0, ts.indexOf("T")).equals(this.targetDate)) ) {
-	    		this.dtl.setStartState(this.opsMgr.getIntStatus(status));
-	    		continue;
+	    	Iterator<Tuple> it_bag2 = bag2.iterator();
+	    	
+	    	int j=0;
+	   
+	    	while (it_bag2.hasNext()){
+	    		
+	    		Tuple cur_subitem = it_bag2.next();
+	   
+	    		this.serviceAggr.insertSlot(hostname, j, Integer.parseInt(cur_subitem.get(0).toString()));
+	    	
+	    		j++;
+	    		
 	    	}
-	    	
-	    	try {
-			
-	    		this.dtl.insert(ts, opsMgr.getIntStatus(status));
-			
-	    	} catch (ParseException e) {
-				e.printStackTrace();
-			}
 	    	
 		}
 		
 		
-	
-	    
-	    
-		
-		this.dtl.finalize();
+		this.serviceAggr.aggregate("OR",this.opsMgr); // should be supplied on outside file
 		
 		//Create output Tuple
 	    Tuple output = tupFactory.newTuple();
 	    DataBag outBag = bagFactory.newDefaultBag();
 	    
+	    output.append(groupname);
 	    output.append(service);
-	    output.append(hostname);
-	    output.append(metric);
-	    
-	    
 	    
 		//Append the timeline
-	    for (int i=0;i<this.dtl.samples.length;i++)  {
+	    for (int i=0;i<this.serviceAggr.aggregation.samples.length;i++)  {
 	    	Tuple cur_tupl = tupFactory.newTuple();
-	    	
 	    	//cur_tupl.append(i);
-			cur_tupl.append(this.dtl.samples[i]);
+			cur_tupl.append(this.serviceAggr.aggregation.samples[i]);
 			outBag.add(cur_tupl);
 		}
 	    
@@ -150,30 +143,27 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 	    if (outBag.size()==0) return null;
 	   
 		return output;
+	    
 		
 		
 		
 		
-		
-	
 	}
 	
 	@Override
     public Schema outputSchema(Schema input) {
         
+		Schema.FieldSchema groupname = new Schema.FieldSchema("groupname", DataType.CHARARRAY);
 		Schema.FieldSchema service = new Schema.FieldSchema("service", DataType.CHARARRAY);
-		Schema.FieldSchema hostname = new Schema.FieldSchema("hostname", DataType.CHARARRAY);
-		Schema.FieldSchema metric = new Schema.FieldSchema("metric", DataType.CHARARRAY);
 		
 		//Schema.FieldSchema slot = new Schema.FieldSchema("slot", DataType.INTEGER);
-		Schema.FieldSchema statusInt = new Schema.FieldSchema("status", DataType.CHARARRAY);
+		Schema.FieldSchema statusInt = new Schema.FieldSchema("status", DataType.INTEGER);
         
-        Schema metricTl = new Schema();
+        Schema endpoint = new Schema();
         Schema timeline = new Schema();
        
-        metricTl.add(service);
-        metricTl.add(hostname);
-        metricTl.add(metric);
+        endpoint.add(groupname);
+        endpoint.add(service);
         
         //timeline.add(slot);
         timeline.add(statusInt);
@@ -185,17 +175,15 @@ public class MetricTimelines extends EvalFunc<Tuple> {
            
         }
         
-        metricTl.add(tl);
+        endpoint.add(tl);
         
         try {
-            return new Schema(new Schema.FieldSchema("endpoint", metricTl, DataType.TUPLE));
+            return new Schema(new Schema.FieldSchema("serviceTl", endpoint, DataType.TUPLE));
         } catch (FrontendException ex) {
            
         }
         
         return null;
     }
-
-	
 	
 }

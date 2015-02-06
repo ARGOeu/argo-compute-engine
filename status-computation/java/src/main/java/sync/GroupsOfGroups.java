@@ -114,11 +114,11 @@ private ArrayList<GroupItem> list;
 			// Grab 1st level mandatory fields
 			String type = avroRow.get("type").toString();
 			String group = avroRow.get("group").toString();
-			String service = avroRow.get("subgroup").toString();
+			String subgroup = avroRow.get("subgroup").toString();
 			
 			
 			// Insert data to list
-			this.insert(type,group,service,tagMap);
+			this.insert(type,group,subgroup,tagMap);
 			
 		} // end of avro rows
 	
