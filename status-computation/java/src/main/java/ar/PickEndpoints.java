@@ -60,7 +60,7 @@ public class PickEndpoints extends FilterFunc {
         	this.init();
         }
 		
-		if (input == null || input.size() == 0) return null;
+		if (input == null || input.size() == 0) return false;
         
         //Get Arguments
         String hostname = (String)input.get(0);
@@ -70,9 +70,9 @@ public class PickEndpoints extends FilterFunc {
         //Only 1 profile per job
         String prof = metricMgr.getProfiles().get(0);
         //Filter By profile first
-        if (metricMgr.checkProfileServiceMetric(prof, service, metric) == false ) return null;
+        if (metricMgr.checkProfileServiceMetric(prof, service, metric) == false ) return false;
         //Filter By topology
-        if (endpointMgr.checkEndpoint(hostname, service) == false) return null;
+        if (endpointMgr.checkEndpoint(hostname, service) == false) return false;
         
         //Filter in the future by tags
         
