@@ -102,9 +102,9 @@ public class AvailabilityProfiles {
 	{
 		if (this.list.containsKey(avProfile))
 		{
-			if (this.list.get("avProfile").groups.containsKey(groupName))
+			if (this.list.get(avProfile).groups.containsKey(groupName))
 			{
-				return this.list.get("avProfile").groups.get(groupName).op;
+				return this.list.get(avProfile).groups.get(groupName).op;
 			}
 		}
 		
