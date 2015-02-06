@@ -107,8 +107,10 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 	   
 	    	while (it_bag2.hasNext()){
 	    		
-	    		Tuple cur_subitem = it_bag2.next(); 
-	    		this.serviceAggr.insertSlot(hostname, j, cur_subitem.getType(0));
+	    		Tuple cur_subitem = it_bag2.next();
+	   
+	    		this.serviceAggr.insertSlot(hostname, j, Integer.parseInt(cur_subitem.get(0).toString()));
+	    	
 	    		j++;
 	    		
 	    	}

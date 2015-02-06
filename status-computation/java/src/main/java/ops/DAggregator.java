@@ -30,6 +30,7 @@ public class DAggregator {
 		if (timelines.containsKey(name) == false) {
 			DTimeline tempTimeline = new DTimeline();
 			tempTimeline.samples[slot] = statusInt;
+			timelines.put(name, tempTimeline);
 		}
 		else {
 			timelines.get(name).samples[slot] = statusInt;
