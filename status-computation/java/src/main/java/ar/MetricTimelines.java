@@ -119,11 +119,6 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 	    	
 		}
 		
-		
-	
-	    
-	    
-		
 		this.dtl.finalize();
 		
 		//Create output Tuple
