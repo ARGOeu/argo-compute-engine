@@ -82,6 +82,8 @@ public class AvailabilityProfilesTest {
 		assertEquals("group storage: SRMv2 op",avp.getProfileGroupServiceOp("ap1", "storage", "SRM"),"AND");
 		assertEquals("group storage: SRM op",avp.getProfileGroupServiceOp("ap1", "storage", "SRMv2"),"AND");
 		assertEquals("group information: Site-BDII op",avp.getProfileGroupServiceOp("ap1", "information", "Site-BDII"),"AND");
+		assertEquals("get group by service: ",avp.getGroupByService("ap1", "CREAM-CE"),"compute");
+		assertEquals("get group by service: ",avp.getGroupByService("ap1", "SRMv2"),"storage");
 		// we check for an unexpected operation
 		assertNotEquals("group compute: CREAM-CE op",avp.getProfileGroupServiceOp("ap1", "compute", "CREAM-CE"),"OR");
 	

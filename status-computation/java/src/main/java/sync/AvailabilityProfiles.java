@@ -19,9 +19,13 @@ public class AvailabilityProfiles {
 	private HashMap<String,AvProfileItem> list;
 	
 	
-	AvailabilityProfiles(){
+	
+	
+	
+	public AvailabilityProfiles(){
 		
 		this.list = new HashMap<String,AvProfileItem>();
+		
 	}
 	
 	private class AvProfileItem {
@@ -33,9 +37,11 @@ public class AvailabilityProfiles {
 		private String op;
 		
 		private HashMap<String,ServGroupItem> groups;
+		private HashMap<String,String> serviceIndex;
 		
 		AvProfileItem(){
 			this.groups=new HashMap<String,ServGroupItem>();
+			this.serviceIndex = new HashMap<String,String>();
 		}
 		
 		private class ServGroupItem{
@@ -63,6 +69,7 @@ public class AvailabilityProfiles {
 			if (this.groups.containsKey(group))
 			{
 				this.groups.get(group).services.put(service, op);
+				this.serviceIndex.put(service, group);
 			}
 		}
 	}
@@ -184,6 +191,16 @@ public class AvailabilityProfiles {
 		return null;
 	}
 	
+	public String getGroupByService(String avProfile, String Service) {
+	
+		if (this.list.containsKey(avProfile)){
+			
+			return this.list.get(avProfile).serviceIndex.get(Service);
+			
+		}
+		return Service;
+		
+	}
 	
 	public void loadProfileJson(File jsonFile) throws FileNotFoundException{
 		
