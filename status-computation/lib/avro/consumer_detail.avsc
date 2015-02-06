@@ -1,0 +1,18 @@
+{"namespace": "argo.avro",
+ "type": "record",
+ "name": "Detail_Log",
+ "fields": [
+  	{"name": "timestamp", "type": "string"},
+ 	{"name": "roc", "type": "string"},
+ 	{"name": "monitoring_box", "type": "string"},
+ 	{"name": "metric", "type": "string"},
+ 	{"name": "service_type", "type": "string"},
+ 	{"name": "hostname", "type": "string"},
+ 	{"name": "status", "type": "string"},
+ 	{"name": "vo", "type": "string"},
+ 	{"name": "vo_fqan", "type": "string"},
+ 	{"name": "summary", "type": "string"},
+ 	{"name": "message", "type": "string"},
+ 	{"name": "rest", "type": "string"}    
+ ]
+}

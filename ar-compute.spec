@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.4.5
-Release: 1%{?dist}
+Version: 1.6.0
+Release: 2%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -30,18 +30,18 @@ mvn package
 install --directory %{buildroot}/usr/libexec/ar-compute
 install --directory %{buildroot}/usr/libexec/ar-compute/pig
 install --directory %{buildroot}/usr/libexec/ar-compute/lib
+install --directory %{buildroot}/usr/libexec/ar-compute/lib/avro
 install --directory %{buildroot}/var/lib/ar-compute
 install --directory %{buildroot}/var/log/ar-compute
 install --directory %{buildroot}/etc
-install --directory %{buildroot}/etc/cron.d
 
 install --mode 755 helpers/ar-compute.py                        %{buildroot}/usr/libexec/ar-compute/
 install --mode 644 status-computation/pig/*                     %{buildroot}/usr/libexec/ar-compute/pig/
-install --mode 644 status-computation/lib/*                     %{buildroot}/usr/libexec/ar-compute/lib/
+install --mode 644 status-computation/lib/avro/*                %{buildroot}/usr/libexec/ar-compute/lib/avro/
+install --mode 644 status-computation/lib/*.jar                 %{buildroot}/usr/libexec/ar-compute/lib/
+install --mode 644 status-computation/lib/*.sh                  %{buildroot}/usr/libexec/ar-compute/lib/
+install --mode 644 status-computation/lib/*.py                  %{buildroot}/usr/libexec/ar-compute/lib/
 install --mode 644 status-computation/java/target/MyUDF-1.0.jar %{buildroot}/usr/libexec/ar-compute/MyUDF.jar
-install --mode 644 cronjobs/ar-compute-hourly                   %{buildroot}/etc/cron.d
-install --mode 644 cronjobs/ar-compute-daily                    %{buildroot}/etc/cron.d
-install --mode 644 cronjobs/ar-compute-monthly                  %{buildroot}/etc/cron.d
 install --mode 644 conf/ar-compute-engine.conf                  %{buildroot}/etc/
 
 %clean
@@ -54,16 +54,30 @@ mvn clean
 %attr(0755,root,root) /usr/libexec/ar-compute/ar-compute.py
 %attr(0755,root,root) /usr/libexec/ar-compute/pig/calculator.pig
 %attr(0755,root,root) /usr/libexec/ar-compute/pig/local_calculator.pig
+%attr(0755,root,root) /usr/libexec/ar-compute/pig/sites.pig
+%attr(0755,root,root) /usr/libexec/ar-compute/pig/status_detailed.pig
+%attr(0755,root,root) /usr/libexec/ar-compute/pig/compute-ar.pig
 %attr(0755,root,root) /usr/libexec/ar-compute/lib/*
 %attr(0755,root,root) /usr/libexec/ar-compute/MyUDF.jar
 %attr(0750,root,root) /var/lib/ar-compute
 %attr(0750,root,root) /var/log/ar-compute
-%attr(0644,root,root) /etc/cron.d/ar-compute-hourly
-%attr(0644,root,root) /etc/cron.d/ar-compute-daily
-%attr(0644,root,root) /etc/cron.d/ar-compute-monthly
 %attr(0644,root,root) /etc/ar-compute-engine.conf
 
 %changelog
+* Fri Feb 06 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-2%{?dist}
+- Add Support for Modular Compuation Elements
+* Tue Feb 03 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-1%{?dist}
+- Add support for Custom Metric Statuses, Operations and Availability Profiles
+* Fri Jan 16 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-0%{?dist}
+- Adding support for reading avro files from consumer and sync components
+* Wed Jan 14 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.0.-3%{?dist}
+- Add support for Previous timestamp. Various Fixes
+* Wed Dec 17 2014 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.0-2%{?dist}
+- Add support for producing status result aggregations.
+* Wed Dec 03 2014 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.0-1%{?dist}
+- Add support for producing status results. Add Support for handling avro files
+* Thu Nov 13 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.4.6-1%{?dist}
+- Removal of depricated call in calculator.sh
 * Tue Jul 22 2014 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.4.5-1%{?dist}
 - Mongo field schema changes (date field: d->dt)
 * Fri May 02 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.4.4-1%{?dist}

@@ -27,6 +27,8 @@ REGISTER /usr/libexec/ar-compute/lib/mongo-java-driver-2.11.4.jar   -- mongodb j
 REGISTER /usr/libexec/ar-compute/lib/mongo-hadoop-core.jar          -- mongo-hadoop core lib
 REGISTER /usr/libexec/ar-compute/lib/mongo-hadoop-pig.jar           -- mongo-hadoop pig lib
 
+
+define PROF myudf.ProfileSupport('$mongoServer');
 define HST myudf.HostServiceTimelines();
 define AT  myudf.AddTopology();
 define SA  myudf.SiteAvailability();
@@ -45,7 +47,6 @@ define SFA myudf.SFAvailability();
 %declare TOPOLOGY3  `cat $topology_file3`
 %declare POEMS      `cat $poem_file`
 %declare WEIGHTS    `cat $weights_file`
-%declare HLP        `cat $hlp ` --- `cat $hlp` --- high level profiles.
 
 ---SET mapred.min.split.size 3000000;
 ---SET mapred.max.split.size 3000000;
@@ -63,11 +64,11 @@ SET mapred.reduce.tasks.speculative.execution false
 
 --- Get beacons (logs from previous day)
 beacons_r = LOAD 'raw_data' USING org.apache.hcatalog.pig.HCatLoader();
-beacons = FILTER beacons_r BY dates=='$PREVDATE' AND (profile=='ch.cern.sam.ROC_CRITICAL' OR profile=='ch.cern.sam.CLOUD-MON');
+beacons = FILTER beacons_r BY dates=='$PREVDATE' AND (PROF(profile));
 
 --- Get current logs
 current_logs_r = LOAD 'raw_data' USING org.apache.hcatalog.pig.HCatLoader();
-current_logs = FILTER current_logs_r BY dates=='$CUR_DATE' AND (profile=='ch.cern.sam.ROC_CRITICAL' OR profile=='ch.cern.sam.CLOUD-MON');
+current_logs = FILTER current_logs_r BY dates=='$CUR_DATE' AND (PROF(profile));
 
 --- Merge current logs with beacons
 logs = UNION current_logs, beacons;

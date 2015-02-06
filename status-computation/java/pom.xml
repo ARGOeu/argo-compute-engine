@@ -23,6 +23,11 @@
         </plugins>
     </build>
     <dependencies>
+    	<dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>1.7.4</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.pig</groupId>
             <artifactId>pig</artifactId>
@@ -54,7 +59,6 @@
         	<groupId>com.google.code.gson</groupId>
         	<artifactId>gson</artifactId>
         	<version>2.2.4</version>
-        	<scope>test</scope>
         </dependency>
         <dependency>
         	<groupId>org.apache.pig</groupId>
