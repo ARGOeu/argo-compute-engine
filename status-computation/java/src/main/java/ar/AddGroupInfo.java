@@ -8,6 +8,7 @@ import java.util.List;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
+import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import sync.EndpointGroups;
@@ -85,13 +86,40 @@ public class AddGroupInfo extends EvalFunc<Tuple>{
 	
 	@Override
     public Schema outputSchema(Schema input) {
+		   
+		Schema.FieldSchema service = new Schema.FieldSchema("service", DataType.CHARARRAY);
+		Schema.FieldSchema hostname = new Schema.FieldSchema("hostname", DataType.CHARARRAY);
+		Schema.FieldSchema groupname = new Schema.FieldSchema("groupname", DataType.CHARARRAY);
+		//Schema.FieldSchema slot = new Schema.FieldSchema("slot", DataType.INTEGER);
+		Schema.FieldSchema statusInt = new Schema.FieldSchema("status", DataType.INTEGER);
         
-		
-		Schema.FieldSchema group = new Schema.FieldSchema("group", DataType.CHARARRAY);
-		
-		input.add(group);
+        Schema endpoint = new Schema();
+        Schema timeline = new Schema();
+       
+        endpoint.add(service);
+        endpoint.add(hostname);
+        
+        //timeline.add(slot);
+        timeline.add(statusInt);
 
-        return input;
+        Schema.FieldSchema tl = null;
+        try {
+            tl = new Schema.FieldSchema("timeline", timeline, DataType.BAG);
+        } catch (FrontendException ex) {
+           
+        }
+        
+        endpoint.add(tl);
+        endpoint.add(groupname);
+        
+
+        try {
+            return new Schema(new Schema.FieldSchema("endpoint", endpoint, DataType.TUPLE));
+        } catch (FrontendException ex) {
+           
+        }
+	    
+	    return null;
         
         
     }
