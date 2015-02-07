@@ -2,15 +2,12 @@ package ar;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import myudf.AddTopology;
 import ops.DAggregator;
 import ops.DTimeline;
 import ops.OpsManager;
@@ -25,52 +22,51 @@ import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
-import sync.EndpointGroups;
-import sync.MetricProfiles;
-import utils.Slot;
+import sync.AvailabilityProfiles;
 
-public class EndpointTimelines extends EvalFunc<Tuple> {
+public class SiteTimelines extends EvalFunc<Tuple> {
 
-    public DAggregator endpointAggr;
-	public OpsManager opsMgr;
-    
+	public HashMap<String,DAggregator> siteAggr;
+	
+	public OpsManager opsMgr = new OpsManager();
+	public AvailabilityProfiles apMgr = new AvailabilityProfiles();
+	
 	private TupleFactory tupFactory; 
     private BagFactory bagFactory;
     
-	private String fnMetricProfiles;
-	private String fnOps;
-	
-	private String targetDate;
-	
-	private String fsUsed;  // local,hdfs,cache (distrubuted_cache)
+    private String fnOps; 
+    private String fnAps;
+    
+    private String fsUsed;  // local,hdfs,cache (distrubuted_cache)
 	
 	private boolean initialized;
-	
-	public EndpointTimelines( String fnOps, String targetDate, String fsUsed) throws IOException{
+    
+	public SiteTimelines(String fnOps, String fnAps, String fsUsed) {
+		
 		// set first the filenames
 		this.fnOps = fnOps;
-		
+		this.fnAps = fnAps;
 		// set distribute cache flag
 		this.fsUsed = fsUsed;
 		
-		// set the targetDate var
-		this.targetDate = targetDate;
-	
 		// set the Structures
-		this.endpointAggr = new DAggregator();
+		this.siteAggr = new HashMap<String,DAggregator>();
 		this.opsMgr = new OpsManager();
+		this.apMgr = new AvailabilityProfiles();
 		// set up factories
 		this.tupFactory = TupleFactory.getInstance();
 		this.bagFactory = BagFactory.getInstance();
 		
 		// this is not yet initialized because we need files from distributed cache
 		this.initialized = false;
+		
 	}
-	
+    
 	public void init() throws IOException
 	{
 		if (this.fsUsed.equalsIgnoreCase("cache")){
 			this.opsMgr.openFile(new File("./ops"));
+			this.apMgr.loadProfileJson(new File("./aps"));
 		}
 		
 		this.initialized=true;
@@ -80,9 +76,9 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	public List<String> getCacheFiles() { 
         List<String> list = new ArrayList<String>(); 
         list.add(this.fnOps.concat("#ops"));
+        list.add(this.fnAps.concat("#aps"));
         return list; 
 	} 
-	
 	
 	@Override
 	public Tuple exec(Tuple input) throws IOException {
@@ -95,62 +91,93 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 		
 		if (input == null || input.size() == 0) return null;
 
-		this.endpointAggr.clear();
+		this.siteAggr.clear();
 		
-		///Grab endpoint info
-		String service = (String)input.get(0);
-		String hostname = (String)input.get(1);
-		// Get timeline info
-		DefaultDataBag bag =  (DefaultDataBag) input.get(2);
+		String aprofile = this.apMgr.getAvProfiles().get(0); //One Availability Profile
+		
+		String sitename = (String)input.get(0);
+		DefaultDataBag bag =  (DefaultDataBag) input.get(1);
+		
 		// Iterate the whole timeline
 		Iterator<Tuple> it_bag = bag.iterator();
 		
 		while (it_bag.hasNext()){
 	    	Tuple cur_item = it_bag.next();
 	    	//Get timeline item info
-	    	String metric = (String) cur_item.get(0);
-	    	String ts = (String) cur_item.get(1);
-	    	String status = (String) cur_item.get(2);
-	    	if (! ( ts.substring(0, ts.indexOf("T")).equals(this.targetDate)) ) {
-	    		this.endpointAggr.setStartState(metric, this.opsMgr.getIntStatus(status));
-	    		continue;
+	    	String service = (String) cur_item.get(0);
+	    	DefaultDataBag bag2 = (DefaultDataBag) cur_item.get(1);
+	    	
+	    	// Get the availability group 
+	    	String group = apMgr.getGroupByService(aprofile, service);
+	    	
+	    	// if group doesn't exist yet create it 
+	    	if (this.siteAggr.containsKey(group)==false) {
+	    		this.siteAggr.put(group, new DAggregator());
 	    	}
-	    	try {
-			
-	    		this.endpointAggr.insert(metric, ts, this.opsMgr.getIntStatus(status));
-			
-	    	} catch (ParseException e) {
-				e.printStackTrace();
-			}
+	    	
+	    	// Group will be present now 
+	    	Iterator<Tuple> it_bag2 = bag2.iterator();
+	    	int j=0;	
+	    	while (it_bag2.hasNext()){
+	    		
+	    		Tuple cur_subitem = it_bag2.next();
+	    		this.siteAggr.get(group).insertSlot(service, j, Integer.parseInt(cur_subitem.get(0).toString()));
+	    		j++;
+	    		
+	    	}
 	    	
 		}
 		
-		this.endpointAggr.finalizeAll();
-		this.endpointAggr.aggregate("AND",this.opsMgr); // should be supplied on outside file
+		// Aggregate each group
+		for (String group : this.siteAggr.keySet())
+		{
+			//Get group Operation
+			System.out.println(group);
+			System.out.println(aprofile);
+			String gop = this.apMgr.getProfileGroupOp(aprofile, group);
+			System.out.println(gop);
+			this.siteAggr.get(group).aggregate(gop, this.opsMgr);
+			
+		}
+		
+		// Aggregate all sites
+		DAggregator totalSite = new DAggregator();
+		
+		// Aggregate each group
+		for (String group : this.siteAggr.keySet())
+		{
+			DTimeline curTimeline = this.siteAggr.get(group).aggregation;
+			for (int i=0;i<curTimeline.samples.length;i++)
+			{
+				totalSite.insertSlot(group, i, curTimeline.samples[i]);
+				
+			}
+			
+		}
+		
+		// Final site aggregate
+		// Get appropriate operation from availability profile
+		totalSite.aggregate(this.apMgr.getTotalOp(aprofile), this.opsMgr);
 		
 		//Create output Tuple
 	    Tuple output = tupFactory.newTuple();
 	    DataBag outBag = bagFactory.newDefaultBag();
 	    
-	    output.append(service);
-	    output.append(hostname);
+	    output.append(sitename);
+	    
 	    
 		//Append the timeline
-	    for (int i=0;i<this.endpointAggr.aggregation.samples.length;i++)  {
+	    for (int i=0;i<totalSite.aggregation.samples.length;i++)  {
 	    	Tuple cur_tupl = tupFactory.newTuple();
 	    	//cur_tupl.append(i);
-			cur_tupl.append(this.endpointAggr.aggregation.samples[i]);
+			cur_tupl.append(totalSite.aggregation.samples[i]);
 			outBag.add(cur_tupl);
 		}
 	    
 	    output.append(outBag);
-	    
-	    if (outBag.size()==0) return null;
-	   
+		
+		
 		return output;
-	    
-		
-		
 		
 		
 	}
@@ -158,8 +185,8 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	@Override
     public Schema outputSchema(Schema input) {
         
-		Schema.FieldSchema service = new Schema.FieldSchema("service", DataType.CHARARRAY);
-		Schema.FieldSchema hostname = new Schema.FieldSchema("hostname", DataType.CHARARRAY);
+		Schema.FieldSchema groupname = new Schema.FieldSchema("groupname", DataType.CHARARRAY);
+		
 		
 		//Schema.FieldSchema slot = new Schema.FieldSchema("slot", DataType.INTEGER);
 		Schema.FieldSchema statusInt = new Schema.FieldSchema("status", DataType.INTEGER);
@@ -167,12 +194,12 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
         Schema endpoint = new Schema();
         Schema timeline = new Schema();
        
-        endpoint.add(service);
-        endpoint.add(hostname);
+        endpoint.add(groupname);
+        
         
         //timeline.add(slot);
         timeline.add(statusInt);
-        
+
         Schema.FieldSchema tl = null;
         try {
             tl = new Schema.FieldSchema("timeline", timeline, DataType.BAG);
@@ -183,12 +210,14 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
         endpoint.add(tl);
         
         try {
-            return new Schema(new Schema.FieldSchema("endpoint", endpoint, DataType.TUPLE));
+            return new Schema(new Schema.FieldSchema("serviceTl", endpoint, DataType.TUPLE));
         } catch (FrontendException ex) {
            
         }
         
         return null;
     }
+	
+	
 	
 }

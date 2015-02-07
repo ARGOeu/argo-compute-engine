@@ -33,6 +33,7 @@ public class AvailabilityProfiles {
 		private String name;
 		private String namespace;
 		private String metricProfile;
+		private String metricOp;
 		private String groupType;
 		private String op;
 		
@@ -77,6 +78,24 @@ public class AvailabilityProfiles {
 	
 	public void clearProfiles(){
 		this.list.clear();
+	}
+	
+	public String getTotalOp(String avProfile)
+	{
+		if (this.list.containsKey(avProfile)){
+			return this.list.get(avProfile).op;
+		}
+		
+		return "";
+	}
+	
+	public String getMetricOp(String avProfile)
+	{
+		if (this.list.containsKey(avProfile)){
+			return this.list.get(avProfile).metricOp;
+		}
+		
+		return "";
 	}
 	
 	// Return the available Group Names of a profile
@@ -217,6 +236,7 @@ public class AvailabilityProfiles {
 		tmpAvp.name= jRootObj.get("name").getAsString();
 		tmpAvp.namespace = jRootObj.get("namespace").getAsString();
 		tmpAvp.metricProfile = jRootObj.get("metric_profile").getAsString();
+		tmpAvp.metricOp = jRootObj.get("metric_ops").getAsString();
 		tmpAvp.groupType = jRootObj.get("group_type").getAsString();
 		tmpAvp.op = jRootObj.get("operation").getAsString();
 		

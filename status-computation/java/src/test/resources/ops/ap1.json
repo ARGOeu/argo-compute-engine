@@ -3,6 +3,7 @@
   "name": "ap1",
   "namespace": "test",
   "metric_profile": "ch.cern.sam.ROC_CRITICAL",
+  "metric_ops":"AND",
   "group_type": "sites",
   "operation":"AND",
   "groups": {

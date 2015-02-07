@@ -18,7 +18,7 @@ public class DAggregatorTest {
 	public static void setUpBeforeClass() throws Exception {
 		// Assert that files are present
 		assertNotNull("Test file missing", DAggregatorTest.class.getResource("/ops/EGI-algorithm.json"));
-	}
+	} 
 	
 	@Test
 	public void test() throws URISyntaxException, FileNotFoundException, ParseException {

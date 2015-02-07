@@ -32,6 +32,7 @@ public class EndpointGroupsTest {
 		// Test Check if service endpoint exists in topology
 		assertTrue(ge.checkEndpoint("storage1.grid.upjs.sk", "ARC-CE"));
 		assertTrue(ge.checkEndpoint("storage1.grid.upjs.sk", "ARC-CE"));
+		assertTrue(ge.checkEndpoint("se01.afroditi.hellasgrid.gr", "SRM"));
 		assertTrue(ge.checkEndpoint("grid-perfsonar.hpc.susx.ac.uk", "net.perfSONAR.Latency"));
 		
 		assertEquals(ge.getGroup("SITES", "gt3.pnpi.nw.ru", "CREAM-CE"),"ru-PNPI");

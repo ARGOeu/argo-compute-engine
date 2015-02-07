@@ -61,6 +61,10 @@ public class EndpointGroups {
     
     public boolean checkEndpoint(String hostname, String service)
     {
+    	//Fix for specific service SRMv2 which actually reports as SRM
+    	if (service.equals("SRMv2")) {
+    		service = "SRM";
+    	}
     	for (EndpointItem item : list)
     	{
     		if (item.hostname.equals(hostname) && item.service.equals(service))
@@ -74,6 +78,10 @@ public class EndpointGroups {
     
     public String getGroup(String type, String hostname, String service)
     {
+    	//Fix for specific service SRMv2 which actually reports as SRM
+    	if (service.equals("SRMv2")) {
+    		service = "SRM";
+    	}
     	for (EndpointItem item : list)
     	{
     		if (item.type.equals(type) && item.hostname.equals(hostname) && item.service.equals(service))
