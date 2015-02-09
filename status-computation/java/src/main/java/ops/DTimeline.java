@@ -61,6 +61,39 @@ public class DTimeline {
 		return this.startState;
 	}
 	
+	public void fill(int stateInt, String startTs, String endTs, String targetDate) throws ParseException
+	{
+		//Find begin state
+		int start;
+		int end;
+		
+		SimpleDateFormat dmy = new SimpleDateFormat("yyy-MM-dd");
+		Date startDt = dmy.parse(startTs);
+    	Date endDt = dmy.parse(endTs);
+    	Date targetDt = dmy.parse(targetDate);
+		
+		
+    	if (startDt.before(targetDt) &&  !(( startTs.substring(0, startTs.indexOf("T")).equals(targetDate)))) {
+    		start = 0;
+    	}
+    	else {
+    		start = tsInt(startTs);
+    	}
+    	
+    	if (endDt.after(targetDt) && !(( endTs.substring(0, endTs.indexOf("T")).equals(targetDate)))){
+    		end = this.samples.length;
+    	}
+    	else {
+    		end = tsInt(endTs);
+    	}
+    	
+    	for (int i=start;i<end;i++)
+    	{
+    		this.samples[i] = stateInt;
+    	}
+    	
+	}
+	
 	public int tsInt(String timestamp) throws ParseException{
 	
 		SimpleDateFormat w3c_date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");

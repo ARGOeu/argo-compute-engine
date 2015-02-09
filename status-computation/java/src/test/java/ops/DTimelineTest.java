@@ -7,7 +7,9 @@ import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -124,7 +126,11 @@ public class DTimelineTest {
 	    
 	    assertArrayEquals("Aggregation check",expected2,dt2.samples);
 	    
-		
+	    // Test Fills
+	    
+	    dt2.fill(2,"2015-03-24T02:44:55Z", "2015-03-24T13:45:00Z" , "2015-03-24");
+	    System.out.println(Arrays.toString(dt2.samples));
+	  
 		
 	}
 

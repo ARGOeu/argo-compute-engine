@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import ops.DAggregator;
 import ops.DTimeline;
 import ops.OpsManager;
 
@@ -161,7 +160,7 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 		Schema.FieldSchema metric = new Schema.FieldSchema("metric", DataType.CHARARRAY);
 		
 		//Schema.FieldSchema slot = new Schema.FieldSchema("slot", DataType.INTEGER);
-		Schema.FieldSchema statusInt = new Schema.FieldSchema("status", DataType.CHARARRAY);
+		Schema.FieldSchema statusInt = new Schema.FieldSchema("status", DataType.INTEGER);
         
         Schema metricTl = new Schema();
         Schema timeline = new Schema();

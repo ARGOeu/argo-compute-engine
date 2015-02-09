@@ -25,6 +25,8 @@ import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
+import sync.AvailabilityProfiles;
+import sync.Downtimes;
 import sync.EndpointGroups;
 import sync.MetricProfiles;
 import utils.Slot;
@@ -33,23 +35,26 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 
     public DAggregator endpointAggr;
 	public OpsManager opsMgr;
-    
+    public Downtimes downMgr;
+    public AvailabilityProfiles avMgr;
+	
 	private TupleFactory tupFactory; 
     private BagFactory bagFactory;
     
-	private String fnMetricProfiles;
+	private String fnAvProfiles;
 	private String fnOps;
-	
+	private String fnDown;
 	private String targetDate;
 	
 	private String fsUsed;  // local,hdfs,cache (distrubuted_cache)
 	
 	private boolean initialized;
 	
-	public EndpointTimelines( String fnOps, String targetDate, String fsUsed) throws IOException{
+	public EndpointTimelines( String fnOps, String fnDown, String fnAvProfiles, String targetDate, String fsUsed) throws IOException{
 		// set first the filenames
 		this.fnOps = fnOps;
-		
+		this.fnDown = fnDown;
+		this.fnAvProfiles = fnAvProfiles;
 		// set distribute cache flag
 		this.fsUsed = fsUsed;
 		
@@ -59,6 +64,9 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 		// set the Structures
 		this.endpointAggr = new DAggregator();
 		this.opsMgr = new OpsManager();
+		this.downMgr = new Downtimes();
+		this.avMgr = new AvailabilityProfiles();
+		
 		// set up factories
 		this.tupFactory = TupleFactory.getInstance();
 		this.bagFactory = BagFactory.getInstance();
@@ -71,6 +79,8 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	{
 		if (this.fsUsed.equalsIgnoreCase("cache")){
 			this.opsMgr.openFile(new File("./ops"));
+			this.downMgr.loadAvro(new File("./down"));
+			this.avMgr.loadProfileJson(new File("./aps"));
 		}
 		
 		this.initialized=true;
@@ -80,6 +90,8 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	public List<String> getCacheFiles() { 
         List<String> list = new ArrayList<String>(); 
         list.add(this.fnOps.concat("#ops"));
+        list.add(this.fnDown.concat("#down"));
+        list.add(this.fnAvProfiles.concat("#aps"));
         return list; 
 	} 
 	
@@ -126,7 +138,24 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 		}
 		
 		this.endpointAggr.finalizeAll();
-		this.endpointAggr.aggregate("AND",this.opsMgr); // should be supplied on outside file
+		
+		String aprofile = this.avMgr.getAvProfiles().get(0);
+		
+		this.endpointAggr.aggregate(this.avMgr.getMetricOp(aprofile),this.opsMgr); // should be supplied on outside file
+		
+		//Apply Downtimes if hostname is on downtime list
+		ArrayList<String> downPeriod = this.downMgr.getPeriod(hostname, service);
+		
+		if (downPeriod!=null){
+			//We have downtime declared
+			try {
+				this.endpointAggr.aggregation.fill(this.opsMgr.getIntOperation("DOWNTIME"), downPeriod.get(0), downPeriod.get(1), this.targetDate);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
 		
 		//Create output Tuple
 	    Tuple output = tupFactory.newTuple();

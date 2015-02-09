@@ -2,6 +2,8 @@ package ops;
 
 import java.math.BigDecimal;
 
+
+
 public class DIntegrator {
 	
 	public double availability;
@@ -37,9 +39,9 @@ public class DIntegrator {
 		
 		clear();
 		
-		int up=0;
-		int down=0;
-		int unknown=0;
+		double up=0;
+		double down=0;
+		double unknown=0;
 
         for (int i=0;i<samples.length;i++)
         {
@@ -63,12 +65,11 @@ public class DIntegrator {
         	}
         }
         
-        
-        int dt = samples.length;
+        double dt = samples.length;
 
         // Availability = UP period / KNOWN period = UP period / (Total period – UNKNOWN period)
         this.availability =  round(((up / dt) / (1.0 - (unknown / dt))) * 100, 3, BigDecimal.ROUND_HALF_UP);
-
+        
         // Reliability = UP period / (KNOWN period – Scheduled Downtime)
         //             = UP period / (Total period – UNKNOWN period – ScheduledDowntime)
         this.reliability =  round(((up / dt) / (1.0 - (unknown / dt) - (down / dt))) * 100, 3, BigDecimal.ROUND_HALF_UP);
@@ -77,8 +78,7 @@ public class DIntegrator {
         this.unknown_f = round(unknown / dt, 5, BigDecimal.ROUND_HALF_UP);
         this.down_f = round(down / dt, 5, BigDecimal.ROUND_HALF_UP);
 		
-		
-
+       
 	}
 
 }
