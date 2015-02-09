@@ -12,7 +12,7 @@ import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import sync.EndpointGroups;
-import sync.GroupsOfGroups;
+
 
 public class AddGroupInfo extends EvalFunc<Tuple>{
 	

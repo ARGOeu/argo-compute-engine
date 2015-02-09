@@ -30,7 +30,7 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 	private TupleFactory tupFactory; 
     private BagFactory bagFactory;
     
-	private String fnMetricProfiles;
+
 	private String fnOps;
 	
 	private String targetDate;

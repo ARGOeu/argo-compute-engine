@@ -6,13 +6,10 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import myudf.AddTopology;
+
 import ops.DAggregator;
-import ops.DTimeline;
+
 import ops.OpsManager;
 
 import org.apache.pig.EvalFunc;
@@ -27,9 +24,7 @@ import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import sync.AvailabilityProfiles;
 import sync.Downtimes;
-import sync.EndpointGroups;
-import sync.MetricProfiles;
-import utils.Slot;
+
 
 public class EndpointTimelines extends EvalFunc<Tuple> {
 
