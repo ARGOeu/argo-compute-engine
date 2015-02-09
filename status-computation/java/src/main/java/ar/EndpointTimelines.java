@@ -144,7 +144,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 		if (downPeriod!=null){
 			//We have downtime declared
 			try {
-				this.endpointAggr.aggregation.fill(this.opsMgr.getIntOperation("DOWNTIME"), downPeriod.get(0), downPeriod.get(1), this.targetDate);
+				this.endpointAggr.aggregation.fill(this.opsMgr.getIntStatus("DOWNTIME"), downPeriod.get(0), downPeriod.get(1), this.targetDate);
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
