@@ -33,7 +33,7 @@ public class MetricTimelinesTest {
 	public void test() throws IOException, URISyntaxException {
 		
 		//Prepare Resource File
-		URL resJsonFile = OpsManagerTest.class.getResource("/ops/EGI-algorithm.json");
+		URL resJsonFile = MetricTimelinesTest.class.getResource("/ops/EGI-algorithm.json");
 		File jsonFile = new File(resJsonFile.toURI());
 		// Instatiate class
 		

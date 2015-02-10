@@ -28,7 +28,7 @@ public class DTimelineTest {
 		
 		// Use Operations Manager 
 		//Prepare Resource File
-		URL resJsonFile = OpsManagerTest.class.getResource("/ops/EGI-algorithm.json");
+		URL resJsonFile = DTimelineTest.class.getResource("/ops/EGI-algorithm.json");
 		File JsonFile = new File(resJsonFile.toURI());
 		// Instatiate class
 		OpsManager opsMgr = new OpsManager();
@@ -57,7 +57,7 @@ public class DTimelineTest {
 	    dtl.insert("2014-01-15T01:33:44Z", opsMgr.getIntStatus("OK"));
 	    dtl.insert("2014-01-15T05:53:40Z", opsMgr.getIntStatus("WARNING"));
 	    dtl.insert("2014-01-15T12:33:22Z", opsMgr.getIntStatus("UNKNOWN"));
-	    dtl.finalize();
+	    dtl.finalize(opsMgr.getIntStatus("MISSING"));
 	    
 	    // Create expected state array 
 	    int[] expected = new int[288];
@@ -117,7 +117,7 @@ public class DTimelineTest {
 	    dt2.insert("2015-01-24T22:45:51Z",opsMgr.getIntStatus("OK"));
 	    dt2.insert("2015-01-24T23:45:52Z",opsMgr.getIntStatus("OK"));
 	    
-	    dt2.finalize();
+	    dt2.finalize(opsMgr.getIntStatus("MISSING"));
 	    
 	    int[] expected2 = new int[288];
 	    for (int i=0;i<288;i++) expected2[i] =0;

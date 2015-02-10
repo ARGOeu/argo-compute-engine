@@ -118,7 +118,7 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 	    	
 		}
 		
-		this.dtl.finalize();
+		this.dtl.finalize(this.opsMgr.getIntStatus("UNKNOWN"));
 		
 		//Create output Tuple
 	    Tuple output = tupFactory.newTuple();

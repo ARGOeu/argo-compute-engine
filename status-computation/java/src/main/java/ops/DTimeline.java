@@ -119,8 +119,12 @@ public class DTimeline {
 		this.inputStates.put(slot,state);
 	}
 	
-	public void finalize()
+	public void finalize(int missingStart)
 	{
+		if (this.startState == -1)
+		{
+			this.startState = missingStart;
+		}
 		int prev_state = this.startState;
 		int prev_slot = 0;
 		for (int item : this.inputStates.keySet())

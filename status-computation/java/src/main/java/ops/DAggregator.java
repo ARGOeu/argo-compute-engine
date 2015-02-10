@@ -77,11 +77,11 @@ public class DAggregator {
 		this.aggregation.clear();
 	}
 	
-	public void finalizeAll()
+	public void finalizeAll(int missingStart)
 	{
 		for (Entry<String, DTimeline> item : timelines.entrySet())
 		{
-			item.getValue().finalize();
+			item.getValue().finalize(missingStart);
 		}
 	}
 	

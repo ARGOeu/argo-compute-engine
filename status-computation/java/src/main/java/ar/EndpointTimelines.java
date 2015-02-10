@@ -132,7 +132,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	    	
 		}
 		
-		this.endpointAggr.finalizeAll();
+		this.endpointAggr.finalizeAll(this.opsMgr.getIntStatus("UNKNOWN"));
 		
 		String aprofile = this.avMgr.getAvProfiles().get(0);
 		

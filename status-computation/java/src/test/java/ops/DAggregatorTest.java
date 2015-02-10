@@ -23,7 +23,7 @@ public class DAggregatorTest {
 	@Test
 	public void test() throws URISyntaxException, FileNotFoundException, ParseException {
 		
-		URL resJsonFile = OpsManagerTest.class.getResource("/ops/EGI-algorithm.json");
+		URL resJsonFile = DAggregatorTest.class.getResource("/ops/EGI-algorithm.json");
 		File jsonFile = new File(resJsonFile.toURI());
 		
 		DAggregator dAgg = new DAggregator();
@@ -65,9 +65,9 @@ public class DAggregatorTest {
 		t3.insert("2014-01-15T12:50:42Z", opsMgr.getIntStatus("OK"));
 		t3.insert("2014-01-15T16:33:44Z", opsMgr.getIntStatus("WARNING"));
 		
-		t1.finalize();
-		t2.finalize();
-		t3.finalize();
+		t1.finalize(opsMgr.getIntStatus("MISSING"));
+		t2.finalize(opsMgr.getIntStatus("MISSING"));
+		t3.finalize(opsMgr.getIntStatus("MISSING"));
 		
 		dAgg.timelines.put("timeline1", t1);
 		dAgg.timelines.put("timeline2", t2);
@@ -90,7 +90,7 @@ public class DAggregatorTest {
 	@Test
 	public void test2() throws URISyntaxException, FileNotFoundException, ParseException {
 		
-		URL resJsonFile = OpsManagerTest.class.getResource("/ops/EGI-algorithm.json");
+		URL resJsonFile = DAggregatorTest.class.getResource("/ops/EGI-algorithm.json");
 		File jsonFile = new File(resJsonFile.toURI());
 		
 		DAggregator dAgg = new DAggregator();
@@ -121,7 +121,7 @@ public class DAggregatorTest {
 		
 	
 		
-		dAgg.finalizeAll();
+		dAgg.finalizeAll(opsMgr.getIntStatus("MISSING"));
 		dAgg.aggregate("AND",opsMgr);
 		
 		System.out.println(Arrays.toString(dAgg.aggregation.samples));
