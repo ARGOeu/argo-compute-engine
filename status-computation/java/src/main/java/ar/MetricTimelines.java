@@ -59,7 +59,7 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 		// Open Files from distributed cache
 		if (this.fsUsed.equalsIgnoreCase("cache")){
 			
-			this.opsMgr.openFile(new File("./ops"));
+			this.opsMgr.loadJson(new File("./ops"));
 		}
 		this.initialized=true;
 		System.out.println("Initialized!");
@@ -118,7 +118,7 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 	    	
 		}
 		
-		this.dtl.finalize(this.opsMgr.getIntStatus("UNKNOWN"));
+		this.dtl.finalize(this.opsMgr.getIntStatus("MISSING"));
 		
 		//Create output Tuple
 	    Tuple output = tupFactory.newTuple();

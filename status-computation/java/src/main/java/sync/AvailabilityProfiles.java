@@ -221,7 +221,7 @@ public class AvailabilityProfiles {
 		
 	}
 	
-	public void loadProfileJson(File jsonFile) throws FileNotFoundException{
+	public void loadJson(File jsonFile) throws FileNotFoundException{
 		
 		BufferedReader br = new BufferedReader(new FileReader(jsonFile));
 		JsonParser jsonParser = new JsonParser();

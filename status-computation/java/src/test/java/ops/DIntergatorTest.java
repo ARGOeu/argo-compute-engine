@@ -24,7 +24,7 @@ public class DIntergatorTest {
 		
 		OpsManager opsMgr = new OpsManager();
 		// Test loading file
-		opsMgr.openFile(JsonFile);
+		opsMgr.loadJson(JsonFile);
 		
 		DTimeline dtl = new DTimeline();
 		

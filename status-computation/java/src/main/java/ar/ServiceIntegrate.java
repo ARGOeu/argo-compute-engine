@@ -59,9 +59,9 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 	public void init() throws IOException
 	{
 		if (this.fsUsed.equalsIgnoreCase("cache")){
-			this.apMgr.loadProfileJson(new File("./aps"));
+			this.apMgr.loadJson(new File("./aps"));
 			this.ggMgr.loadAvro(new File("./groups"));
-			this.opsMgr.openFile(new File("./ops"));
+			this.opsMgr.loadJson(new File("./ops"));
 		}
 		
 		this.initialized=true;

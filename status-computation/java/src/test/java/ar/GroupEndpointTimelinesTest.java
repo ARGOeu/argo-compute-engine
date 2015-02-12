@@ -40,8 +40,8 @@ public class GroupEndpointTimelinesTest {
 		
 		// Instatiate class
 		GroupEndpointTimelines st = new GroupEndpointTimelines("","","local");
-		st.apMgr.loadProfileJson(apsJson);
-		st.opsMgr.openFile(opsJson);
+		st.apMgr.loadJson(apsJson);
+		st.opsMgr.loadJson(opsJson);
 		
 		String jsonStr = IOUtils.toString(this.getClass().getResourceAsStream("/ar/site_timeline.json"),"UTF-8");
 		TupleFactory tf = TupleFactory.getInstance();

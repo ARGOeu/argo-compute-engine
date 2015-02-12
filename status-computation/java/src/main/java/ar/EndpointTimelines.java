@@ -73,9 +73,9 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	public void init() throws IOException
 	{
 		if (this.fsUsed.equalsIgnoreCase("cache")){
-			this.opsMgr.openFile(new File("./ops"));
+			this.opsMgr.loadJson(new File("./ops"));
 			this.downMgr.loadAvro(new File("./down"));
-			this.avMgr.loadProfileJson(new File("./aps"));
+			this.avMgr.loadJson(new File("./aps"));
 		}
 		
 		this.initialized=true;
@@ -132,7 +132,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	    	
 		}
 		
-		this.endpointAggr.finalizeAll(this.opsMgr.getIntStatus("UNKNOWN"));
+		this.endpointAggr.finalizeAll(this.opsMgr.getIntStatus("MISSING"));
 		
 		String aprofile = this.avMgr.getAvProfiles().get(0);
 		

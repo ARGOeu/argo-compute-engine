@@ -50,10 +50,10 @@ public class EndpointTimelinesTest {
 		URL avpJsonFile = EndpointTimelines.class.getResource("/ops/ap1.json");
 		File avpFile = new File(avpJsonFile.toURI());
 		
-		et.avMgr.loadProfileJson(avpFile);
+		et.avMgr.loadJson(avpFile);
 		et.downMgr.loadAvro(downAvro);
 		
-		et.opsMgr.openFile(jsonFile);
+		et.opsMgr.loadJson(jsonFile);
 		cur = et.exec(inpTuple);
 		
 		

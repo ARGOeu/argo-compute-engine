@@ -33,7 +33,7 @@ public class DTimelineTest {
 		// Instatiate class
 		OpsManager opsMgr = new OpsManager();
 		// Test loading file
-		opsMgr.openFile(JsonFile);
+		opsMgr.loadJson(JsonFile);
 		
 		
 		// Initialize Discrete Timeline for testing

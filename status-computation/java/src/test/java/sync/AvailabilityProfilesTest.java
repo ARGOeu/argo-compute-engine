@@ -30,7 +30,7 @@ public class AvailabilityProfilesTest {
 		// Instatiate class
 		AvailabilityProfiles avp = new AvailabilityProfiles();
 		avp.clearProfiles();
-		avp.loadProfileJson(jsonFile);
+		avp.loadJson(jsonFile);
 	   
 		// Check that only one availability profile was loaded
 		assertEquals("Only 1 av profile present",avp.getAvProfiles().size(),1);

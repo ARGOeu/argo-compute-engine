@@ -34,7 +34,7 @@ public class OpsManagerTest {
 		// Instatiate class
 		OpsManager opsMgr = new OpsManager();
 		// Test loading file
-		opsMgr.openFile(JsonFile);
+		opsMgr.loadJson(JsonFile);
 		
 	    // Test the available states
 		ArrayList<String> avStates = new ArrayList<String>();

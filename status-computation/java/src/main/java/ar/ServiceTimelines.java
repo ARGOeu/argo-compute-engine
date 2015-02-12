@@ -63,7 +63,7 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 	public void init() throws IOException
 	{
 		if (this.fsUsed.equalsIgnoreCase("cache")){
-			this.opsMgr.openFile(new File("./ops"));
+			this.opsMgr.loadJson(new File("./ops"));
 		}
 		
 		this.initialized=true;

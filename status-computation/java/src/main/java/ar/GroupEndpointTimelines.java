@@ -25,7 +25,7 @@ import sync.AvailabilityProfiles;
 
 public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 
-	public HashMap<String, DAggregator> siteAggr;
+	public HashMap<String, DAggregator> groupEndpointAggr;
 
 	public OpsManager opsMgr = new OpsManager();
 	public AvailabilityProfiles apMgr = new AvailabilityProfiles();
@@ -49,7 +49,7 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 		this.fsUsed = fsUsed;
 
 		// set the Structures
-		this.siteAggr = new HashMap<String, DAggregator>();
+		this.groupEndpointAggr = new HashMap<String, DAggregator>();
 		this.opsMgr = new OpsManager();
 		this.apMgr = new AvailabilityProfiles();
 		// set up factories
@@ -64,8 +64,8 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 
 	public void init() throws IOException {
 		if (this.fsUsed.equalsIgnoreCase("cache")) {
-			this.opsMgr.openFile(new File("./ops"));
-			this.apMgr.loadProfileJson(new File("./aps"));
+			this.opsMgr.loadJson(new File("./ops"));
+			this.apMgr.loadJson(new File("./aps"));
 		}
 
 		this.initialized = true;
@@ -90,7 +90,7 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 		if (input == null || input.size() == 0)
 			return null;
 
-		this.siteAggr.clear();
+		this.groupEndpointAggr.clear();
 
 		String aprofile = this.apMgr.getAvProfiles().get(0); // One Availability
 																// Profile
@@ -111,8 +111,8 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 			String group = apMgr.getGroupByService(aprofile, service);
 
 			// if group doesn't exist yet create it
-			if (this.siteAggr.containsKey(group) == false) {
-				this.siteAggr.put(group, new DAggregator());
+			if (this.groupEndpointAggr.containsKey(group) == false) {
+				this.groupEndpointAggr.put(group, new DAggregator());
 			}
 
 			// Group will be present now
@@ -121,7 +121,7 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 			while (it_bag2.hasNext()) {
 
 				Tuple cur_subitem = it_bag2.next();
-				this.siteAggr.get(group).insertSlot(service, j,
+				this.groupEndpointAggr.get(group).insertSlot(service, j,
 						Integer.parseInt(cur_subitem.get(0).toString()));
 				j++;
 
@@ -130,13 +130,13 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 		}
 
 		// Aggregate each group
-		for (String group : this.siteAggr.keySet()) {
+		for (String group : this.groupEndpointAggr.keySet()) {
 			// Get group Operation
 			System.out.println(group);
 			System.out.println(aprofile);
 			String gop = this.apMgr.getProfileGroupOp(aprofile, group);
 			System.out.println(gop);
-			this.siteAggr.get(group).aggregate(gop, this.opsMgr);
+			this.groupEndpointAggr.get(group).aggregate(gop, this.opsMgr);
 
 		}
 
@@ -144,8 +144,8 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 		DAggregator totalSite = new DAggregator();
 
 		// Aggregate each group
-		for (String group : this.siteAggr.keySet()) {
-			DTimeline curTimeline = this.siteAggr.get(group).aggregation;
+		for (String group : this.groupEndpointAggr.keySet()) {
+			DTimeline curTimeline = this.groupEndpointAggr.get(group).aggregation;
 			for (int i = 0; i < curTimeline.samples.length; i++) {
 				totalSite.insertSlot(group, i, curTimeline.samples[i]);
 

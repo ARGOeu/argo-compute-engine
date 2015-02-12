@@ -29,7 +29,7 @@ public class DAggregatorTest {
 		DAggregator dAgg = new DAggregator();
 		OpsManager opsMgr = new OpsManager();
 		
-		opsMgr.openFile(jsonFile);
+		opsMgr.loadJson(jsonFile);
 		
 		//Create 3 Timelines
 		DTimeline t1 = new DTimeline();
@@ -97,7 +97,7 @@ public class DAggregatorTest {
 		dAgg.loadOpsFile(jsonFile);
 		
 		OpsManager opsMgr = new OpsManager();
-		opsMgr.openFile(jsonFile);
+		opsMgr.loadJson(jsonFile);
 		
 		dAgg.setStartState("m1", opsMgr.getIntStatus("OK"));
 		dAgg.setStartState("m2", opsMgr.getIntStatus("OK"));

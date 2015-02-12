@@ -44,7 +44,7 @@ public class MetricTimelinesTest {
 		Tuple inpTuple = JsonToPig.jsonToTuple(jsonStr);
 		MetricTimelines mt = new MetricTimelines("","","local");
 	   
-		mt.opsMgr.openFile(jsonFile);
+		mt.opsMgr.loadJson(jsonFile);
 		cur = mt.exec(inpTuple);
 		
 		Tuple expTuple = tf.newTuple();
