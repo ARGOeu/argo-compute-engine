@@ -19,12 +19,12 @@ import org.junit.Test;
 
 import TestIO.JsonToPig;
 
-public class SiteTimelinesTest {
+public class GroupEndpointTimelinesTest {
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Assert that files are present
-		assertNotNull("Test file missing", SiteTimelinesTest.class.getResource("/ar/site_timeline.json"));
+		assertNotNull("Test file missing", GroupEndpointTimelinesTest.class.getResource("/ar/site_timeline.json"));
 	}
 	
 
@@ -39,7 +39,7 @@ public class SiteTimelinesTest {
 		File apsJson = new File(apsFile.toURI());
 		
 		// Instatiate class
-		SiteTimelines st = new SiteTimelines("","","local");
+		GroupEndpointTimelines st = new GroupEndpointTimelines("","","local");
 		st.apMgr.loadProfileJson(apsJson);
 		st.opsMgr.openFile(opsJson);
 		
