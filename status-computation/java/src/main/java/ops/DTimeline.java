@@ -67,7 +67,7 @@ public class DTimeline {
 		int start;
 		int end;
 		
-		SimpleDateFormat dmy = new SimpleDateFormat("yyy-MM-dd");
+		SimpleDateFormat dmy = new SimpleDateFormat("yyyy-MM-dd");
 		Date startDt = dmy.parse(startTs);
     	Date endDt = dmy.parse(endTs);
     	Date targetDt = dmy.parse(targetDate);
