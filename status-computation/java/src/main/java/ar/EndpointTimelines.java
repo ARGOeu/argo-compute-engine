@@ -132,7 +132,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	    	
 		}
 		
-		this.endpointAggr.finalizeAll(this.opsMgr.getIntStatus("MISSING"));
+		this.endpointAggr.finalizeAll(this.opsMgr.getDefaultMissingInt());
 		
 		String aprofile = this.avMgr.getAvProfiles().get(0);
 		

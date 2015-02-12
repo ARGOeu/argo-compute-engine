@@ -118,7 +118,7 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 	    	
 		}
 		
-		this.dtl.finalize(this.opsMgr.getIntStatus("MISSING"));
+		this.dtl.finalize(this.opsMgr.getDefaultMissingInt());
 		
 		//Create output Tuple
 	    Tuple output = tupFactory.newTuple();
