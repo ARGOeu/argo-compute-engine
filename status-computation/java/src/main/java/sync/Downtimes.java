@@ -58,10 +58,7 @@ private ArrayList<DowntimeItem> list;
     }
     
     public ArrayList<String> getPeriod(String hostname, String service){
-    	//Fix for specific service SRMv2 which actually reports as SRM
-    	if (service.equals("SRMv2")) {
-    		service = "SRM";
-    	}
+    	
     	ArrayList<String> period = new ArrayList<String>();
 		
     	for (DowntimeItem item : this.list)
