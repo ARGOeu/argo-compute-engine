@@ -19,30 +19,33 @@ import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
+import sync.AvailabilityProfiles;
+
 
 
 public class ServiceTimelines extends EvalFunc<Tuple> {
 
     public DAggregator serviceAggr;
     public OpsManager opsMgr;
-    
+    public AvailabilityProfiles apsMgr;
 	
 	private TupleFactory tupFactory; 
     private BagFactory bagFactory;
     
+   
 
 	private String fnOps;
-	
+	private String fnAps;
 	private String targetDate;
 	
 	private String fsUsed;  // local,hdfs,cache (distrubuted_cache)
 	
 	private boolean initialized;
 	
-	public ServiceTimelines( String fnOps, String targetDate, String fsUsed) throws IOException{
+	public ServiceTimelines( String fnAps, String fnOps, String targetDate, String fsUsed) throws IOException{
 		// set first the filenames
 		this.fnOps = fnOps;
-		
+		this.fnAps = fnAps;
 		// set distribute cache flag
 		this.fsUsed = fsUsed;
 		
@@ -52,6 +55,7 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 		// set the Structures
 		this.serviceAggr = new DAggregator();
 		this.opsMgr = new OpsManager();
+		this.apsMgr = new AvailabilityProfiles();
 		// set up factories
 		this.tupFactory = TupleFactory.getInstance();
 		this.bagFactory = BagFactory.getInstance();
@@ -64,6 +68,8 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 	{
 		if (this.fsUsed.equalsIgnoreCase("cache")){
 			this.opsMgr.loadJson(new File("./ops"));
+			this.apsMgr.loadJson(new File("./aps"));
+		
 		}
 		
 		this.initialized=true;
@@ -73,6 +79,7 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 	public List<String> getCacheFiles() { 
         List<String> list = new ArrayList<String>(); 
         list.add(this.fnOps.concat("#ops"));
+        list.add(this.fnAps.concat("#aps"));
         return list; 
 	} 
 	
@@ -120,8 +127,14 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 	    	
 		}
 		
+		//Get the availability profile - One per job
+		String avProfile = this.apsMgr.getAvProfiles().get(0);
+		//Get the availability Group in which this service belongs
+		String avGroup = this.apsMgr.getGroupByService(avProfile, service);
+		//Get the availability operation on this service instances
+		String avOp = this.apsMgr.getProfileGroupServiceOp(avProfile, avGroup, service);
 		
-		this.serviceAggr.aggregate("OR",this.opsMgr); // should be supplied on outside file
+		this.serviceAggr.aggregate(avOp,this.opsMgr); // now the operation is read from availability file
 		
 		//Create output Tuple
 	    Tuple output = tupFactory.newTuple();
