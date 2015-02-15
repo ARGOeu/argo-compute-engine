@@ -9,24 +9,24 @@
   "groups": {
     "compute": {
       "services":{
-        "CREAM-CE":"AND",
-        "ARC-CE":"AND",
-        "GRAM5":"AND",
-        "unicore6.TargetSystemFactory":"AND",
-        "QCG.Computing":"AND"
+        "CREAM-CE":"OR",
+        "ARC-CE":"OR",
+        "GRAM5":"OR",
+        "unicore6.TargetSystemFactory":"OR",
+        "QCG.Computing":"OR"
         },
        "operation":"OR"
     },
     "storage": {
       "services":{
-        "SRM":"AND",
-        "SRMv2":"AND"
+        "SRM":"OR",
+        "SRMv2":"OR"
         },
        "operation":"OR"
     },
     "information": {
       "services":{
-        "Site-BDII":"AND"
+        "Site-BDII":"OR"
         },
        "operation":"OR"
     }

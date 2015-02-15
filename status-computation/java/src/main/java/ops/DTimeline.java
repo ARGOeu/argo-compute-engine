@@ -87,7 +87,7 @@ public class DTimeline {
     		end = tsInt(endTs);
     	}
     	
-    	for (int i=start;i<end;i++)
+    	for (int i=start;i<=end;i++) 
     	{
     		this.samples[i] = stateInt;
     	}

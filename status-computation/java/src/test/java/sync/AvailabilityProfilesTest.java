@@ -86,6 +86,8 @@ public class AvailabilityProfilesTest {
 		assertEquals("get group by service: ",avp.getGroupByService("ap1", "SRMv2"),"storage");
 		// we check for an unexpected operation
 		assertNotEquals("group compute: CREAM-CE op",avp.getProfileGroupServiceOp("ap1", "compute", "CREAM-CE"),"OR");
+		assertNotEquals("group compute: CREAM-CE op",avp.getProfileGroupServiceOp("ap1", "informationss", "CREAM-CE"),"OR");
+		assertNotEquals("group compute: CREAM-CE op",avp.getProfileGroupServiceOp("ap1", "storage", "CREAM-CE"),"OR");
 		// check for metric profile operations and total operation
 		assertEquals("metric profile operations: AND",avp.getMetricOp("ap1"),"AND");
 		assertEquals("total profile operations: AND",avp.getMetricOp("ap1"),"AND");

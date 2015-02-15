@@ -63,7 +63,8 @@ public class OpsManagerTest {
 		assertEquals("OK (AND) CRITICAL = CRITICAL",opsMgr.op("AND","OK","CRITICAL"),"CRITICAL");
 		assertEquals("DOWNTIME (AND) UNKNOWN = DOWNTIME",opsMgr.op("AND","DOWNTIME","UNKNOWN"),"DOWNTIME");
 		
-		
+		assertEquals("Default Downtime Status = DOWNTIME",opsMgr.getDefaultDown(),"DOWNTIME");
+		System.out.println(opsMgr.getDefaultMissingInt());
 	}
 
 }

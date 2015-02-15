@@ -41,8 +41,7 @@ public class GroupEndpointIntegrate extends EvalFunc<Tuple> {
 
 	private String superGroup;
 
-	public GroupEndpointIntegrate(String fnOps, String fnAps, String fnGroups,
-			String fsUsed, String superGroup) {
+	public GroupEndpointIntegrate(String fnOps, String fnAps, String fnGroups, String fsUsed, String superGroup) {
 		this.fnAps = fnAps;
 		this.fsUsed = fsUsed;
 		this.fnOps = fnOps;
