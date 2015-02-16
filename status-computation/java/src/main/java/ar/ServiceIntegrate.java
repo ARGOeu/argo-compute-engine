@@ -46,7 +46,8 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 
 		this.apMgr = new AvailabilityProfiles();
 		this.opsMgr = new OpsManager();
-		//
+		this.arMgr = new DIntegrator();
+		
 
 		this.tupFactory = TupleFactory.getInstance();
 		this.bagFactory = BagFactory.getInstance();
@@ -73,11 +74,14 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 
 	@Override
 	public Tuple exec(Tuple input) throws IOException {
-
+		
 		// Check if cache files have been opened
 		if (this.initialized == false) {
 			this.init(); // If not open them
 		}
+		
+		if (input == null || input.size() == 0)
+			return null;
 
 		String groupname = (String) input.get(0);
 		String service = (String) input.get(1);
