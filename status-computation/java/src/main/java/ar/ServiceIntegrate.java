@@ -45,7 +45,6 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 		this.fnOps = fnOps;
 
 		this.apMgr = new AvailabilityProfiles();
-		this.ggMgr = new GroupsOfGroups();
 		this.opsMgr = new OpsManager();
 		//
 
@@ -58,7 +57,6 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 	public void init() throws IOException {
 		if (this.fsUsed.equalsIgnoreCase("cache")) {
 			this.apMgr.loadJson(new File("./aps"));
-			this.ggMgr.loadAvro(new File("./groups"));
 			this.opsMgr.loadJson(new File("./ops"));
 		}
 
@@ -69,7 +67,6 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 	public List<String> getCacheFiles() {
 		List<String> list = new ArrayList<String>();
 		list.add(this.fnAps.concat("#aps"));
-		list.add(this.fnGroups.concat("#groups"));
 		list.add(this.fnOps.concat("#ops"));
 		return list;
 	}
