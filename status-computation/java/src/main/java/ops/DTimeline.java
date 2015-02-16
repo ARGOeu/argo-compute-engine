@@ -27,6 +27,15 @@ public class DTimeline {
 		Arrays.fill(samples, -1);
 	}
 	
+	public DTimeline(int period, int interval)	{
+		this.startState = -1;
+		this.sPeriod = period;			// given in minutes
+		this.sInterval = interval;				// every ? minutes;
+		this.samples = new int[period/interval]; //? samples
+		this.inputStates = new TreeMap<Integer,Integer>();
+		Arrays.fill(samples, -1);
+	}
+	
 	
 	
 	public void setSampling(int period, int interval) {

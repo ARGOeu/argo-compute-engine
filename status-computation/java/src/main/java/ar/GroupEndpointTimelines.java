@@ -35,12 +35,15 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 
 	private String fnOps;
 	private String fnAps;
+	
+	private int sPeriod;
+	private int sInterval;
 
 	private String fsUsed; // local,hdfs,cache (distrubuted_cache)
 
 	private boolean initialized;
 
-	public GroupEndpointTimelines(String fnOps, String fnAps, String fsUsed) {
+	public GroupEndpointTimelines(String fnOps, String fnAps, String fsUsed, String sPeriod, String sInterval) {
 
 		// set first the filenames
 		this.fnOps = fnOps;
@@ -48,6 +51,9 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 		// set distribute cache flag
 		this.fsUsed = fsUsed;
 
+		this.sPeriod = Integer.parseInt(sPeriod);
+		this.sInterval = Integer.parseInt(sInterval);
+		
 		// set the Structures
 		this.groupEndpointAggr = new HashMap<String, DAggregator>();
 		this.opsMgr = new OpsManager();
@@ -112,7 +118,7 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 
 			// if group doesn't exist yet create it
 			if (this.groupEndpointAggr.containsKey(group) == false) {
-				this.groupEndpointAggr.put(group, new DAggregator());
+				this.groupEndpointAggr.put(group, new DAggregator(this.sPeriod,this.sInterval));
 			}
 
 			// Group will be present now

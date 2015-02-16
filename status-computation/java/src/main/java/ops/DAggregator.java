@@ -12,9 +12,25 @@ public class DAggregator {
 	public HashMap<String,DTimeline> timelines;
 	public DTimeline aggregation;
 	
+	private int period;     // used for sampling of the timelines
+	private int interval;   // used for sampling of the timelines
+	
 	//public OpsManager opsMgr;
 	
 	public DAggregator(){
+		
+		this.period=1440;
+		this.interval=5;
+		
+		this.timelines = new HashMap<String,DTimeline>();
+		this.aggregation = new DTimeline(this.period,this.interval);
+		//this.opsMgr = new OpsManager();
+	}
+	
+	public DAggregator(int period, int interval){
+		
+		this.period = period;
+		this.interval = interval;
 		
 		this.timelines = new HashMap<String,DTimeline>();
 		this.aggregation = new DTimeline();
@@ -29,7 +45,7 @@ public class DAggregator {
 	public void insertSlot(String name, int slot, int statusInt)
 	{
 		if (timelines.containsKey(name) == false) {
-			DTimeline tempTimeline = new DTimeline();
+			DTimeline tempTimeline = new DTimeline(this.period,this.interval);
 			tempTimeline.samples[slot] = statusInt;
 			timelines.put(name, tempTimeline);
 		}
@@ -45,7 +61,7 @@ public class DAggregator {
 		
 		// Check if time-line exists or else create it
 		if (timelines.containsKey(name) == false) {
-			DTimeline tempTimeline = new DTimeline();
+			DTimeline tempTimeline = new DTimeline(this.period,this.interval);
 			tempTimeline.insert(timestamp, statusInt);
 			timelines.put(name, tempTimeline);
 		}
@@ -62,7 +78,7 @@ public class DAggregator {
 		
 		// Check if time-line exists or else create it
 		if (timelines.containsKey(name) == false) {
-			DTimeline tempTimeline = new DTimeline();
+			DTimeline tempTimeline = new DTimeline(this.period,this.interval);
 			tempTimeline.setStartState(statusInt);
 			timelines.put(name, tempTimeline);
 		}

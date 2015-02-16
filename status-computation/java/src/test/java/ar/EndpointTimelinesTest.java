@@ -42,7 +42,7 @@ public class EndpointTimelinesTest {
 		
 		Tuple cur = tf.newTuple();
 		Tuple inpTuple = JsonToPig.jsonToTuple(jsonStr);
-		EndpointTimelines et = new EndpointTimelines("","","","2015-02-06","local");
+		EndpointTimelines et = new EndpointTimelines("","","","2015-02-06","local","1440","5");
 	   
 		URL downRes = EndpointTimelinesTest.class.getResource("/avro/downtimes_test.avro");
 		File downAvro = new File(downRes.toURI());

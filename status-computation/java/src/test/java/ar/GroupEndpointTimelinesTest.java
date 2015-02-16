@@ -32,14 +32,14 @@ public class GroupEndpointTimelinesTest {
 	public void test() throws IOException, URISyntaxException {
 		
 		//Prepare Resource File
-		URL opsFile = OpsManagerTest.class.getResource("/ops/EGI-algorithm.json");
+		URL opsFile = GroupEndpointTimelines.class.getResource("/ops/EGI-algorithm.json");
 		File opsJson = new File(opsFile.toURI());
 		
-		URL apsFile = OpsManagerTest.class.getResource("/ops/ap1.json");
+		URL apsFile = GroupEndpointTimelines.class.getResource("/ops/ap1.json");
 		File apsJson = new File(apsFile.toURI());
 		
 		// Instatiate class
-		GroupEndpointTimelines st = new GroupEndpointTimelines("","","local");
+		GroupEndpointTimelines st = new GroupEndpointTimelines("","","local","1440","5");
 		st.apMgr.loadJson(apsJson);
 		st.opsMgr.loadJson(opsJson);
 		

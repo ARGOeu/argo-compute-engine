@@ -32,21 +32,28 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 
 	private String fnOps;
 	private String fnAps;
+	
+	private int sPeriod;
+	private int sInterval;
 
 	private String fsUsed; // local,hdfs,cache (distrubuted_cache)
 
 	private boolean initialized;
 
-	public ServiceTimelines(String fnAps, String fnOps, String fsUsed)
+	public ServiceTimelines(String fnAps, String fnOps, String fsUsed, String sPeriod, String sInterval)
 			throws IOException {
 		// set first the filenames
 		this.fnOps = fnOps;
 		this.fnAps = fnAps;
 		// set distribute cache flag
 		this.fsUsed = fsUsed;
+		
+		// set frequency config
+		this.sPeriod = Integer.parseInt(sPeriod);
+		this.sInterval = Integer.parseInt(sInterval);
 
 		// set the Structures
-		this.serviceAggr = new DAggregator();
+		this.serviceAggr = new DAggregator(this.sPeriod,this.sInterval);
 		this.opsMgr = new OpsManager();
 		this.apsMgr = new AvailabilityProfiles();
 		// set up factories

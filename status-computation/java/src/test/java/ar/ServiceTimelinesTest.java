@@ -44,7 +44,7 @@ public class ServiceTimelinesTest {
 		
 		Tuple cur = tf.newTuple();
 		Tuple inpTuple = JsonToPig.jsonToTuple(jsonStr);
-		ServiceTimelines st = new ServiceTimelines("","","local");
+		ServiceTimelines st = new ServiceTimelines("","","local","1440","5");
 	   
 		st.apsMgr.loadJson(avpJson);
 		st.opsMgr.loadJson(jsonFile);

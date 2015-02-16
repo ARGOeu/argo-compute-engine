@@ -7,9 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-
 import ops.DAggregator;
-
 import ops.OpsManager;
 
 import org.apache.pig.EvalFunc;
@@ -41,11 +39,15 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	private String fnDown;
 	private String targetDate;
 	
+	// Sampling config
+	private int sPeriod;
+	private int sInterval;
+	
 	private String fsUsed;  // local,hdfs,cache (distrubuted_cache)
 	
 	private boolean initialized;
 	
-	public EndpointTimelines( String fnOps, String fnDown, String fnAvProfiles, String targetDate, String fsUsed) throws IOException{
+	public EndpointTimelines( String fnOps, String fnDown, String fnAvProfiles, String targetDate, String fsUsed, String sPeriod, String sInterval) throws IOException{
 		// set first the filenames
 		this.fnOps = fnOps;
 		this.fnDown = fnDown;
@@ -56,8 +58,12 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 		// set the targetDate var
 		this.targetDate = targetDate;
 	
+		// sampling
+		this.sPeriod = Integer.parseInt(sPeriod);
+		this.sInterval = Integer.parseInt(sInterval);
+		
 		// set the Structures
-		this.endpointAggr = new DAggregator();
+		this.endpointAggr = new DAggregator(this.sPeriod,this.sInterval); // Create Aggregator according to sampling freq.
 		this.opsMgr = new OpsManager();
 		this.downMgr = new Downtimes();
 		this.avMgr = new AvailabilityProfiles();
