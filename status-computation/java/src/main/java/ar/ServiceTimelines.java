@@ -71,6 +71,10 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 			this.apsMgr.loadJson(new File("./aps"));
 
 		}
+		else if (this.fsUsed.equalsIgnoreCase("local")) {
+			this.apsMgr.loadJson(new File(this.fnAps));
+			this.opsMgr.loadJson(new File(this.fnOps));
+		}
 
 		this.initialized = true;
 

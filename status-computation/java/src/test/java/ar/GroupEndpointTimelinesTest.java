@@ -39,7 +39,7 @@ public class GroupEndpointTimelinesTest {
 		File apsJson = new File(apsFile.toURI());
 		
 		// Instatiate class
-		GroupEndpointTimelines st = new GroupEndpointTimelines("","","local","1440","5");
+		GroupEndpointTimelines st = new GroupEndpointTimelines("","","test","1440","5");
 		st.apMgr.loadJson(apsJson);
 		st.opsMgr.loadJson(opsJson);
 		

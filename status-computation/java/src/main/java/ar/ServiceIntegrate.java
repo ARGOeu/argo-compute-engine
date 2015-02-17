@@ -60,6 +60,10 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 			this.apMgr.loadJson(new File("./aps"));
 			this.opsMgr.loadJson(new File("./ops"));
 		}
+		if (this.fsUsed.equalsIgnoreCase("local")) {
+			this.apMgr.loadJson(new File(this.fnAps));
+			this.opsMgr.loadJson(new File(this.fnOps));
+		}
 
 		this.initialized = true;
 

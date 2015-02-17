@@ -83,6 +83,11 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 			this.downMgr.loadAvro(new File("./down"));
 			this.avMgr.loadJson(new File("./aps"));
 		}
+		else if (this.fsUsed.equalsIgnoreCase("localfs")) {
+			this.opsMgr.loadJson(new File(this.fnOps));
+			this.downMgr.loadAvro(new File(this.fnDown));
+			this.avMgr.loadJson(new File(this.fnAvProfiles));
+		}
 		
 		this.initialized=true;
 		

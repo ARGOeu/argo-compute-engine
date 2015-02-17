@@ -73,6 +73,10 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 			this.opsMgr.loadJson(new File("./ops"));
 			this.apMgr.loadJson(new File("./aps"));
 		}
+		else if (this.fsUsed.equalsIgnoreCase("local")) {
+			this.apMgr.loadJson(new File(this.fnAps));
+			this.opsMgr.loadJson(new File(this.fnOps));
+		}
 
 		this.initialized = true;
 

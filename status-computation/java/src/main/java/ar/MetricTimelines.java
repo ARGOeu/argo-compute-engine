@@ -68,8 +68,14 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 
 			this.opsMgr.loadJson(new File("./ops"));
 		}
+		else if (this.fsUsed.equalsIgnoreCase("local")) {
+	
+			this.opsMgr.loadJson(new File(this.fnOps));
+		}
+		
+		
 		this.initialized = true;
-		System.out.println("Initialized!");
+		
 	}
 
 	public List<String> getCacheFiles() {

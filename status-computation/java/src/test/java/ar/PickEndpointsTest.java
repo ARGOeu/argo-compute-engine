@@ -30,7 +30,7 @@ public class PickEndpointsTest {
 		URL groupEndpointRes = GroupsOfGroupsTest.class.getResource("/avro/group_endpoints_test.avro");
 		File groupEndpointAvro = new File(groupEndpointRes.toURI());
 		
-		PickEndpoints pt = new PickEndpoints("","","local");
+		PickEndpoints pt = new PickEndpoints("","","test");
 		
 		pt.metricMgr.loadAvro(metricAvro);
 		pt.endpointMgr.loadAvro(groupEndpointAvro);

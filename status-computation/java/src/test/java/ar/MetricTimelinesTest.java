@@ -42,7 +42,7 @@ public class MetricTimelinesTest {
 		
 		Tuple cur = tf.newTuple();
 		Tuple inpTuple = JsonToPig.jsonToTuple(jsonStr);
-		MetricTimelines mt = new MetricTimelines("","","local","1440","5");
+		MetricTimelines mt = new MetricTimelines("","","test","1440","5");
 	   
 		mt.opsMgr.loadJson(jsonFile);
 		cur = mt.exec(inpTuple);

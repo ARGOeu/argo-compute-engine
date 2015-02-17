@@ -42,6 +42,11 @@ public class PickEndpoints extends FilterFunc {
 			this.endpointMgr.loadAvro(new File("./endpoint_groups"));
 			this.metricMgr.loadAvro(new File("./metric_profiles"));
 		}
+		else if (this.fsUsed.equalsIgnoreCase("local")) {
+			this.endpointMgr.loadAvro(new File(this.fnEndpointGroups));
+			this.metricMgr.loadAvro(new File(this.fnMetricProfiles));
+			
+		}
 		
 		this.initialized=true;
 	}

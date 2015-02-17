@@ -62,6 +62,11 @@ public class GroupEndpointIntegrate extends EvalFunc<Tuple> {
 			this.ggMgr.loadAvro(new File("./groups"));
 			this.opsMgr.loadJson(new File("./ops"));
 		}
+		else if (this.fsUsed.equalsIgnoreCase("local")) {
+			this.apMgr.loadJson(new File(this.fnAps));
+			this.ggMgr.loadAvro(new File(this.fnGroups));
+			this.opsMgr.loadJson(new File(this.fnOps));
+		}
 
 		this.initialized = true;
 
