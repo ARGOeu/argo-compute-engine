@@ -12,6 +12,7 @@ import ops.OpsManagerTest;
 import org.apache.commons.io.IOUtils;
 import org.apache.pig.data.BagFactory;
 import org.apache.pig.data.DataBag;
+import org.apache.pig.data.DefaultDataBag;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 import org.junit.BeforeClass;
@@ -48,11 +49,22 @@ public class GroupEndpointTimelinesTest {
 		
 		Tuple cur = tf.newTuple();
 		Tuple inpTuple = JsonToPig.jsonToTuple(jsonStr);
+		DataBag expBag = new DefaultDataBag();
+		Tuple expTuple = tf.newTuple();
+		expTuple.append("UKI-NORTHGRID-LANCS-HEP");
+		for (int i=0;i<288;i++)
+		{
+			Tuple tmpTuple = tf.newTuple();
+			tmpTuple.append(0);
+			expBag.add(tmpTuple);
+		}
+		
+		expTuple.append(expBag);
+		
 		
 	    cur = st.exec(inpTuple);
 	    
-	    System.out.println(cur);
-		
+	    assertEquals(expTuple,cur);
 		
 		
 		
