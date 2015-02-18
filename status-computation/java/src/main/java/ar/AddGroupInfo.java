@@ -52,7 +52,9 @@ public class AddGroupInfo extends EvalFunc<Tuple>{
 			this.endpointMgr.loadAvro(new File("./endpoint_groups"));
 			//this.groupMgr.loadAvro(new File("./group_groups"));
 		}
-		
+		else if (this.fsUsed.equalsIgnoreCase("local")) {
+			this.endpointMgr.loadAvro(new File(this.fnEndpointGroups));
+		}
 		this.initialized=true;
 	}
 	
