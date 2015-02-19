@@ -42,7 +42,7 @@ public class EndpointTimelinesTest {
 		
 		Tuple cur = tf.newTuple();
 		Tuple inpTuple = JsonToPig.jsonToTuple(jsonStr);
-		EndpointTimelines et = new EndpointTimelines("","","","2015-02-06","test","1440","5");
+		EndpointTimelines et = new EndpointTimelines("","","","","2015-02-06","test","1440","5");
 	   
 		URL downRes = EndpointTimelinesTest.class.getResource("/avro/downtimes_test.avro");
 		File downAvro = new File(downRes.toURI());
@@ -50,9 +50,13 @@ public class EndpointTimelinesTest {
 		URL avpJsonFile = EndpointTimelines.class.getResource("/ops/ap1.json");
 		File avpFile = new File(avpJsonFile.toURI());
 		
+		URL metricRes = EndpointTimelines.class.getResource("/avro/poem_sync_test.avro");
+		File metricFile = new File(metricRes.toURI());
+		
+		
 		et.avMgr.loadJson(avpFile);
 		et.downMgr.loadAvro(downAvro);
-		
+		et.metricMgr.loadAvro(metricFile);
 		et.opsMgr.loadJson(jsonFile);
 		cur = et.exec(inpTuple);
 		

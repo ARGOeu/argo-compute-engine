@@ -38,7 +38,7 @@ public class PickEndpointsTest {
 		TupleFactory tf = TupleFactory.getInstance();
 		Tuple inp = tf.newTuple();
 		inp.append("se01.afroditi.hellasgrid.gr");
-		inp.append("SRMv2");
+		inp.append("SRM");
 		inp.append("org.sam.SRM-Ls");
 		
 		System.out.println(pt.exec(inp));

@@ -37,6 +37,11 @@ public class DAggregator {
 		//this.opsMgr = new OpsManager();
 	}
 	
+	public void initTimeline(String name, int startStateInt){
+		this.timelines.put(name, new DTimeline(this.period,this.interval));
+		this.setStartState(name, startStateInt);
+	}
+	
 	public void loadOpsFile(File opsFile) throws FileNotFoundException{
 		//this.opsMgr.openFile(opsFile);
 	}

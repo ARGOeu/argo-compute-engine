@@ -142,10 +142,9 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 		// Aggregate each group
 		for (String group : this.groupEndpointAggr.keySet()) {
 			// Get group Operation
-			System.out.println(group);
-			System.out.println(aprofile);
+			
 			String gop = this.apMgr.getProfileGroupOp(aprofile, group);
-			System.out.println(gop);
+			
 			this.groupEndpointAggr.get(group).aggregate(gop, this.opsMgr);
 
 		}

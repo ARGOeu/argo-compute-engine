@@ -66,7 +66,7 @@ public class ServiceTimelinesTest {
 		
 		expTuple.append(expBag);
 		
-		//assertTrue(expTuple.toString().equals(cur.toString()));
+		assertTrue(expTuple.toString().equals(cur.toString()));
 		
 		
 		
