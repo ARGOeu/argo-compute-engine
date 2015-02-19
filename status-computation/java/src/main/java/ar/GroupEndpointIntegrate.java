@@ -12,9 +12,11 @@ import ops.OpsManager;
 
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.BagFactory;
+import org.apache.pig.data.DataType;
 import org.apache.pig.data.DefaultDataBag;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
+import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.eclipse.jdt.core.dom.ThisExpression;
 
 import sync.AvailabilityProfiles;
@@ -25,61 +27,46 @@ import sync.WeightGroups;
 public class GroupEndpointIntegrate extends EvalFunc<Tuple> {
 
 	public AvailabilityProfiles apMgr;
-	public GroupsOfGroups ggMgr;
-	public EndpointGroups egMgr;
-	public WeightGroups wgMgr;
 	public OpsManager opsMgr;
 
 	private String fnAps;
-	public String fnGroups;
-	public String fnEgroups;
-	public String fnWeights;
 	public String fnOps;
 
 	private String fsUsed;
 	
 	public DIntegrator arMgr;
-	
-	private String targetDate;
+
 	
 	private boolean initialized = false;
 	
 	private TupleFactory tupFactory;
-	private BagFactory bagFactory;
+
 
 	private String superGroup;
 
-	public GroupEndpointIntegrate(String fnOps, String fnAps, String fnGroups, String fnEgroups, String fnWeights, String fsUsed, String superGroup, String targetDate) {
+	public GroupEndpointIntegrate(String fnOps, String fnAps, String fsUsed) {
 		this.fnAps = fnAps;
 		this.fsUsed = fsUsed;
 		this.fnOps = fnOps;
-		this.fnGroups = fnGroups;
-		this.targetDate = targetDate;
+		
+		
 		this.apMgr = new AvailabilityProfiles();
-		this.ggMgr = new GroupsOfGroups();
 		this.opsMgr = new OpsManager();
 		this.arMgr = new DIntegrator();
-		this.superGroup = superGroup;
+		
 
 		this.tupFactory = TupleFactory.getInstance();
-		this.bagFactory = BagFactory.getInstance();
 	}
 
 	public void init() throws IOException {
 		
 		if (this.fsUsed.equalsIgnoreCase("cache")) {
 			this.apMgr.loadJson(new File("./aps"));
-			this.ggMgr.loadAvro(new File("./groups"));
 			this.opsMgr.loadJson(new File("./ops"));
-			this.wgMgr.loadAvro(new File("./wgt"));
-			this.egMgr.loadAvro(new File("./egroups"));
 		}
 		else if (this.fsUsed.equalsIgnoreCase("local")) {
 			this.apMgr.loadJson(new File(this.fnAps));
-			this.ggMgr.loadAvro(new File(this.fnGroups));
 			this.opsMgr.loadJson(new File(this.fnOps));
-			this.wgMgr.loadAvro(new File(this.fnWeights));
-			this.egMgr.loadAvro(new File(this.fnEgroups));
 		}
 
 		this.initialized = true;
@@ -89,10 +76,7 @@ public class GroupEndpointIntegrate extends EvalFunc<Tuple> {
 	public List<String> getCacheFiles() {
 		List<String> list = new ArrayList<String>();
 		list.add(this.fnAps.concat("#aps"));
-		list.add(this.fnGroups.concat("#groups"));
 		list.add(this.fnOps.concat("#ops"));
-		list.add(this.fnWeights.concat("#wgt"));
-		list.add(this.fnEgroups.concat("#egroups"));
 		return list;
 	}
 
@@ -123,16 +107,9 @@ public class GroupEndpointIntegrate extends EvalFunc<Tuple> {
 
 		this.arMgr.calculateAR(siteTl.samples, this.opsMgr);
 
-		String aprofile = this.apMgr.getAvProfiles().get(0);
-
-		String dateInt = this.targetDate.replace("-", "");
-		
 		Tuple output = tupFactory.newTuple();
-		output.append(dateInt);
-		output.append(this.apMgr.getProfileMetricProfile(aprofile));
-		output.append(aprofile);
+		
 		output.append(groupname);
-		output.append(this.ggMgr.getGroup(superGroup, groupname));
 		output.append(this.arMgr.availability);
 		output.append(this.arMgr.reliability);
 		output.append(this.arMgr.up_f);
@@ -140,6 +117,30 @@ public class GroupEndpointIntegrate extends EvalFunc<Tuple> {
 		output.append(this.arMgr.down_f);
 
 		return output;
+	}
+	
+	@Override
+	public Schema outputSchema(Schema input) {
+		
+		 Schema groupEndpointAR = new Schema();
+		
+		 Schema.FieldSchema groupname  = new Schema.FieldSchema("groupname", DataType.DOUBLE);
+		 Schema.FieldSchema av  = new Schema.FieldSchema("availability", DataType.DOUBLE);
+         Schema.FieldSchema rel   = new Schema.FieldSchema("reliability",  DataType.DOUBLE);
+         Schema.FieldSchema upFraction       = new Schema.FieldSchema("up_f",       DataType.DOUBLE);
+         Schema.FieldSchema unknownFraction  = new Schema.FieldSchema("unknown_f",  DataType.DOUBLE);
+         Schema.FieldSchema downFraction     = new Schema.FieldSchema("down_f",     DataType.DOUBLE);
+         
+        
+         groupEndpointAR.add(groupname);
+         groupEndpointAR.add(av);
+         groupEndpointAR.add(rel);
+         groupEndpointAR.add(upFraction);
+         groupEndpointAR.add(unknownFraction);
+         groupEndpointAR.add(downFraction);
+         
+         return groupEndpointAR;
+         
 	}
 
 }

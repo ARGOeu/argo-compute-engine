@@ -12,9 +12,12 @@ import ops.OpsManager;
 
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.BagFactory;
+import org.apache.pig.data.DataType;
 import org.apache.pig.data.DefaultDataBag;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
+import org.apache.pig.impl.logicalLayer.FrontendException;
+import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import sync.AvailabilityProfiles;
 import sync.GroupsOfGroups;
@@ -32,7 +35,7 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 
 	private String fsUsed;
 	public DIntegrator arMgr;
-
+	
 	private boolean initialized;
 
 	private TupleFactory tupFactory;
@@ -114,5 +117,30 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 
 		return output;
 	}
+	
+	@Override
+	public Schema outputSchema(Schema input) {
+		
+		 Schema serviceAR = new Schema();
+		 Schema.FieldSchema service  = new Schema.FieldSchema("service", DataType.DOUBLE);
+		 Schema.FieldSchema groupname  = new Schema.FieldSchema("groupname", DataType.DOUBLE);
+		 Schema.FieldSchema av  = new Schema.FieldSchema("availability", DataType.DOUBLE);
+         Schema.FieldSchema rel   = new Schema.FieldSchema("reliability",  DataType.DOUBLE);
+         Schema.FieldSchema upFraction       = new Schema.FieldSchema("up_f",       DataType.DOUBLE);
+         Schema.FieldSchema unknownFraction  = new Schema.FieldSchema("unknown_f",  DataType.DOUBLE);
+         Schema.FieldSchema downFraction     = new Schema.FieldSchema("down_f",     DataType.DOUBLE);
+         
+         serviceAR.add(service);
+         serviceAR.add(groupname);
+         serviceAR.add(av);
+         serviceAR.add(rel);
+         serviceAR.add(upFraction);
+         serviceAR.add(unknownFraction);
+         serviceAR.add(downFraction);
+         
+         return serviceAR;
+         
+	}
+
 
 }
