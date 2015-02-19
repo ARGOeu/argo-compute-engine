@@ -18,34 +18,43 @@ import org.apache.pig.data.TupleFactory;
 import org.eclipse.jdt.core.dom.ThisExpression;
 
 import sync.AvailabilityProfiles;
+import sync.EndpointGroups;
 import sync.GroupsOfGroups;
+import sync.WeightGroups;
 
 public class GroupEndpointIntegrate extends EvalFunc<Tuple> {
 
 	public AvailabilityProfiles apMgr;
 	public GroupsOfGroups ggMgr;
+	public EndpointGroups egMgr;
+	public WeightGroups wgMgr;
 	public OpsManager opsMgr;
 
 	private String fnAps;
 	public String fnGroups;
-
+	public String fnEgroups;
+	public String fnWeights;
 	public String fnOps;
 
 	private String fsUsed;
+	
 	public DIntegrator arMgr;
-
+	
+	private String targetDate;
+	
 	private boolean initialized = false;
-
+	
 	private TupleFactory tupFactory;
 	private BagFactory bagFactory;
 
 	private String superGroup;
 
-	public GroupEndpointIntegrate(String fnOps, String fnAps, String fnGroups, String fsUsed, String superGroup) {
+	public GroupEndpointIntegrate(String fnOps, String fnAps, String fnGroups, String fnEgroups, String fnWeights, String fsUsed, String superGroup, String targetDate) {
 		this.fnAps = fnAps;
 		this.fsUsed = fsUsed;
 		this.fnOps = fnOps;
 		this.fnGroups = fnGroups;
+		this.targetDate = targetDate;
 		this.apMgr = new AvailabilityProfiles();
 		this.ggMgr = new GroupsOfGroups();
 		this.opsMgr = new OpsManager();
@@ -57,15 +66,20 @@ public class GroupEndpointIntegrate extends EvalFunc<Tuple> {
 	}
 
 	public void init() throws IOException {
+		
 		if (this.fsUsed.equalsIgnoreCase("cache")) {
 			this.apMgr.loadJson(new File("./aps"));
 			this.ggMgr.loadAvro(new File("./groups"));
 			this.opsMgr.loadJson(new File("./ops"));
+			this.wgMgr.loadAvro(new File("./wgt"));
+			this.egMgr.loadAvro(new File("./egroups"));
 		}
 		else if (this.fsUsed.equalsIgnoreCase("local")) {
 			this.apMgr.loadJson(new File(this.fnAps));
 			this.ggMgr.loadAvro(new File(this.fnGroups));
 			this.opsMgr.loadJson(new File(this.fnOps));
+			this.wgMgr.loadAvro(new File(this.fnWeights));
+			this.egMgr.loadAvro(new File(this.fnEgroups));
 		}
 
 		this.initialized = true;
@@ -77,6 +91,8 @@ public class GroupEndpointIntegrate extends EvalFunc<Tuple> {
 		list.add(this.fnAps.concat("#aps"));
 		list.add(this.fnGroups.concat("#groups"));
 		list.add(this.fnOps.concat("#ops"));
+		list.add(this.fnWeights.concat("#wgt"));
+		list.add(this.fnEgroups.concat("#egroups"));
 		return list;
 	}
 
@@ -109,7 +125,10 @@ public class GroupEndpointIntegrate extends EvalFunc<Tuple> {
 
 		String aprofile = this.apMgr.getAvProfiles().get(0);
 
+		String dateInt = this.targetDate.replace("-", "");
+		
 		Tuple output = tupFactory.newTuple();
+		output.append(dateInt);
 		output.append(this.apMgr.getProfileMetricProfile(aprofile));
 		output.append(aprofile);
 		output.append(groupname);

@@ -57,6 +57,19 @@ private ArrayList<GroupItem> list;
     	return 0; //All good
     }
     
+    public HashMap<String,String> getGroupTags(String type, String subgroup)
+    {
+    	for (GroupItem item : list)
+    	{
+    		if (item.type.equals(type) && item.subgroup.equals(subgroup))
+    		{
+    			return item.tags; 
+    		}
+    	}
+    	
+    	return null;
+    }
+    
     public String getGroup(String type, String subgroup)
     {
     	for (GroupItem item : list)

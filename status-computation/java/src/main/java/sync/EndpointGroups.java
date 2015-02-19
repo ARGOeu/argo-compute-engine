@@ -86,6 +86,22 @@ public class EndpointGroups {
     	
     	return null;
     }
+    
+    public HashMap<String,String>  getGroupTags(String type, String hostname, String service)
+    {
+    	
+    	for (EndpointItem item : list)
+    	{
+    		if (item.type.equals(type) && item.hostname.equals(hostname) && item.service.equals(service))
+    		{
+    			return item.tags; 
+    		}
+    	}
+    	
+    	return null;
+    }
+    
+    
 	
 	public int loadAvro(File avroFile) throws IOException{
 	
