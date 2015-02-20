@@ -18,8 +18,8 @@ public class ConfigManager {
 	public String egroup; // endpoint group
 	public String ggroup; // group of groups
 	public String weight; // weight factor type 
-	public HashMap<String, String> egroupTags;
-	public HashMap<String, String> ggroupTags;
+	public TreeMap<String, String> egroupTags;
+	public TreeMap<String, String> ggroupTags;
 	public HashMap<String, HashMap<String, String>> datastore_map;
 
 	public ConfigManager() {
@@ -28,8 +28,8 @@ public class ConfigManager {
 		this.egroup = null;
 		this.ggroup = null;
 		this.weight = null;
-		this.egroupTags = new HashMap<String, String>();
-		this.ggroupTags = new HashMap<String, String>();
+		this.egroupTags = new TreeMap<String, String>();
+		this.ggroupTags = new TreeMap<String, String>();
 		this.datastore_map = new HashMap<String, HashMap<String, String>>();
 	}
 
