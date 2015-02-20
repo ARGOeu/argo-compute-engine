@@ -27,6 +27,8 @@
     },
     "ar":{
       "date":"dt",
+      "metric_profile":"p",
+      "av_profile":"ap",
       "availability":"a",
       "reliability":"r",
       "up_f":"up",
