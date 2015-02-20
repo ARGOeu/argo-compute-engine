@@ -3,6 +3,7 @@
   "job":"Critical",
   "egroup":"SITES",
   "ggroup":"NGI",
+  "weight":"hepspec",
   "egroup_tags":{
     "scope":"EGI",
     "production":"1",

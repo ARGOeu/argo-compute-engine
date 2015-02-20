@@ -17,6 +17,7 @@ public class ConfigManager {
 	public String job;
 	public String egroup; // endpoint group
 	public String ggroup; // group of groups
+	public String weight; // weight factor type 
 	public HashMap<String, String> egroupTags;
 	public HashMap<String, String> ggroupTags;
 	public HashMap<String, HashMap<String, String>> datastore_map;
@@ -26,6 +27,7 @@ public class ConfigManager {
 		this.job = null;
 		this.egroup = null;
 		this.ggroup = null;
+		this.weight = null;
 		this.egroupTags = new HashMap<String, String>();
 		this.ggroupTags = new HashMap<String, String>();
 		this.datastore_map = new HashMap<String, HashMap<String, String>>();
@@ -36,6 +38,7 @@ public class ConfigManager {
 		this.job = null;
 		this.egroup = null;
 		this.ggroup = null;
+		this.weight = null;
 		this.egroupTags.clear();
 		this.ggroupTags.clear();
 		this.datastore_map.clear();
@@ -55,7 +58,7 @@ public class ConfigManager {
 		this.job = jObj.getAsJsonPrimitive("job").getAsString();
 		this.egroup = jObj.getAsJsonPrimitive("egroup").getAsString();
 		this.ggroup = jObj.getAsJsonPrimitive("ggroup").getAsString();
-
+		this.weight = jObj.getAsJsonPrimitive("weight").getAsString();
 		// Get compound fields
 		JsonObject jEgroupTags = jObj.getAsJsonObject("egroup_tags");
 		JsonObject jGgroupTags = jObj.getAsJsonObject("ggroup_tags");
