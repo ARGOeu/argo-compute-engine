@@ -52,7 +52,7 @@ public class ConfigManager {
 			return this.datastore_map.get(category).get(value);
 		}
 		
-		return null
+		return null;
 	}
 
 	public void loadJson(File json_file) throws FileNotFoundException {
