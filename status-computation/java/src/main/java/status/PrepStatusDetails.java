@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import ops.ConfigManager;
+
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
@@ -19,24 +21,29 @@ import org.apache.pig.data.DefaultDataBag;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
+import sync.AvailabilityProfiles;
 import sync.EndpointGroups;
 
 
 public class PrepStatusDetails extends EvalFunc<Tuple> {
 	
-	private  String fnEndpointGroups;
-	private  String fnMetricProfiles;
+	private String fnEgrp;
+	private String fnAps;
+	private String fnCfg;
 	
 	private String fsUsed;
-	
-	public EndpointGroups endpointMgr;
+
+	public AvailabilityProfiles apsMgr;
+	public EndpointGroups egrpMgr;
+	public ConfigManager cfgMgr;
 	
 	private boolean initialized;
 	
-	public PrepStatusDetails (String fnEndpointGroups, String fnMetricProfiles, String fsUsed){
+	public PrepStatusDetails (String fnEgrp, String fnAps, String fnCfg, String fsUsed){
 		
-		this.fnEndpointGroups = fnEndpointGroups;
-		this.fnMetricProfiles = fnMetricProfiles;
+		this.fnEgrp= fnEgrp;
+		this.fnAps = fnAps;
+		this.fnCfg = fnCfg;
 		this.fsUsed = fsUsed;
 	
 		this.initialized = false;
@@ -48,8 +55,14 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 	public void init() throws IOException
 	{
 		if (this.fsUsed.equalsIgnoreCase("cache")){
-			this.endpointMgr.loadAvro(new File("./endpoint_groups"));
-			
+			this.egrpMgr.loadAvro(new File("./endpoint_groups"));
+			this.apsMgr.loadJson(new File("./aps"));
+			this.cfgMgr.loadJson(new File("./endpoint_groups"));
+		}
+		else if (this.fsUsed.equalsIgnoreCase("local")) {
+			this.egrpMgr.loadAvro(new File(this.fnEgrp));
+			this.apsMgr.loadJson(new File(this.fnAps));
+			this.cfgMgr.loadJson(new File(this.fnCfg));
 		}
 		
 		this.initialized=true;
@@ -57,8 +70,10 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 	
 	public List<String> getCacheFiles() { 
         List<String> list = new ArrayList<String>(); 
-        list.add(this.fnEndpointGroups.concat("#endpoint_groups"));
-        list.add(this.fnMetricProfiles.concat("#metric_profiles"));
+        list.add(this.fnEgrp.concat("#endpoint_groups"));
+        list.add(this.fnAps.concat("#aps"));
+        list.add(this.fnCfg.concat("#cfg"));
+        
         return list; 
 	} 
 	

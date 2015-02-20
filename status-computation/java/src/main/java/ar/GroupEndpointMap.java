@@ -1,6 +1,7 @@
 package ar;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,10 +16,16 @@ import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import sync.AvailabilityProfiles;
 import sync.EndpointGroups;
 import sync.GroupsOfGroups;
 import sync.WeightGroups;
+
+
 
 public class GroupEndpointMap extends EvalFunc<Tuple> {
 	
@@ -31,18 +38,22 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 	
 	private String fsUsed;
 	
+	private String schemaJson;
+	
 	public ConfigManager cfgMgr;
 	public AvailabilityProfiles apsMgr;
 	public WeightGroups weightMgr;
 	public GroupsOfGroups ggMgr;
 	public EndpointGroups egMgr;
 	
+	
+	
 	private TupleFactory tupFactory;
 	
 	private boolean initialized;
 	
 	public GroupEndpointMap(String fnConfig, String fnAps, String fnWeights, String fnGgroups, 
-							String fnEgroups, String targetDate, String fsUsed) {
+							String fnEgroups, String targetDate, String fsUsed, String schemaJson) {
 		
 		this.fsUsed = fsUsed;
 		this.fnConfig = fnConfig;
@@ -52,6 +63,8 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 		this.fnEgroups = fnEgroups;
 		this.targetDate = targetDate;
 		this.fsUsed = fsUsed;
+	    
+		this.schemaJson = schemaJson;
 		
 		// Initialize Managers
 		this.cfgMgr = new ConfigManager();
@@ -63,20 +76,21 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 		this.tupFactory = TupleFactory.getInstance();
 		
 		this.initialized = false;
+	
 	}
 	
 	
 	public void init() throws IOException {
-		if (this.fsUsed.equalsIgnoreCase("cache")) {
+		if (this.fsUsed.equalsIgnoreCase("zcache")) {
 			this.cfgMgr.loadJson(new File("./cfg"));
 			this.apsMgr.loadJson(new File("./aps"));
 			this.weightMgr.loadAvro(new File("./weights"));
 			this.ggMgr.loadAvro(new File("./ggroups"));
 			this.egMgr.loadAvro(new File("./egroups"));
 		}
-		else if (this.fsUsed.equalsIgnoreCase("local")) {
+		else if (this.fsUsed.equalsIgnoreCase("cache")) {
 		
-			this.cfgMgr.loadJson(new File(this.fnConfig));
+		
 			this.apsMgr.loadJson(new File(this.fnAps));
 			this.weightMgr.loadAvro(new File(this.fnWeights));
 			this.ggMgr.loadAvro(new File(this.fnGgroups));
@@ -89,7 +103,7 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 	
 	public List<String> getCacheFiles() {
 		List<String> list = new ArrayList<String>();
-		list.add(this.fnConfig.concat("#config"));
+		list.add(this.fnConfig.concat("#cfg"));
 		list.add(this.fnAps.concat("#aps"));
 		list.add(this.fnWeights.concat("#weights"));
 		list.add(this.fnGgroups.concat("#ggroups"));
@@ -112,11 +126,11 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 		
 		// Get input fields
 		String egroupName = (String)input.get(0);
-		double av = (Float) (input.get(1));
-		double rel = (Float) (input.get(2));
-		double upFraction = (Float) (input.get(3));
-		double unknownFraction = (Float) (input.get(4));
-		double downFraction = (Float) (input.get(5));
+		double av = (Double) input.get(1);
+		double rel = (Double) input.get(2);
+		double upFraction = (Double)input.get(3);
+		double unknownFraction = (Double) input.get(4);
+		double downFraction = (Double) input.get(5);
 		
 		// Supplement info for datastore
 		int dateInt = Integer.parseInt(this.targetDate.replace("-", ""));
@@ -127,11 +141,12 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 		
 		String ggroupName = this.ggMgr.getGroup(ggroupType, egroupName);
 		String avProfile = this.apsMgr.getAvProfiles().get(0);
+		String avNamespace = this.apsMgr.getProfileNamespace(avProfile);
 		String metricProfile = this.apsMgr.getProfileMetricProfile(avProfile);
-		
+		String fullAvProfile = avNamespace + "-" + avProfile;
 		// Add the previous info before adding the tags
 		output.append(dateInt); 		// 0 
-		output.append(avProfile);		// 1
+		output.append(fullAvProfile);	// 1
 		output.append(metricProfile); 	// 2
 		output.append(egroupName); 		// 3
 		output.append(ggroupName);		// 4
@@ -158,63 +173,33 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 		}
 		
 		
-		return input;
+		return output;
 	}
 	
 	@Override
 	public Schema outputSchema(Schema input) {
 		
-		
 		Schema groupEndpointData = new Schema();
-		// Define first fields
-		Schema.FieldSchema sDateInt  = new Schema.FieldSchema(this.cfgMgr.getMapped("ar","date"), DataType.INTEGER);
-		Schema.FieldSchema sAvProfile  = new Schema.FieldSchema(this.cfgMgr.getMapped("ar","av_profile"), DataType.CHARARRAY);
-		Schema.FieldSchema sMetricProfile   = new Schema.FieldSchema(this.cfgMgr.getMapped("ar","metric_profile"),  DataType.CHARARRAY);
-		Schema.FieldSchema sGroup   = new Schema.FieldSchema(this.cfgMgr.getMapped("ar","group"),  DataType.CHARARRAY);
-		Schema.FieldSchema sSuperGroup   = new Schema.FieldSchema(this.cfgMgr.getMapped("ar","supergroup"),  DataType.CHARARRAY);
-		Schema.FieldSchema sWeight   = new Schema.FieldSchema(this.cfgMgr.getMapped("ar","weight"),  DataType.CHARARRAY);
-        // Define the ar results fields
-		Schema.FieldSchema sAv  = new Schema.FieldSchema(this.cfgMgr.getMapped("ar","availability"), DataType.DOUBLE);
-		Schema.FieldSchema sRel  = new Schema.FieldSchema(this.cfgMgr.getMapped("ar","reliability"), DataType.DOUBLE);
-		Schema.FieldSchema sUp   = new Schema.FieldSchema(this.cfgMgr.getMapped("ar","up_f"),  DataType.DOUBLE);
-		Schema.FieldSchema sUnknown   = new Schema.FieldSchema(this.cfgMgr.getMapped("ar","unkown_f"),  DataType.DOUBLE);
-		Schema.FieldSchema sDown   = new Schema.FieldSchema(this.cfgMgr.getMapped("ar","down_f"),  DataType.DOUBLE);
 		
-		// Create a field schema list for egroup tags
-		ArrayList<Schema.FieldSchema> egroupFields = new ArrayList<Schema.FieldSchema>();
-		// Get egroup config tags
-		for ( Entry<String,String> item : this.cfgMgr.egroupTags.entrySet()){
-			egroupFields.add(new Schema.FieldSchema(this.cfgMgr.getMapped("egroup", item.getKey()),DataType.CHARARRAY));
-		}
-		
-		ArrayList<Schema.FieldSchema> ggroupFields = new ArrayList<Schema.FieldSchema>();
-		// Get ggroup config tags
-		for ( Entry<String,String> item : this.cfgMgr.ggroupTags.entrySet()){
-			ggroupFields.add(new Schema.FieldSchema(this.cfgMgr.getMapped("ggroup", item.getKey()),DataType.CHARARRAY));
-		}
-		
-		// Add fields to schema
-		groupEndpointData.add(sDateInt);
-		groupEndpointData.add(sAvProfile);
-		groupEndpointData.add(sMetricProfile);
-		groupEndpointData.add(sGroup);
-		groupEndpointData.add(sSuperGroup);
-		groupEndpointData.add(sWeight);
-		
-		groupEndpointData.add(sAv);
-		groupEndpointData.add(sRel);
-		groupEndpointData.add(sUp);
-		groupEndpointData.add(sUnknown);
-		groupEndpointData.add(sDown);
-		
-		for (Schema.FieldSchema item : egroupFields)
+		JsonParser jsonParser = new JsonParser();
+		JsonElement jElement = jsonParser.parse(this.schemaJson);
+		JsonObject jObj = jElement.getAsJsonObject();
+		for (Entry<String,JsonElement> item : jObj.entrySet())
 		{
-			groupEndpointData.add(item);
-		}
-		
-		for (Schema.FieldSchema item : ggroupFields)
-		{
-			groupEndpointData.add(item);
+			String name = item.getKey();
+			String type = item.getValue().getAsString();
+			
+			if (type.equalsIgnoreCase("int")){
+				groupEndpointData.add(new Schema.FieldSchema(name,DataType.INTEGER));
+			}
+			else if (type.equalsIgnoreCase("double")){
+				groupEndpointData.add(new Schema.FieldSchema(name,DataType.DOUBLE));
+			}
+			else
+			{
+				groupEndpointData.add(new Schema.FieldSchema(name,DataType.CHARARRAY));
+			}
+			
 		}
 		
         return groupEndpointData;

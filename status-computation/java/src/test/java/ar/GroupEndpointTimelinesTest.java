@@ -51,6 +51,7 @@ public class GroupEndpointTimelinesTest {
 		Tuple inpTuple = JsonToPig.jsonToTuple(jsonStr);
 		DataBag expBag = new DefaultDataBag();
 		Tuple expTuple = tf.newTuple();
+		
 		expTuple.append("UKI-NORTHGRID-LANCS-HEP");
 		for (int i=0;i<288;i++)
 		{
@@ -63,7 +64,7 @@ public class GroupEndpointTimelinesTest {
 		
 		
 	    cur = st.exec(inpTuple);
-	    
+	
 	    assertEquals(expTuple,cur);
 		
 		

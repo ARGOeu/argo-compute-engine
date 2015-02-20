@@ -45,6 +45,14 @@ public class ConfigManagerTest {
 		assertEquals("1",cfgMgr.egroupTags.get("monitored"));
 		assertEquals("EGI",cfgMgr.egroupTags.get("scope"));
 	
+		System.out.println(cfgMgr.getMapped("ar", "reliability"));
+		System.out.println(cfgMgr.getMapped("ar","date"));
+		System.out.println(cfgMgr.getMapped("ar","av_profile"));
+		System.out.println(cfgMgr.getMapped("ar","metric_profile"));
+		System.out.println(cfgMgr.getMapped("ar","group"));
+		System.out.println(cfgMgr.getMapped("ar","supergroup"));
+		System.out.println(cfgMgr.getMapped("ar","weight"));
+		
 	}
 
 }
