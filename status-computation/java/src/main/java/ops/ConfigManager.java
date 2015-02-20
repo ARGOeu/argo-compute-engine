@@ -44,6 +44,16 @@ public class ConfigManager {
 		this.ggroupTags.clear();
 		this.datastore_map.clear();
 	}
+	
+	public String getMapped(String category, String value)
+	{
+		if (this.datastore_map.containsKey(category))
+		{
+			return this.datastore_map.get(category).get(value);
+		}
+		
+		return null
+	}
 
 	public void loadJson(File json_file) throws FileNotFoundException {
 		// Clear data
