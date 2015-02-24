@@ -22,6 +22,7 @@ import org.apache.pig.data.DefaultDataBag;
 import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
+import org.eclipse.jdt.core.dom.ThisExpression;
 
 import sync.AvailabilityProfiles;
 import sync.EndpointGroups;
@@ -32,14 +33,13 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 	
 	private String fnGgrp;
 	private String fnEgrp;
-	private String fnAps;
 	private String fnCfg;
 	
 	private String targetDate;
 	
 	private String fsUsed;
 
-	public AvailabilityProfiles apsMgr;
+	//public AvailabilityProfiles apsMgr;
 	public EndpointGroups egrpMgr;
 	public GroupsOfGroups ggrpMgr;
 	public ConfigManager cfgMgr;
@@ -48,21 +48,20 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 	
 	private boolean initialized;
 	
-	public PrepStatusDetails (String fnGgrp, String fnEgrp, String fnAps, String fnCfg, String targetDate, String fsUsed){
+	public PrepStatusDetails (String fnGgrp, String fnEgrp, String fnCfg, String targetDate, String fsUsed){
 		
 		this.targetDate = targetDate;
 		
 		this.fnGgrp = fnGgrp;
 		this.fnEgrp= fnEgrp;
-		this.fnAps = fnAps;
 		this.fnCfg = fnCfg;
 		this.fsUsed = fsUsed;
 		
-		this.apsMgr = new AvailabilityProfiles();
+	
 		this.egrpMgr = new EndpointGroups();
 		this.ggrpMgr = new GroupsOfGroups();
 		this.cfgMgr = new ConfigManager();
-	
+				
 		this.tupFactory= TupleFactory.getInstance();
 		
 		this.initialized = false;
@@ -75,15 +74,13 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 	{
 		if (this.fsUsed.equalsIgnoreCase("cache")){
 			this.egrpMgr.loadAvro(new File("./egrp"));
-			this.apsMgr.loadJson(new File("./aps"));
-			this.cfgMgr.loadJson(new File("./cfg"));
 			this.ggrpMgr.loadAvro(new File("./ggrp"));
+			this.cfgMgr.loadJson(new File("./cfg"));
 		}
 		else if (this.fsUsed.equalsIgnoreCase("local")) {
 			this.egrpMgr.loadAvro(new File(this.fnEgrp));
-			this.apsMgr.loadJson(new File(this.fnAps));
-			this.cfgMgr.loadJson(new File(this.fnCfg));
 			this.ggrpMgr.loadAvro(new File(this.fnGgrp));
+			this.cfgMgr.loadJson(new File(this.fnCfg));
 		}
 		
 		this.initialized=true;
@@ -93,7 +90,6 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
         List<String> list = new ArrayList<String>(); 
         list.add(this.fnGgrp.concat("#ggrp"));
         list.add(this.fnEgrp.concat("#egrp"));
-        list.add(this.fnAps.concat("#aps"));
         list.add(this.fnCfg.concat("#cfg"));
         
         
@@ -203,15 +199,6 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 		Schema.FieldSchema altgroup = new Schema.FieldSchema("altg",DataType.CHARARRAY);
 		Schema.FieldSchema altgroupf = new Schema.FieldSchema("altgf",DataType.CHARARRAY);
 		
-		
-		//Schema.FieldSchema egroup = new Schema.FieldSchema("site",DataType.CHARARRAY);
-		//Schema.FieldSchema ggroup = new Schema.FieldSchema("roc",DataType.CHARARRAY);
-		
-		//Schema.FieldSchema altgroup = new Schema.FieldSchema("vo",DataType.CHARARRAY);
-		//Schema.FieldSchema altgroupf = new Schema.FieldSchema("vo_f",DataType.CHARARRAY);
-      
-        
-        
         Schema.FieldSchema timestamp = new Schema.FieldSchema("timestamp", DataType.CHARARRAY);
         Schema.FieldSchema status = new Schema.FieldSchema("status", DataType.CHARARRAY);
         Schema.FieldSchema summary = new Schema.FieldSchema("summary", DataType.CHARARRAY);
