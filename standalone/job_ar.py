@@ -15,6 +15,7 @@ def main(args=None):
 	arsync_lib = "/var/lib/ar-sync/"
 	arcomp_conf = "/etc/ar-compute/"
 	arcomp_exec = "/usr/libexec/ar-compute/"
+	pig_script_path = "/usr/libexec/ar-compute/pig/"
 
 	actual_date = datetime.strptime(args.date,'%Y-%m-%d')
 	one_day_ago = actual_date - timedelta(days=1)
@@ -105,7 +106,8 @@ def main(args=None):
 
 	# Append Pig Executionable Script
 	cmd_pig.append('-f')
-	cmd_pig.append('compute-ar.pig')
+	cmd_pig.append(pig_script_path+'compute-ar.pig')
+
 
 	try:
 		check_call(cmd_pig)

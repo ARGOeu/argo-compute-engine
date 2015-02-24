@@ -15,7 +15,7 @@ def main(args=None):
 	arsync_lib = "/var/lib/ar-sync/"
 	arcomp_conf = "/etc/ar-compute/"
 	arcomp_exec = "/usr/libexec/ar-compute/"
-	pig_script_path = "/usr/libexec/ar-compute/pig"
+	pig_script_path = "/usr/libexec/ar-compute/pig/"
 
 	actual_date = datetime.strptime(args.date,'%Y-%m-%d')
 	one_day_ago = actual_date - timedelta(days=1)
