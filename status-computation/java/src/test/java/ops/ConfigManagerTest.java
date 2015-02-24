@@ -45,13 +45,18 @@ public class ConfigManagerTest {
 		assertEquals("1",cfgMgr.egroupTags.get("monitored"));
 		assertEquals("EGI",cfgMgr.egroupTags.get("scope"));
 	
-		System.out.println(cfgMgr.getMapped("ar", "reliability"));
-		System.out.println(cfgMgr.getMapped("ar","date"));
-		System.out.println(cfgMgr.getMapped("ar","av_profile"));
-		System.out.println(cfgMgr.getMapped("ar","metric_profile"));
-		System.out.println(cfgMgr.getMapped("ar","group"));
-		System.out.println(cfgMgr.getMapped("ar","supergroup"));
-		System.out.println(cfgMgr.getMapped("ar","weight"));
+		// Assert compound fields
+		assertEquals("ops",cfgMgr.mdataTags.get("vo"));
+		assertEquals("ops",cfgMgr.mdataTags.get("vo_fqan"));
+		assertEquals("any",cfgMgr.mdataTags.get("roc"));
+		
+		assertEquals("r",cfgMgr.getMapped("ar", "reliability"));
+		assertEquals("dt",cfgMgr.getMapped("ar","date"));
+		assertEquals("ap",cfgMgr.getMapped("ar","av_profile"));
+		assertEquals("p",cfgMgr.getMapped("ar","metric_profile"));
+		assertEquals("s",cfgMgr.getMapped("ar","group"));
+		assertEquals("n",cfgMgr.getMapped("ar","supergroup"));
+		assertEquals("hsp",cfgMgr.getMapped("ar","weight"));
 		
 	}
 

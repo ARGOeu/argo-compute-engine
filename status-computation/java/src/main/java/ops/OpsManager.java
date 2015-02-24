@@ -25,6 +25,7 @@ public class OpsManager {
 	
 	private String defaultDownState;
 	private String defaultMissingState;
+	private String defaultUnknownState;
 	
 	private boolean order;
 	
@@ -52,6 +53,14 @@ public class OpsManager {
 	public String getDefaultDown()
 	{
 		return this.defaultDownState;
+	}
+	
+	public String getDefaultUnknown(){
+		return this.defaultUnknownState;
+	}
+
+	public int getDefaultUnknownInt(){
+		return this.getIntStatus(this.defaultUnknownState);
 	}
 	
 	public int getDefaultDownInt(){
@@ -161,6 +170,7 @@ public class OpsManager {
 		JsonObject j_ops = j_obj.getAsJsonObject("operations");
 		this.defaultMissingState = j_obj.getAsJsonPrimitive("default_missing").getAsString();
 		this.defaultDownState = j_obj.getAsJsonPrimitive("default_down").getAsString();
+		this.defaultUnknownState = j_obj.getAsJsonPrimitive("default_unknown").getAsString();
 		// Collect the available states
 		for (int i=0;i<j_states.size();i++)
 		{

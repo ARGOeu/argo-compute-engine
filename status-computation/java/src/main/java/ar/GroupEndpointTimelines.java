@@ -2,11 +2,13 @@ package ar;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import ops.ConfigManager;
 import ops.DAggregator;
 import ops.DTimeline;
 import ops.OpsManager;
@@ -22,19 +24,29 @@ import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import sync.AvailabilityProfiles;
+import sync.GroupsOfGroups;
+import sync.Recalculations;
 
 public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 
 	public HashMap<String, DAggregator> groupEndpointAggr;
 
-	public OpsManager opsMgr = new OpsManager();
-	public AvailabilityProfiles apMgr = new AvailabilityProfiles();
-
+	public OpsManager opsMgr;
+	public AvailabilityProfiles apMgr;
+    public Recalculations recMgr;
+	public GroupsOfGroups ggMgr;
+	public ConfigManager cfgMgr;
+	
 	private TupleFactory tupFactory;
 	private BagFactory bagFactory;
 
 	private String fnOps;
 	private String fnAps;
+	private String fnRec;
+	private String fnGG;
+	private String fnCfg;
+	
+	private String targetDate;
 	
 	private int sPeriod;
 	private int sInterval;
@@ -43,11 +55,15 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 
 	private boolean initialized;
 
-	public GroupEndpointTimelines(String fnOps, String fnAps, String fsUsed, String sPeriod, String sInterval) {
+	public GroupEndpointTimelines(String fnOps, String fnAps, String fnRec, String fnGG,  
+			String fnCfg, String targetDate, String fsUsed, String sPeriod, String sInterval) {
 
 		// set first the filenames
 		this.fnOps = fnOps;
 		this.fnAps = fnAps;
+		this.fnRec = fnRec;
+		this.fnGG = fnGG;
+		this.fnCfg = fnCfg;
 		// set distribute cache flag
 		this.fsUsed = fsUsed;
 
@@ -58,6 +74,12 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 		this.groupEndpointAggr = new HashMap<String, DAggregator>();
 		this.opsMgr = new OpsManager();
 		this.apMgr = new AvailabilityProfiles();
+		this.recMgr = new Recalculations();
+		this.ggMgr = new GroupsOfGroups();
+		this.cfgMgr = new ConfigManager();
+		
+		this.targetDate = targetDate;
+		
 		// set up factories
 		this.tupFactory = TupleFactory.getInstance();
 		this.bagFactory = BagFactory.getInstance();
@@ -72,10 +94,17 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 		if (this.fsUsed.equalsIgnoreCase("cache")) {
 			this.opsMgr.loadJson(new File("./ops"));
 			this.apMgr.loadJson(new File("./aps"));
+			this.recMgr.loadJson(new File("./rec"));
+			this.ggMgr.loadAvro(new File("./ggroups"));
+			this.cfgMgr.loadJson(new File("./cfg"));
 		}
 		else if (this.fsUsed.equalsIgnoreCase("local")) {
 			this.apMgr.loadJson(new File(this.fnAps));
 			this.opsMgr.loadJson(new File(this.fnOps));
+			this.recMgr.loadJson(new File(this.fnRec));
+			this.ggMgr.loadAvro(new File(this.fnGG));
+			this.cfgMgr.loadJson(new File(this.fnCfg));
+		
 		}
 
 		this.initialized = true;
@@ -86,6 +115,9 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 		List<String> list = new ArrayList<String>();
 		list.add(this.fnOps.concat("#ops"));
 		list.add(this.fnAps.concat("#aps"));
+		list.add(this.fnRec.concat("#rec"));
+		list.add(this.fnGG.concat("#ggroups"));
+		list.add(this.fnCfg.concat("#cfg"));
 		return list;
 	}
 
@@ -105,7 +137,7 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 		String aprofile = this.apMgr.getAvProfiles().get(0); // One Availability
 																// Profile
 
-		String sitename = (String) input.get(0);
+		String groupname = (String) input.get(0);
 		DefaultDataBag bag = (DefaultDataBag) input.get(1);
 
 		// Iterate the whole timeline
@@ -166,11 +198,32 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 		// Get appropriate operation from availability profile
 		totalSite.aggregate(this.apMgr.getTotalOp(aprofile), this.opsMgr);
 
+		// Check for Recalculations
+		String supergroupType = this.cfgMgr.ggroup;
+		String groupType = this.cfgMgr.egroup;
+		String supergroup = this.ggMgr.getGroup(supergroupType, groupname);
+		
+		try {
+			
+			if (this.recMgr.check(supergroup, groupname,this.targetDate)){
+				
+				String startRec = this.recMgr.getStart(supergroup);
+				String endRec = this.recMgr.getEnd(supergroup);
+				
+				totalSite.aggregation.fill(this.opsMgr.getDefaultUnknownInt(), startRec, endRec, this.targetDate);
+			}
+			
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+			
+		
+		
 		// Create output Tuple
 		Tuple output = tupFactory.newTuple();
 		DataBag outBag = bagFactory.newDefaultBag();
 
-		output.append(sitename);
+		output.append(groupname);
 
 		// Append the timeline
 		for (int i = 0; i < totalSite.aggregation.samples.length; i++) {

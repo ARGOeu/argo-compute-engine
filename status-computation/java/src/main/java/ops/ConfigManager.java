@@ -18,9 +18,11 @@ public class ConfigManager {
 	public String job;
 	public String egroup; // endpoint group
 	public String ggroup; // group of groups
+	public String agroup; // alternative group   
 	public String weight; // weight factor type 
 	public TreeMap<String, String> egroupTags;
 	public TreeMap<String, String> ggroupTags;
+	public TreeMap<String, String> mdataTags;
 	public HashMap<String, HashMap<String, String>> datastore_map;
 
 	public ConfigManager() {
@@ -31,6 +33,7 @@ public class ConfigManager {
 		this.weight = null;
 		this.egroupTags = new TreeMap<String, String>();
 		this.ggroupTags = new TreeMap<String, String>();
+		this.mdataTags = new TreeMap<String, String>();
 		this.datastore_map = new HashMap<String, HashMap<String, String>>();
 	}
 
@@ -42,6 +45,7 @@ public class ConfigManager {
 		this.weight = null;
 		this.egroupTags.clear();
 		this.ggroupTags.clear();
+		this.mdataTags.clear();
 		this.datastore_map.clear();
 	}
 	
@@ -70,9 +74,11 @@ public class ConfigManager {
 		this.egroup = jObj.getAsJsonPrimitive("egroup").getAsString();
 		this.ggroup = jObj.getAsJsonPrimitive("ggroup").getAsString();
 		this.weight = jObj.getAsJsonPrimitive("weight").getAsString();
+		this.agroup = jObj.getAsJsonPrimitive("altg").getAsString();
 		// Get compound fields
 		JsonObject jEgroupTags = jObj.getAsJsonObject("egroup_tags");
 		JsonObject jGgroupTags = jObj.getAsJsonObject("ggroup_tags");
+		JsonObject jMdataTags = jObj.getAsJsonObject("mdata_tags");
 		JsonObject jDataMap = jObj.getAsJsonObject("datastore_maps");
 		
 		// Get compound fields
@@ -84,6 +90,11 @@ public class ConfigManager {
 			
 			this.ggroupTags.put(item.getKey(),item.getValue().getAsString());
 		}
+		for (Entry<String,JsonElement> item : jMdataTags.entrySet()) {
+			
+			this.mdataTags.put(item.getKey(),item.getValue().getAsString());
+		}
+		
 		
 		// Get super compound field
 		for (Entry<String,JsonElement> item : jDataMap.entrySet()) {

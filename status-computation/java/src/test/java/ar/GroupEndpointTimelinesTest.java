@@ -39,8 +39,10 @@ public class GroupEndpointTimelinesTest {
 		URL apsFile = GroupEndpointTimelines.class.getResource("/ops/ap1.json");
 		File apsJson = new File(apsFile.toURI());
 		
+	
+		
 		// Instatiate class
-		GroupEndpointTimelines st = new GroupEndpointTimelines("","","test","1440","5");
+		GroupEndpointTimelines st = new GroupEndpointTimelines("","","","","","","test","1440","5");
 		st.apMgr.loadJson(apsJson);
 		st.opsMgr.loadJson(opsJson);
 		

@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import ops.ConfigManager;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -38,7 +40,20 @@ public class EndpointGroupsTest {
 		assertEquals(ge.getGroup("SITES", "gt3.pnpi.nw.ru", "CREAM-CE"),"ru-PNPI");
 		
 		assertEquals(ge.getGroup("SITES", "wms02.afroditi.hellasgrid.gr", "WMS"),"HG-03-AUTH");
+		assertTrue(ge.checkEndpoint("ce.etfos.cro-ngi.hr", "GRAM5"));
+		assertTrue(ge.checkEndpoint("grid129.sinp.msu.ru", "CREAM-CE"));
+	
+		// Test Tag Filtering
+		URL resJson = GroupsOfGroupsTest.class.getResource("/ops/config.json");
+		File cfgFile = new File(resJson.toURI());
+		ConfigManager cfgMgr = new ConfigManager();
+		cfgMgr.loadJson(cfgFile);
+		ge.filter(cfgMgr.egroupTags);
 		
+		
+		
+		assertTrue(ge.checkEndpoint("ce.etfos.cro-ngi.hr", "GRAM5")==false);
+		assertTrue(ge.checkEndpoint("grid129.sinp.msu.ru", "CREAM-CE")==false);
 		
 	}
 

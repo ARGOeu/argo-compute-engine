@@ -30,10 +30,10 @@ public class PickEndpointsTest {
 		URL groupEndpointRes = GroupsOfGroupsTest.class.getResource("/avro/group_endpoints_test.avro");
 		File groupEndpointAvro = new File(groupEndpointRes.toURI());
 		
-		PickEndpoints pt = new PickEndpoints("","","test");
+		PickEndpoints pt = new PickEndpoints("","","","","test");
 		
-		pt.metricMgr.loadAvro(metricAvro);
-		pt.endpointMgr.loadAvro(groupEndpointAvro);
+		pt.mpsMgr.loadAvro(metricAvro);
+		pt.egMgr.loadAvro(groupEndpointAvro);
 		
 		TupleFactory tf = TupleFactory.getInstance();
 		Tuple inp = tf.newTuple();

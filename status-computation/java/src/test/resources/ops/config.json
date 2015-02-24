@@ -3,6 +3,7 @@
   "job":"Critical",
   "egroup":"SITES",
   "ggroup":"NGI",
+  "altg":"ops",
   "weight":"hepspec",
   "egroup_tags":{
     "scope":"EGI",
@@ -13,6 +14,11 @@
     "scope":"EGI",
     "infrastructure":"Production",
     "certification":"Certified"
+  },
+  "mdata_tags":{
+    "vo":"ops",
+    "vo_fqan":"ops",
+    "roc":"any"
   },
   "datastore_maps":{
     "ggroups":{
@@ -36,6 +42,7 @@
       "down_f":"d",
       "group":"s",
       "supergroup":"n",
+      "service":"sf",
       "weight":"hsp"
     },
     "status":{
@@ -56,7 +63,10 @@
       "hostname":"h",
       "metric":"m",
       "profile":"p",
-      "service":"srv"
+      "service":"srv",
+      "roc":"roc",
+      "altg":"vo",
+      "altg2":"vo_f"
     }
   }
 }

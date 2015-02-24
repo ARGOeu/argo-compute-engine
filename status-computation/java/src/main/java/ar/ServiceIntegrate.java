@@ -11,12 +11,10 @@ import ops.DTimeline;
 import ops.OpsManager;
 
 import org.apache.pig.EvalFunc;
-import org.apache.pig.data.BagFactory;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.DefaultDataBag;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
-import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import sync.AvailabilityProfiles;
@@ -35,11 +33,10 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 
 	private String fsUsed;
 	public DIntegrator arMgr;
-	
+
 	private boolean initialized;
 
 	private TupleFactory tupFactory;
-	private BagFactory bagFactory;
 
 	public ServiceIntegrate(String fnOps, String fnAps, String fsUsed) {
 		this.fnAps = fnAps;
@@ -50,10 +47,8 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 		this.apMgr = new AvailabilityProfiles();
 		this.opsMgr = new OpsManager();
 		this.arMgr = new DIntegrator();
-		
 
 		this.tupFactory = TupleFactory.getInstance();
-		this.bagFactory = BagFactory.getInstance();
 
 		this.initialized = false;
 	}
@@ -62,8 +57,7 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 		if (this.fsUsed.equalsIgnoreCase("cache")) {
 			this.apMgr.loadJson(new File("./aps"));
 			this.opsMgr.loadJson(new File("./ops"));
-		}
-		else if (this.fsUsed.equalsIgnoreCase("local")) {
+		} else if (this.fsUsed.equalsIgnoreCase("local")) {
 			this.apMgr.loadJson(new File(this.fnAps));
 			this.opsMgr.loadJson(new File(this.fnOps));
 		}
@@ -81,12 +75,12 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 
 	@Override
 	public Tuple exec(Tuple input) throws IOException {
-		
+
 		// Check if cache files have been opened
 		if (this.initialized == false) {
 			this.init(); // If not open them
 		}
-		
+
 		if (input == null || input.size() == 0)
 			return null;
 
@@ -117,30 +111,36 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 
 		return output;
 	}
-	
+
 	@Override
 	public Schema outputSchema(Schema input) {
-		
-		 Schema serviceAR = new Schema();
-		 Schema.FieldSchema service  = new Schema.FieldSchema("service", DataType.DOUBLE);
-		 Schema.FieldSchema groupname  = new Schema.FieldSchema("groupname", DataType.DOUBLE);
-		 Schema.FieldSchema av  = new Schema.FieldSchema("availability", DataType.DOUBLE);
-         Schema.FieldSchema rel   = new Schema.FieldSchema("reliability",  DataType.DOUBLE);
-         Schema.FieldSchema upFraction       = new Schema.FieldSchema("up_f",       DataType.DOUBLE);
-         Schema.FieldSchema unknownFraction  = new Schema.FieldSchema("unknown_f",  DataType.DOUBLE);
-         Schema.FieldSchema downFraction     = new Schema.FieldSchema("down_f",     DataType.DOUBLE);
-         
-         serviceAR.add(service);
-         serviceAR.add(groupname);
-         serviceAR.add(av);
-         serviceAR.add(rel);
-         serviceAR.add(upFraction);
-         serviceAR.add(unknownFraction);
-         serviceAR.add(downFraction);
-         
-         return serviceAR;
-         
-	}
 
+		Schema serviceAR = new Schema();
+		Schema.FieldSchema service = new Schema.FieldSchema("service",
+				DataType.DOUBLE);
+		Schema.FieldSchema groupname = new Schema.FieldSchema("groupname",
+				DataType.DOUBLE);
+		Schema.FieldSchema av = new Schema.FieldSchema("availability",
+				DataType.DOUBLE);
+		Schema.FieldSchema rel = new Schema.FieldSchema("reliability",
+				DataType.DOUBLE);
+		Schema.FieldSchema upFraction = new Schema.FieldSchema("up_f",
+				DataType.DOUBLE);
+		Schema.FieldSchema unknownFraction = new Schema.FieldSchema(
+				"unknown_f", DataType.DOUBLE);
+		Schema.FieldSchema downFraction = new Schema.FieldSchema("down_f",
+				DataType.DOUBLE);
+
+		serviceAR.add(service);
+		serviceAR.add(groupname);
+		serviceAR.add(av);
+		serviceAR.add(rel);
+		serviceAR.add(upFraction);
+		serviceAR.add(unknownFraction);
+		serviceAR.add(downFraction);
+
+		return serviceAR;
+
+	}
 
 }
