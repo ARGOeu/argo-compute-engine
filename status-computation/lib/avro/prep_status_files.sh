@@ -24,9 +24,9 @@ echo "Remove consumer data duplicates for day $DAY_TARGET"
 cat /var/lib/ar-consumer/ar-consumer_log_details_$DAY_TARGET.txt | sort -u > /tmp/avro/ar-consumer_log_$DAY_TARGET.min
 # Encode in avro format
 echo "Encode avro file for day $DAY_BEFORE"
-java -jar /usr/libexec/ar-compute/avro/avro_encoder.jar /usr/libexec/ar-compute/avro/consumer_detail.avsc /tmp/avro/ar-consumer_log_$DAY_BEFORE.min /tmp/avro/ar-consumer_log_$DAY_BEFORE.avro
+java -jar /usr/libexec/ar-compute/lib/avro/avro_encoder.jar /usr/libexec/ar-compute/lib/avro/consumer_detail.avsc /tmp/avro/ar-consumer_log_$DAY_BEFORE.min /tmp/avro/ar-consumer_log_$DAY_BEFORE.avro
 echo "Encode avro file for day $DAY_TARGET"
-java -jar /usr/libexec/ar-compute/avro/avro_encoder.jar /usr/libexec/ar-compute/avro/consumer_detail.avsc /tmp/avro/ar-consumer_log_$DAY_TARGET.min /tmp/avro/ar-consumer_log_$DAY_TARGET.avro
+java -jar /usr/libexec/ar-compute/lib/avro/avro_encoder.jar /usr/libexec/ar-compute/lib/avro/consumer_detail.avsc /tmp/avro/ar-consumer_log_$DAY_TARGET.min /tmp/avro/ar-consumer_log_$DAY_TARGET.avro
 # Clean HDFS directory 
 echo "clean HDFS ../tmp/avro"
 hadoop fs -mkdir -p ./tmp/avro
@@ -40,7 +40,7 @@ hadoop fs -put /tmp/avro/ar-consumer_log_$DAY_BEFORE.avro ./tmp/avro
 hadoop fs -put /tmp/avro/ar-consumer_log_$DAY_TARGET.avro ./tmp/avro
 # Clean MongoDB from data
 echo "MongoDB: Delete status_metric data for day $DAY_TARGET"
-/usr/libexec/ar-compute/avro/mongo_status_date_delete.py $DAY_TARGET
+/usr/libexec/ar-compute/lib/avro/mongo_status_date_delete.py $DAY_TARGET
 
 # Pig launch for sites
 echo "Launch site info upload"

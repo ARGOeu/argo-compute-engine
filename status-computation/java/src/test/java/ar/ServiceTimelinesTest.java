@@ -33,6 +33,10 @@ public class ServiceTimelinesTest {
 		//Prepare Resource File
 		URL resJsonFile = OpsManagerTest.class.getResource("/ops/EGI-algorithm.json");
 		File jsonFile = new File(resJsonFile.toURI());
+		
+		//Prepare Resource File
+		URL avpFilePath = OpsManagerTest.class.getResource("/ops/ap1.json");
+		File avpJson = new File(avpFilePath.toURI());
 		// Instatiate class
 		
 		String jsonStr = IOUtils.toString(this.getClass().getResourceAsStream("/ar/service_timeline.json"),"UTF-8");
@@ -40,9 +44,10 @@ public class ServiceTimelinesTest {
 		
 		Tuple cur = tf.newTuple();
 		Tuple inpTuple = JsonToPig.jsonToTuple(jsonStr);
-		ServiceTimelines st = new ServiceTimelines("","","local");
+		ServiceTimelines st = new ServiceTimelines("","","test","1440","5");
 	   
-		st.opsMgr.openFile(jsonFile);
+		st.apsMgr.loadJson(avpJson);
+		st.opsMgr.loadJson(jsonFile);
 		cur = st.exec(inpTuple);
 		
 		Tuple expTuple = tf.newTuple();

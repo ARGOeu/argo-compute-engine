@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
@@ -17,9 +19,12 @@ import org.apache.avro.io.DatumReader;
 
 
 
+
+
 public class GroupsOfGroups {
 
 private ArrayList<GroupItem> list;
+private ArrayList<GroupItem> fList;
 	
 	
 	private class GroupItem
@@ -48,7 +53,8 @@ private ArrayList<GroupItem> list;
 	}
 	
 	public GroupsOfGroups(){
-		list = new ArrayList<GroupItem>();
+		this.list = new ArrayList<GroupItem>();
+		this.fList = new ArrayList<GroupItem>();
 	}
 	
     public int insert(String type, String group, String subgroup, HashMap<String,String> tags){
@@ -57,9 +63,26 @@ private ArrayList<GroupItem> list;
     	return 0; //All good
     }
     
+    public HashMap<String,String> getGroupTags(String type, String subgroup)
+    {
+    	for (GroupItem item : this.fList)
+    	{
+    		if (item.type.equals(type) && item.subgroup.equals(subgroup))
+    		{
+    			return item.tags; 
+    		}
+    	}
+    	
+    	return null;
+    }
+    
+    public int count(){
+    	return this.fList.size();
+    }
+    
     public String getGroup(String type, String subgroup)
     {
-    	for (GroupItem item : list)
+    	for (GroupItem item : this.fList)
     	{
     		if (item.type.equals(type) && item.subgroup.equals(subgroup))
     		{
@@ -70,7 +93,51 @@ private ArrayList<GroupItem> list;
     	return null;
     }
     
+    public void unfilter(){
+    	this.fList.clear();
+    	for (GroupItem item: this.list)
+    	{
+    		this.fList.add(item);
+    	}
+    }
+    
+    public void filter(TreeMap<String,String> fTags)
+    {
+    	this.fList.clear();
+    	boolean trim;
+    	for (GroupItem item : this.list)
+    	{
+    		trim = false;
+    		HashMap<String,String>itemTags = item.tags;
+    		for (Entry<String,String> fTagItem : fTags.entrySet()) {
+    			
+    			if (itemTags.containsKey(fTagItem.getKey())){
+    				if (itemTags.get(fTagItem.getKey()).equalsIgnoreCase(fTagItem.getValue()) == false)
+    				{
+    					trim=true;
+    				}
+    			
+    			}
+    		}
+    		
+    		if (trim==false) {
+    			fList.add(item);
+    		}
+    	}
+    }
 	
+    public boolean checkSubGroup(String subgroup)
+    {
+    	for (GroupItem item : fList)
+    	{
+    		if (item.subgroup.equals(subgroup)){
+    			return true;
+    		}
+    	}
+    	
+    	return false;
+    }
+    
 	public int loadAvro(File avroFile) throws IOException{
 		
 	
@@ -122,6 +189,8 @@ private ArrayList<GroupItem> list;
 			
 		} // end of avro rows
 	
+		this.unfilter();
+		
 		dataFileReader.close();
 		
 		return 0; // allgood

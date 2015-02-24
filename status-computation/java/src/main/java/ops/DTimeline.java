@@ -27,6 +27,15 @@ public class DTimeline {
 		Arrays.fill(samples, -1);
 	}
 	
+	public DTimeline(int period, int interval)	{
+		this.startState = -1;
+		this.sPeriod = period;			// given in minutes
+		this.sInterval = interval;				// every ? minutes;
+		this.samples = new int[period/interval]; //? samples
+		this.inputStates = new TreeMap<Integer,Integer>();
+		Arrays.fill(samples, -1);
+	}
+	
 	
 	
 	public void setSampling(int period, int interval) {
@@ -61,6 +70,39 @@ public class DTimeline {
 		return this.startState;
 	}
 	
+	public void fill(int stateInt, String startTs, String endTs, String targetDate) throws ParseException
+	{
+		//Find begin state
+		int start;
+		int end;
+		
+		SimpleDateFormat dmy = new SimpleDateFormat("yyyy-MM-dd");
+		Date startDt = dmy.parse(startTs);
+    	Date endDt = dmy.parse(endTs);
+    	Date targetDt = dmy.parse(targetDate);
+		
+		
+    	if (startDt.before(targetDt) &&  !(( startTs.substring(0, startTs.indexOf("T")).equals(targetDate)))) {
+    		start = 0;
+    	}
+    	else {
+    		start = tsInt(startTs);
+    	}
+    	
+    	if (endDt.after(targetDt) && !(( endTs.substring(0, endTs.indexOf("T")).equals(targetDate)))){
+    		end = this.samples.length;
+    	}
+    	else {
+    		end = tsInt(endTs);
+    	}
+    	
+    	for (int i=start;i<=end;i++) 
+    	{
+    		this.samples[i] = stateInt;
+    	}
+    	
+	}
+	
 	public int tsInt(String timestamp) throws ParseException{
 	
 		SimpleDateFormat w3c_date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -86,8 +128,12 @@ public class DTimeline {
 		this.inputStates.put(slot,state);
 	}
 	
-	public void finalize()
+	public void finalize(int missingStart)
 	{
+		if (this.startState == -1)
+		{
+			this.startState = missingStart;
+		}
 		int prev_state = this.startState;
 		int prev_slot = 0;
 		for (int item : this.inputStates.keySet())

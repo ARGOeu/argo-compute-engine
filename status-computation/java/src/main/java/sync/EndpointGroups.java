@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
@@ -16,9 +18,13 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
 
 
+
+
+
 public class EndpointGroups {
 
 	private ArrayList<EndpointItem> list;
+	private ArrayList<EndpointItem> fList;
 	
 	
 	private class EndpointItem
@@ -50,7 +56,9 @@ public class EndpointGroups {
 	}
 	
 	public EndpointGroups(){
-		list = new ArrayList<EndpointItem>();
+		this.list = new ArrayList<EndpointItem>();
+		this.fList = new ArrayList<EndpointItem>();
+		
 	}
 	
     public int insert(String type, String group, String service, String hostname, HashMap<String,String> tags){
@@ -61,7 +69,8 @@ public class EndpointGroups {
     
     public boolean checkEndpoint(String hostname, String service)
     {
-    	for (EndpointItem item : list)
+    	
+    	for (EndpointItem item : fList)
     	{
     		if (item.hostname.equals(hostname) && item.service.equals(service))
     		{
@@ -74,7 +83,8 @@ public class EndpointGroups {
     
     public String getGroup(String type, String hostname, String service)
     {
-    	for (EndpointItem item : list)
+    	
+    	for (EndpointItem item : fList)
     	{
     		if (item.type.equals(type) && item.hostname.equals(hostname) && item.service.equals(service))
     		{
@@ -84,7 +94,70 @@ public class EndpointGroups {
     	
     	return null;
     }
+    
+    public HashMap<String,String>  getGroupTags(String type, String hostname, String service)
+    {
+    	
+    	for (EndpointItem item : fList)
+    	{
+    		if (item.type.equals(type) && item.hostname.equals(hostname) && item.service.equals(service))
+    		{
+    			return item.tags; 
+    		}
+    	}
+    	
+    	return null;
+    }
+    
+    public int count(){
+    	return this.fList.size();
+    }
+    
+    public void unfilter(){
+    	this.fList.clear();
+    	for (EndpointItem item: this.list)
+    	{
+    		this.fList.add(item);
+    	}
+    }
 	
+    public void filter(TreeMap<String,String> fTags) {
+    	this.fList.clear();
+    	boolean trim;
+    	for (EndpointItem item : this.list)
+    	{
+    		trim = false;
+    		HashMap<String,String>itemTags = item.tags;
+    		for (Entry<String,String> fTagItem : fTags.entrySet()) {
+    			
+    			if (itemTags.containsKey(fTagItem.getKey())){
+    				// First Check binary tags as Y/N 0/1
+    				
+    				if (fTagItem.getValue().equalsIgnoreCase("y") || fTagItem.getValue().equalsIgnoreCase("n"))
+    				{
+    					String binValue="";
+    					if (fTagItem.getValue().equalsIgnoreCase("y")) binValue = "1";
+    					if (fTagItem.getValue().equalsIgnoreCase("n")) binValue = "0";
+    					
+    					if (itemTags.get(fTagItem.getKey()).equalsIgnoreCase(binValue) == false )
+    					{
+    						trim=true;
+    					}
+    				}
+    				else if (itemTags.get(fTagItem.getKey()).equalsIgnoreCase(fTagItem.getValue()) == false)
+    				{
+    					trim=true;
+    				}
+    			
+    			}
+    		}
+    		
+    		if (trim==false) {
+    			fList.add(item);
+    		}
+    	}
+    }
+    
 	public int loadAvro(File avroFile) throws IOException{
 	
 		// Prepare Avro File Readers
@@ -135,6 +208,8 @@ public class EndpointGroups {
 			
 		} // end of avro rows
 	
+		this.unfilter();
+		
 		dataFileReader.close();
 		
 		return 0; // allgood

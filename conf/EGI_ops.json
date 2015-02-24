@@ -12,7 +12,6 @@
   
   "default_down": "DOWNTIME",
   "default_missing": "MISSING",
-  "default_unknown": "UNKNOWN",
   
   "operations":
   {
@@ -37,7 +36,7 @@
       { "A":"MISSING",  "B":"CRITICAL", "X":"CRITICAL" },
       { "A":"MISSING",  "B":"DOWNTIME", "X":"DOWNTIME" },
       { "A":"CRITICAL", "B":"CRITICAL", "X":"CRITICAL" },
-      { "A":"CRITICAL", "B":"DOWNTIME", "X":"DOWNTIME" },
+      { "A":"CRITICAL", "B":"DOWNTIME", "X":"CRITICAL" },
       { "A":"DOWNTIME", "B":"DOWNTIME", "X":"DOWNTIME" }
 
     ],
@@ -63,8 +62,9 @@
       { "A":"MISSING",  "B":"CRITICAL", "X":"CRITICAL" },
       { "A":"MISSING",  "B":"DOWNTIME", "X":"MISSING"  },
       { "A":"CRITICAL", "B":"CRITICAL", "X":"CRITICAL" },
-      { "A":"CRITICAL", "B":"DOWNTIME", "X":"DOWNTIME" },
+      { "A":"CRITICAL", "B":"DOWNTIME", "X":"CRITICAL" },
       { "A":"DOWNTIME", "B":"DOWNTIME", "X":"DOWNTIME" }
     ]
   } 
 }
+

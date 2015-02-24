@@ -18,6 +18,8 @@ import org.apache.pig.data.TupleFactory;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import sync.EndpointGroupsTest;
+import sync.GroupsOfGroupsTest;
 import TestIO.JsonToPig;
 
 public class EndpointTimelinesTest {
@@ -35,36 +37,36 @@ public class EndpointTimelinesTest {
 		File jsonFile = new File(resJsonFile.toURI());
 		// Instatiate class
 		
-		String jsonStr = IOUtils.toString(this.getClass().getResourceAsStream("/ar/endpoint_timeline.json"),"UTF-8");
+		String jsonStr = IOUtils.toString(this.getClass().getResourceAsStream("/ar/cream-ce-timeline.json"),"UTF-8");
 		TupleFactory tf = TupleFactory.getInstance();
 		
 		Tuple cur = tf.newTuple();
 		Tuple inpTuple = JsonToPig.jsonToTuple(jsonStr);
-		EndpointTimelines et = new EndpointTimelines("","","local");
+		EndpointTimelines et = new EndpointTimelines("","","","","2015-02-06","test","1440","5");
 	   
+		URL downRes = EndpointTimelinesTest.class.getResource("/avro/downtimes_test.avro");
+		File downAvro = new File(downRes.toURI());
+		
+		URL avpJsonFile = EndpointTimelines.class.getResource("/ops/ap1.json");
+		File avpFile = new File(avpJsonFile.toURI());
+		
+		URL metricRes = EndpointTimelines.class.getResource("/avro/poem_sync_test.avro");
+		File metricFile = new File(metricRes.toURI());
 		
 		
-		et.opsMgr.openFile(jsonFile);
+		et.avMgr.loadJson(avpFile);
+		et.downMgr.loadAvro(downAvro);
+		et.metricMgr.loadAvro(metricFile);
+		et.opsMgr.loadJson(jsonFile);
 		cur = et.exec(inpTuple);
 		
 		
 		
-		Tuple expTuple = tf.newTuple();
+		String curToStr="(CREAM-CE,cce.ihep.ac.cn,{(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(4),(4),(4),(4),(4),(4),(4),(4),(4),(4),(4),(4),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(4),(4),(4),(4),(4),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(4),(4),(4),(4),(4),(4),(4),(4),(4),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2)})";
+		assertTrue(curToStr.equals(cur.toString()));
 		
-		BagFactory bf = BagFactory.getInstance();
-		DataBag expBag = bf.newDefaultBag();
 		
-		for (int i=0;i<288;i++) {
-			Tuple subTuple = tf.newTuple();
-			subTuple.append(4);
-			expBag.add(subTuple);
-		}
-		
-		expTuple.append("unicore6.TargetSystemFactory");
-		expTuple.append("unicore-ui.reef.man.poznan.pl");
-		expTuple.append(expBag);
-		
-		assertTrue(expTuple.toString().equals(cur.toString()));
+		//assertTrue(expTuple.toString().equals(cur.toString()));
 	}
 
 }

@@ -6,13 +6,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import myudf.AddTopology;
 import ops.DAggregator;
-import ops.DTimeline;
 import ops.OpsManager;
 
 import org.apache.pig.EvalFunc;
@@ -25,40 +20,59 @@ import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
-import sync.EndpointGroups;
+import sync.AvailabilityProfiles;
+import sync.Downtimes;
 import sync.MetricProfiles;
-import utils.Slot;
+
 
 public class EndpointTimelines extends EvalFunc<Tuple> {
 
     public DAggregator endpointAggr;
 	public OpsManager opsMgr;
-    
+    public Downtimes downMgr;
+    public AvailabilityProfiles avMgr;
+    public MetricProfiles metricMgr;
+	
 	private TupleFactory tupFactory; 
     private BagFactory bagFactory;
     
-	private String fnMetricProfiles;
+	private String fnAvProfiles;
 	private String fnOps;
-	
+	private String fnDown;
+	private String fnMetricProfiles;
 	private String targetDate;
+	
+	// Sampling config
+	private int sPeriod;
+	private int sInterval;
 	
 	private String fsUsed;  // local,hdfs,cache (distrubuted_cache)
 	
 	private boolean initialized;
 	
-	public EndpointTimelines( String fnOps, String targetDate, String fsUsed) throws IOException{
+	public EndpointTimelines( String fnOps, String fnDown, String fnAvProfiles, String fnMetricProfiles, String targetDate, String fsUsed, String sPeriod, String sInterval) throws IOException{
 		// set first the filenames
 		this.fnOps = fnOps;
-		
+		this.fnDown = fnDown;
+		this.fnAvProfiles = fnAvProfiles;
+		this.fnMetricProfiles = fnMetricProfiles;
 		// set distribute cache flag
 		this.fsUsed = fsUsed;
 		
 		// set the targetDate var
 		this.targetDate = targetDate;
 	
+		// sampling
+		this.sPeriod = Integer.parseInt(sPeriod);
+		this.sInterval = Integer.parseInt(sInterval);
+		
 		// set the Structures
-		this.endpointAggr = new DAggregator();
+		this.endpointAggr = new DAggregator(this.sPeriod,this.sInterval); // Create Aggregator according to sampling freq.
 		this.opsMgr = new OpsManager();
+		this.downMgr = new Downtimes();
+		this.avMgr = new AvailabilityProfiles();
+		this.metricMgr = new MetricProfiles();
+		
 		// set up factories
 		this.tupFactory = TupleFactory.getInstance();
 		this.bagFactory = BagFactory.getInstance();
@@ -70,7 +84,17 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	public void init() throws IOException
 	{
 		if (this.fsUsed.equalsIgnoreCase("cache")){
-			this.opsMgr.openFile(new File("./ops"));
+			this.opsMgr.loadJson(new File("./ops"));
+			this.downMgr.loadAvro(new File("./down"));
+			this.avMgr.loadJson(new File("./aps"));
+			this.metricMgr.loadAvro(new File("./mps"));
+			
+		}
+		else if (this.fsUsed.equalsIgnoreCase("local")) {
+			this.opsMgr.loadJson(new File(this.fnOps));
+			this.downMgr.loadAvro(new File(this.fnDown));
+			this.avMgr.loadJson(new File(this.fnAvProfiles));
+			this.metricMgr.loadAvro(new File(this.fnMetricProfiles));
 		}
 		
 		this.initialized=true;
@@ -80,6 +104,9 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	public List<String> getCacheFiles() { 
         List<String> list = new ArrayList<String>(); 
         list.add(this.fnOps.concat("#ops"));
+        list.add(this.fnDown.concat("#down"));
+        list.add(this.fnAvProfiles.concat("#aps"));
+        list.add(this.fnMetricProfiles.concat("#mps"));
         return list; 
 	} 
 	
@@ -105,6 +132,16 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 		// Iterate the whole timeline
 		Iterator<Tuple> it_bag = bag.iterator();
 		
+		// Before reading metric messages, init expected metric timelines
+		// Only 1 profile per job
+        String mProfile = metricMgr.getProfiles().get(0);
+        // Get default missing state
+        int defMissing = this.opsMgr.getDefaultMissingInt();
+        // Iterate all metric names of profile and initiate timelines
+		for (String mName : this.metricMgr.getProfileServiceMetrics(mProfile, service)){
+			this.endpointAggr.initTimeline(mName,defMissing);
+		}
+		
 		while (it_bag.hasNext()){
 	    	Tuple cur_item = it_bag.next();
 	    	//Get timeline item info
@@ -125,8 +162,25 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	    	
 		}
 		
-		this.endpointAggr.finalizeAll();
-		this.endpointAggr.aggregate("AND",this.opsMgr); // should be supplied on outside file
+		this.endpointAggr.finalizeAll(this.opsMgr.getDefaultMissingInt());
+		
+		String aprofile = this.avMgr.getAvProfiles().get(0);
+		
+		this.endpointAggr.aggregate(this.avMgr.getMetricOp(aprofile),this.opsMgr); // should be supplied on outside file
+		
+		//Apply Downtimes if hostname is on downtime list
+		ArrayList<String> downPeriod = this.downMgr.getPeriod(hostname, service);
+		
+		if (downPeriod!=null){
+			//We have downtime declared
+			try {
+				this.endpointAggr.aggregation.fill(this.opsMgr.getDefaultDownInt(), downPeriod.get(0), downPeriod.get(1), this.targetDate);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
 		
 		//Create output Tuple
 	    Tuple output = tupFactory.newTuple();
@@ -172,7 +226,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
         
         //timeline.add(slot);
         timeline.add(statusInt);
-
+        
         Schema.FieldSchema tl = null;
         try {
             tl = new Schema.FieldSchema("timeline", timeline, DataType.BAG);

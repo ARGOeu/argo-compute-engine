@@ -23,6 +23,10 @@ public class OpsManager {
 	
 	private int[][][] truthTable;
 	
+	private String defaultDownState;
+	private String defaultMissingState;
+	private String defaultUnknownState;
+	
 	private boolean order;
 	
 	public OpsManager(){
@@ -45,6 +49,34 @@ public class OpsManager {
 		
 		this.truthTable = null;
 	}
+	
+	public String getDefaultDown()
+	{
+		return this.defaultDownState;
+	}
+	
+	public String getDefaultUnknown(){
+		return this.defaultUnknownState;
+	}
+
+	public int getDefaultUnknownInt(){
+		return this.getIntStatus(this.defaultUnknownState);
+	}
+	
+	public int getDefaultDownInt(){
+		return this.getIntStatus(this.defaultDownState);
+	}
+	
+	
+	public String getDefaultMissing()
+	{
+		return this.defaultMissingState;
+	}
+	
+	public int getDefaultMissingInt(){
+		return this.getIntStatus(this.defaultMissingState);
+	}
+	
 	
 	public void clear()
 	{
@@ -126,7 +158,7 @@ public class OpsManager {
 	
 	
 	
-	public void openFile(File json_file) throws FileNotFoundException{
+	public void loadJson(File json_file) throws FileNotFoundException{
 		// Clear data
 		this.clear();
 		
@@ -136,8 +168,9 @@ public class OpsManager {
 		JsonObject j_obj = j_element.getAsJsonObject();
 		JsonArray j_states = j_obj.getAsJsonArray("states");
 		JsonObject j_ops = j_obj.getAsJsonObject("operations");
-		
-		
+		this.defaultMissingState = j_obj.getAsJsonPrimitive("default_missing").getAsString();
+		this.defaultDownState = j_obj.getAsJsonPrimitive("default_down").getAsString();
+		this.defaultUnknownState = j_obj.getAsJsonPrimitive("default_unknown").getAsString();
 		// Collect the available states
 		for (int i=0;i<j_states.size();i++)
 		{
