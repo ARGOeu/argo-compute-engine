@@ -31,7 +31,7 @@ install --directory %{buildroot}/usr/libexec/ar-compute
 install --directory %{buildroot}/usr/libexec/ar-compute/pig
 install --directory %{buildroot}/usr/libexec/ar-compute/lib
 install --directory %{buildroot}/usr/libexec/ar-compute/lib/avro
-install --directory %{buildroot}/usr/libexec/ar-compute/lib/standalone
+install --directory %{buildroot}/usr/libexec/ar-compute/standalone
 install --directory %{buildroot}/var/lib/ar-compute
 install --directory %{buildroot}/var/log/ar-compute
 install --directory %{buildroot}/etc
