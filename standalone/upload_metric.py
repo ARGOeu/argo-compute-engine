@@ -54,8 +54,8 @@ if __name__ == "__main__":
 
 	# Feed Argument parser with the description of the 3 arguments we need (input_file,output_file,schema_file)
 	arg_parser = ArgumentParser(description="Uploading metric data to hdfs")
-	arg_parser.add_argument("-d","--date",help="raw text input file", dest="date", metavar="DATE", required="TRUE")
-	arg_parser.add_argument("-t","--tenant",help="output avro file ", dest="tenant", metavar= "STRING", required="TRUE")
+	arg_parser.add_argument("-d","--date",help="date", dest="date", metavar="DATE", required="TRUE")
+	arg_parser.add_argument("-t","--tenant",help="tenant owner ", dest="tenant", metavar= "STRING", required="TRUE")
 
 	# Parse the command line arguments accordingly and introduce them to main...
 	sys.exit(main(arg_parser.parse_args()))
