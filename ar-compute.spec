@@ -31,9 +31,11 @@ install --directory %{buildroot}/usr/libexec/ar-compute
 install --directory %{buildroot}/usr/libexec/ar-compute/pig
 install --directory %{buildroot}/usr/libexec/ar-compute/lib
 install --directory %{buildroot}/usr/libexec/ar-compute/lib/avro
+install --directory %{buildroot}/usr/libexec/ar-compute/lib/standalone
 install --directory %{buildroot}/var/lib/ar-compute
 install --directory %{buildroot}/var/log/ar-compute
 install --directory %{buildroot}/etc
+install --directory %{buildroot}/etc/ar-compute
 
 install --mode 755 helpers/ar-compute.py                        %{buildroot}/usr/libexec/ar-compute/
 install --mode 644 status-computation/pig/*                     %{buildroot}/usr/libexec/ar-compute/pig/
@@ -41,8 +43,10 @@ install --mode 644 status-computation/lib/avro/*                %{buildroot}/usr
 install --mode 644 status-computation/lib/*.jar                 %{buildroot}/usr/libexec/ar-compute/lib/
 install --mode 644 status-computation/lib/*.sh                  %{buildroot}/usr/libexec/ar-compute/lib/
 install --mode 644 status-computation/lib/*.py                  %{buildroot}/usr/libexec/ar-compute/lib/
+install --mode 755 standalone/*.py                              %{buildroot}/usr/libexec/ar-compute/standalone/
 install --mode 644 status-computation/java/target/MyUDF-1.0.jar %{buildroot}/usr/libexec/ar-compute/MyUDF.jar
 install --mode 644 conf/ar-compute-engine.conf                  %{buildroot}/etc/
+install --mode 644 conf/*.json                                  %{buildroot}/etc/ar-compute
 
 %clean
 cd status-computation/java
@@ -58,13 +62,15 @@ mvn clean
 %attr(0755,root,root) /usr/libexec/ar-compute/pig/status_detailed.pig
 %attr(0755,root,root) /usr/libexec/ar-compute/pig/compute-ar.pig
 %attr(0755,root,root) /usr/libexec/ar-compute/lib/*
+%attr(0755,root,root) /usr/libexec/ar-compute/standalone/*.py
 %attr(0755,root,root) /usr/libexec/ar-compute/MyUDF.jar
 %attr(0750,root,root) /var/lib/ar-compute
 %attr(0750,root,root) /var/log/ar-compute
 %attr(0644,root,root) /etc/ar-compute-engine.conf
+%attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
-* Thu Feb 12 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-3%{?dist}
+* Tue Feb 24 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-3%{?dist}
 - Whitespace fix
 - Get group name in which service belongs in a Av.Profile
 - Fix error retreaving Group Operation
@@ -73,6 +79,7 @@ mvn clean
 - Minor Refactoring
 - Add startState Parameter, Expand Tests
 - Fix insconsistencies to honor new spec deployment
+- Implement fixes for standalone version
 * Fri Feb 06 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-2%{?dist}
 - Add Support for Modular Compuation Elements
 * Tue Feb 03 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-1%{?dist}
