@@ -56,11 +56,7 @@ mvn clean
 %files
 %defattr(0644,root,root)
 %attr(0755,root,root) /usr/libexec/ar-compute/ar-compute.py
-%attr(0755,root,root) /usr/libexec/ar-compute/pig/calculator.pig
-%attr(0755,root,root) /usr/libexec/ar-compute/pig/local_calculator.pig
-%attr(0755,root,root) /usr/libexec/ar-compute/pig/sites.pig
-%attr(0755,root,root) /usr/libexec/ar-compute/pig/status_detailed.pig
-%attr(0755,root,root) /usr/libexec/ar-compute/pig/compute-ar.pig
+%attr(0755,root,root) /usr/libexec/ar-compute/pig/*.pig
 %attr(0755,root,root) /usr/libexec/ar-compute/lib/*
 %attr(0755,root,root) /usr/libexec/ar-compute/standalone/*.py
 %attr(0755,root,root) /usr/libexec/ar-compute/MyUDF.jar
