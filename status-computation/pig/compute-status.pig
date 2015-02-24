@@ -14,7 +14,7 @@ REGISTER /usr/libexec/ar-compute/lib/gson-2.2.4.jar
 REGISTER /usr/libexec/ar-compute/MyUDF.jar
 
 DEFINE f_PickEndpoints ar.PickEndpoints('$egs','$mps','$ggs','$cfg','$mode');
-DEFINE f_PrepStatus  status.PrepStatusDetails('$ggs','$egs','$aps','$cfg','$dt', '$mode');
+DEFINE f_PrepStatus  status.PrepStatusDetails('$ggs','$egs','$cfg','$dt','$mode');
 
 
 p_mdata = LOAD '$p_mdata' using org.apache.pig.piggybank.storage.avro.AvroStorage();
