@@ -16,19 +16,11 @@ def main(args=None):
 	arsync_exec = "/usr/libexec/ar-sync/"
 	arsync_lib = "/var/lib/ar-sync/"
 
-	print args.date
-	print args.tenant
-
 	date_under = args.date.replace("-","_")
-
-	print date_under
 
 	ArConfig = SafeConfigParser()
 	ArConfig.read(fn_ar_cfg)
 
-	print ArConfig.get('default','mongo_host')
-	print ArConfig.get('default','mongo_port')
-	print ArConfig.get('default','serialization')
 
 	#call prefilter
 	cmd_pref = [os.path.join(arsync_exec,'prefilter-avro'),'-d',args.date]
@@ -39,7 +31,7 @@ def main(args=None):
 	except Exception, err:
 
 		sys.stderr.write('Could not run prefilter-avro properly \n')
-		#return 1
+		return 1
 
 	#transfer prefilter to hdfs
 	hdfs_path = "./"+args.tenant+"/mdata/"
@@ -54,7 +46,7 @@ def main(args=None):
 	except Exception, err:
 
 		sys.stderr.write('Could not upload metric data to hdfs \n')
-		#return 1
+		return 1
 
 	print "Metric Data of tenant %s for date %s uploaded successfully to hdfs" % (args.tenant , args.date)
 
