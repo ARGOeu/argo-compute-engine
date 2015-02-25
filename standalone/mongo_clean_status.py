@@ -19,10 +19,35 @@ def main(args=None):
 	
 	mongo_host = ArConfig.get('default','mongo_host')
 	mongo_port = ArConfig.get('default','mongo_port')
-	client = MongoClient(str(mongo_host), int(mongo_port))
-	db = client.AR
+
+	mongo_dest = ArConfig.get('datastore_mapping','sdetail_dest')
+	
+	#Split db.collection path string to obtain database name and collection name
+	mongo_dest = mongo_dest.split('.')
+	db_status = mongo_dest[0]
+	col_status = mongo_dest[1]
+
+	#Creating a date integer for use in the database queries
 	date_int = int(args.date.replace("-",""))
-	db.status_metric.remove({"dt": date})
+
+	print "Connecting to mongo server: %s:%s" % (mongo_host,mongo_port)
+	client = MongoClient(str(mongo_host), int(mongo_port))
+
+	print "Opening database: %s" % db_status
+	db = client[db_status]
+
+	print "Opening collection: %s" % col_status
+	col = db[col_status]
+
+	num_of_rows = col.find({"di": date_int}).count()
+	print "Found %s entries for date %s" % (num_of_rows,args.date)
+
+	if num_of_rows > 0:	
+		print "Remove entries for date: %s" % args.date 
+		col.remove({"di": date_int})
+		print "Entries Removed!"
+	else:
+		print "Zero entries found. No need to remove anything"
 
 if __name__ == "__main__":
 
