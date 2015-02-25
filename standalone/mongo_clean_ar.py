@@ -19,11 +19,64 @@ def main(args=None):
 	
 	mongo_host = ArConfig.get('default','mongo_host')
 	mongo_port = ArConfig.get('default','mongo_port')
-	client = MongoClient(str(mongo_host), int(mongo_port))
-	db = client.AR
+
+	mongo_service_dest = ArConfig.get('datastore_mapping','service_dest')
+	mongo_egroup_dest = ArConfig.get('datastore_mapping','egroup_dest')
+
+	#Split db.collection path strings to obtain database name and collection name
+	mongo_service_dest = mongo_service_dest.split('.')
+	db_service = mongo_service_dest[0]
+	col_service = mongo_service_dest[1]
+
+	mongo_egroup_dest = mongo_egroup_dest.split('.')
+	db_egroup = mongo_egroup_dest[0]
+	col_egroup = mongo_egroup_dest[1]
+
+	#Create a date integer for use in the database queries
 	date_int = int(args.date.replace("-",""))
-	db.sites.remove({"dt": date})
-	db.sfreports.remove({"dt":date})
+
+	print "Connecting to mongo server: %s:%s" % (mongo_host,mongo_port)
+	client = MongoClient(str(mongo_host), int(mongo_port))
+
+	# for service collection cleanup do the following
+	print "Regarding service a/r data..."
+
+	print "Opening database: %s" % db_service
+	db = client[db_service]
+
+	print "Opening collection: %s" % col_service
+	col = db[col_service]
+
+	num_of_rows = col.find({"di": date_int}).count()
+	print "Found %s entries for date %s" % (num_of_rows,args.date)
+
+	if num_of_rows > 0:	
+		print "Remove entries for date: %s" % args.date 
+		col.remove({"di": date_int})
+		print "Entries Removed!"
+	else:
+		print "Zero entries found. No need to remove anything"
+
+
+	# for service collection cleanup do the following
+	print "Regarding endpoint group a/r data..."
+
+	print "Opening database: %s" % db_service
+	db = client[db_egroup]
+
+	print "Opening collection: %s" % col_service
+	col = db[col_egroup]
+
+	num_of_rows = col.find({"di": date_int}).count()
+	print "Found %s entries for date %s" % (num_of_rows,args.date)
+
+	if num_of_rows > 0:	
+		print "Remove entries for date: %s" % args.date 
+		col.remove({"di": date_int})
+		print "Entries Removed!"
+	else:
+		print "Zero entries found. No need to remove anything"
+
 
 if __name__ == "__main__":
 
