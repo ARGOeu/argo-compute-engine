@@ -68,7 +68,7 @@ public class WeightGroups {
     		}
     	}
     	
-    	return -1;
+    	return 0;
     	
     }
     
