@@ -3,7 +3,7 @@
 # arg parsing related imports
 import os, sys
 from datetime import datetime, timedelta
-from subprocess import check_call
+from subprocess import call
 from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser
 
@@ -15,6 +15,7 @@ def main(args=None):
 	arsync_lib = "/var/lib/ar-sync/"
 	arcomp_conf = "/etc/ar-compute/"
 	arcomp_exec = "/usr/libexec/ar-compute/"
+	stdl_exec = "/usr/libexec/ar-compute/standalone"
 	pig_script_path = "/usr/libexec/ar-compute/pig/"
 
 	actual_date = datetime.strptime(args.date,'%Y-%m-%d')
@@ -31,15 +32,19 @@ def main(args=None):
 	mongo_port = ArConfig.get('default','mongo_port')
 	mongo_dest = ArConfig.get('datastore_mapping','sdetail_dest')
 	ar_mode = ArConfig.get('default','mode')
-	
+	job_set = ArConfig.get("jobs","job_set")
+	job_set = job_set.split(',')
+
+	# check if sync_data must be cleaned in hdfs
+	sync_clean = ArConfig.get('default','sync_clean');	
 
 	# Proposed hdfs pathways
 	hdfs_mdata_path = './' + args.tenant + "/mdata/"
-	hdfs_sync_path = './' + args.tenant + "/sync/" + args.job + "/" 
+	hdfs_sync_path = './scratch/sync/' + args.tenant + "/" + job_set[0] + "/" + date_under + "/" 
 
 	# Proposed local pathways
 	local_mdata_path = arsync_lib
-	local_sync_path = arsync_lib + args.tenant + "/" + args.job + "/"
+	local_sync_path = arsync_lib + args.tenant + "/" + job_set[0] + "/"
 	local_cfg_path = arcomp_conf 
 
 	if ar_mode == 'cluster':
@@ -59,10 +64,11 @@ def main(args=None):
 
 	pig_params['mdata'] = mdata_path + 'prefilter_' + date_under + '.avro';
 	pig_params['p_mdata'] = mdata_path + 'prefilter_' + prev_date_under + '.avro';
-	pig_params['egs'] = sync_path + "group_endpoints_" + date_under + '.avro';
-	pig_params['ggs'] = sync_path + "group_groups_" + date_under + '.avro';
-	pig_params['mps'] = sync_path + "poem_sync_" + date_under + '.avro';
-	pig_params['cfg'] = cfg_path + args.tenant + "_" + args.job + '_cfg.json';
+	pig_params['egs'] = sync_path + 'group_endpoints.avro';
+	pig_params['ggs'] = sync_path + 'group_groups.avro';
+	pig_params['mps'] = sync_path + 'poem_sync.avro';
+	pig_params['cfg'] = cfg_path + args.tenant + '_' + job_set[0] + '_cfg.json';
+	pig_params['aps'] = cfg_path + args.tenant + '_' + job_set[0] + '_ap.json';
 	pig_params['dt'] = args.date 
 	pig_params['mode'] = mode
 	pig_params['n_eg'] = ArConfig.get('datastore_mapping','n_eg')
@@ -70,6 +76,7 @@ def main(args=None):
 	pig_params['n_alt'] = ArConfig.get('datastore_mapping','n_alt')
 	pig_params['n_altf'] = ArConfig.get('datastore_mapping','n_altf') 
 	pig_params['sd_map'] = ArConfig.get('datastore_mapping','sd_map')
+	pig_params['flt'] = '0'
 	pig_params['mongo_status_detail'] = 'mongodb://' + mongo_host + ':' + mongo_port + '/' + mongo_dest;
 	
 	cmd_pig = []
@@ -91,15 +98,33 @@ def main(args=None):
 	cmd_pig.append('-f')
 	cmd_pig.append(pig_script_path+'compute-status.pig')
 
-	try:
-		check_call(cmd_pig)
-		
-	except Exception, err:
-		sys.stderr.write('Error during execution of pig job \n')
-		return 1
+	# Command to clean a/r data from mongo
+	cmd_clean_mongo_status = [os.path.join(stdl_exec,"mongo_clean_status.py"),'-d',args.date]
 
+	# Command to upload sync data to hdfs
+	cmd_upload_sync = [os.path.join(stdl_exec,"upload_sync.py"),'-d',args.date,'-t',args.tenant,'-j',job_set[0]]
 
-	print "Excution of job %s for tenant %s for date %s completed!" % (args.job , args.tenant, args.date)
+	# Command to clean hdfs data
+	cmd_clean_sync = ['hadoop','fs','-rm','-r',hdfs_sync_path]
+
+	# Upload data to hdfs
+	print "Uploading sync data to hdfs..."
+	call(cmd_upload_sync)
+
+	# Clean data from mongo
+	print "Cleaning data from mongodb"
+	call(cmd_clean_mongo_status)
+
+	# Call pig
+	print "Submitting pig compute a/r job..."
+	call(cmd_pig)
+
+	# Cleaning hdfs sync data 
+	if sync_clean == "true":
+		print "System configured to clean sync hdfs data after job"
+		call(cmd_clean_sync)
+
+	print "Excution of status job for tenant %s for date %s completed!" % ( args.tenant, args.date)
 
 if __name__ == "__main__":
 
@@ -107,6 +132,5 @@ if __name__ == "__main__":
 	arg_parser = ArgumentParser(description="Initiate a status detail job")
 	arg_parser.add_argument("-d","--date",help="date", dest="date", metavar="DATE", required="TRUE")
 	arg_parser.add_argument("-t","--tenant",help="tenant owner ", dest="tenant", metavar= "STRING", required="TRUE")
-	arg_parser.add_argument("-j","--job",help="job name ", dest="job", metavar= "STRING", required="TRUE")
 	# Parse the command line arguments accordingly and introduce them to main...
 	sys.exit(main(arg_parser.parse_args()))
