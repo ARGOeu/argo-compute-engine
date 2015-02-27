@@ -28,20 +28,21 @@ def main(args=None):
 	#Command to upload the prefilter data
 	cmd_upload_metric = [os.path.join(sdl_exec,"upload_metric.py"),'-d',args.date,'-t',tenant]
 
-	print "upload metric data to hdfs"
+	print "UPLOAD METRIC DATA TO HDFS"
 	call(cmd_upload_metric)
 
 	#Command to submit job status detail
-	cmd_job_status = [os.path.join(sdl_exec,"job-status.py"),'-d',args.date,'-t',tenant,'-j',job_set[0]]
 
-	print "Calculate status detail"
+	cmd_job_status = [os.path.join(sdl_exec,"job_status_detail.py"),'-d',args.date,'-t',tenant]
+
+	print "CALCULATE STATUS DETAIL"
 	call(cmd_job_status)
 
 	print "Iterate over a/r jobs and submit them"
 	#For each job genereate ar
 	for item in job_set:
 
-		cmd_job_ar = [os.path.join(sdl_exec,"job-ar.py"),'-d',args.date,'-t',tenant,'-j',item]
+		cmd_job_ar = [os.path.join(sdl_exec,"job_ar.py"),'-d',args.date,'-t',tenant,'-j',item]
 		call(cmd_job_ar)
 
 if __name__ == "__main__":
