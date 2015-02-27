@@ -2,9 +2,34 @@
 
 # arg parsing related imports
 import os, sys
+from datetime import datetime, timedelta
 from subprocess import call
 from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser
+
+
+def getSyncFile(dt,prefix,postfix,splitstr):
+	days_back=0
+	while True:
+		target_dt = dt - timedelta(days=days_back)
+		date_split = target_dt.strftime('%Y'+splitstr+'%m'+splitstr+'%d')
+		file_path = prefix + date_split + postfix
+		
+		print "Check if %s exists..." % file_path
+
+		if (os.path.exists(file_path)):
+			print "True"
+			return file_path
+		else:
+			days_back = days_back + 1
+			print "False, try %s days back" + str(days_back)
+
+		if days_back > 3:
+			print "ERROR: Too many days without a file..."
+			sys.exit(1)
+
+
+
 
 def main(args=None):
 
@@ -14,19 +39,21 @@ def main(args=None):
 	arsync_lib = "/var/lib/ar-sync/"
 	arcomp_conf = "/etc/ar-compute/"
 
+
+	actual_date = datetime.strptime(args.date,'%Y-%m-%d')
+
 	# Create a second date used by the file formats
 	date_under = args.date.replace("-","_")
+
+
+	
 
 	# Initiate config file parser to read global ar-compute-engine.conf 
 	ArConfig = SafeConfigParser()
 	ArConfig.read(fn_ar_cfg)
 	
 	# Compose needed sync filenames using the correct prefixes, dates and file extensions (avro/json)
-	fn_egroups = 'group_endpoints_' + date_under + '.avro'
-	fn_ggroups = 'group_groups_' + date_under + '.avro'
-	fn_downtimes = 'downtimes_' + args.date + '.avro'
-	fn_weights = 'weights_sync_'+ date_under + '.avro'
-	fn_mps = 'poem_sync_' + date_under + '.avro'
+
 	fn_ops = args.tenant + '_ops.json'
 	fn_aps = args.tenant + '_' + args.job + '_ap.json'
 	fn_cfg = args.tenant + '_' + args.job + '_cfg.json'
@@ -41,23 +68,25 @@ def main(args=None):
 	# arsync job = /var/lib/ar-sync/tenant/job/...
 	arsync_job = arsync_lib + args.tenant + '/' + args.job + '/'
 
+
+	# Call downtimes latest info
+	cmd_call_downtimes = [os.path.join(arsync_exec,'downtime-sync'),'-d',args.date]
+	print "Calling downtime sync to give us latest downtime info"
+	call(cmd_call_downtimes)
+
 	# Compose the local paths for files (paths+filenames)
-	local_egroups = os.path.join(arsync_job,fn_egroups)
-	local_ggroups = os.path.join(arsync_job,fn_ggroups)
-	local_downtimes = os.path.join(arsync_lib,fn_downtimes)
-	local_weights = os.path.join(arsync_job,fn_weights)
-	local_mps = os.path.join(arsync_job,fn_mps)
+	local_egroups = getSyncFile(actual_date, os.path.join(arsync_job,"group_endpoints_") , '.avro','_')
+	local_ggroups = getSyncFile(actual_date, os.path.join(arsync_job,"group_groups_") , '.avro','_')
+	local_weights = getSyncFile(actual_date, os.path.join(arsync_job,"weights_sync_") , '.avro','_')
+	local_mps = getSyncFile(actual_date, os.path.join(arsync_job,"poem_sync_"), '.avro','_')
+	local_downtimes = getSyncFile(actual_date, os.path.join(arsync_lib,"downtimes_"), '.avro','-')
+
 	local_aps = os.path.join(arcomp_conf,fn_aps)
 	local_ops = os.path.join(arcomp_conf,fn_ops)
 	local_cfg = os.path.join(arcomp_conf,fn_cfg)
 	local_rec = os.path.join(arcomp_conf,fn_rec)
 
 	# Check filenames if exist
-	print "Check if %s exists: %s" % (local_egroups,os.path.exists(local_egroups))
-	print "Check if %s exists: %s" % (local_ggroups,os.path.exists(local_ggroups))
-	print "Check if %s exists: %s" % (local_downtimes,os.path.exists(local_downtimes))
-	print "Check if %s exists: %s" % (local_weights,os.path.exists(local_weights))
-	print "Check if %s exists: %s" % (local_mps,os.path.exists(local_mps))
 	print "Check if %s exists: %s" % (local_aps,os.path.exists(local_aps))
 	print "Check if %s exists: %s" % (local_ops,os.path.exists(local_ops))
 	print "Check if %s exists: %s" % (local_cfg,os.path.exists(local_cfg))
@@ -69,15 +98,16 @@ def main(args=None):
 	# Establish new scratch sync directory in hdfs for this job
 	cmd_estHdfs = ['hadoop','fs','-mkdir','-p',hdfs_dest]
 	# Transfer endpoint groups topo from local to hdfs
-	cmd_putEgroups =  ['hadoop','fs','-put','-f',local_egroups,hdfs_dest]
+	cmd_putEgroups =  ['hadoop','fs','-put','-f',local_egroups,hdfs_dest+'group_endpoints.avro']
 	# Transfer group of groups topo from local to hdfs 
-	cmd_putGgroups = ['hadoop','fs','-put','-f',local_ggroups,hdfs_dest]
+	cmd_putGgroups = ['hadoop','fs','-put','-f',local_ggroups,hdfs_dest+'group_groups.avro']
 	# Transfer weight factors from local to hdfs
-	cmd_putWeights = ['hadoop','fs','-put','-f',local_weights,hdfs_dest]
-	# Transfer downtime info from local to hdfs
-	cmd_putDowntimes = ['hadoop','fs','-put','-f',local_downtimes,hdfs_dest]
+	cmd_putWeights = ['hadoop','fs','-put','-f',local_weights,hdfs_dest+'weights_sync.avro']
 	# Transfer metric profile from local to hdfs
-	cmd_putMps =  ['hadoop','fs','-put','-f',local_mps,hdfs_dest]
+	cmd_putMps =  ['hadoop','fs','-put','-f',local_mps,hdfs_dest+'poem_sync.avro']
+	# Transfer downtime info from local to hdfs
+	cmd_putDowntimes = ['hadoop','fs','-put','-f',local_downtimes,hdfs_dest+'downtimes.avro']
+	
 	# Transfer availability profile from local to hdfs
 	cmd_putAps = ['hadoop','fs','-put','-f',local_aps,hdfs_dest]
 	# Transfer operations from local to hdfs 
