@@ -13,7 +13,7 @@ REGISTER /usr/libexec/ar-compute/lib/gson-2.2.4.jar
 
 REGISTER /usr/libexec/ar-compute/MyUDF.jar
 
-DEFINE f_PickEndpoints ar.PickEndpoints('$egs','$mps','$ggs','$cfg','$mode');
+DEFINE f_PickEndpoints ar.PickEndpoints('$egs','$mps','$aps','$ggs','$cfg', '$flt' , '$mode');
 DEFINE f_EndpointTl ar.EndpointTimelines('$ops','$dts', '$aps', '$mps', '$dt','$mode','$s_period','$s_interval');
 DEFINE f_MetricTl ar.MetricTimelines('$ops','$dt','$mode','$s_period','$s_interval');
 DEFINE f_AddGroupInfo ar.AddGroupInfo('$egs','$ggs','$name_eg','$mode');

@@ -210,14 +210,27 @@ public class AvailabilityProfiles {
 		return null;
 	}
 	
-	public String getGroupByService(String avProfile, String Service) {
+	public String getGroupByService(String avProfile, String service) {
 	
 		if (this.list.containsKey(avProfile)){
 			
-			return this.list.get(avProfile).serviceIndex.get(Service);
+			return this.list.get(avProfile).serviceIndex.get(service);
 			
 		}
-		return Service;
+		return null;
+		
+	}
+	
+	public boolean checkService(String avProfile, String service) {
+		
+		if (this.list.containsKey(avProfile)){
+			
+			if (this.list.get(avProfile).serviceIndex.containsKey(service)){
+				return true;
+			}
+			
+		}
+		return false;
 		
 	}
 	

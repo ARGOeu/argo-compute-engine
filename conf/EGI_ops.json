@@ -12,6 +12,7 @@
   
   "default_down": "DOWNTIME",
   "default_missing": "MISSING",
+  "default_unknown": "UNKNOWN",
   
   "operations":
   {
