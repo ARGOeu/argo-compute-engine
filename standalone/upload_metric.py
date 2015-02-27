@@ -2,7 +2,7 @@
 
 # arg parsing related imports
 import os, sys
-from subprocess import check_call
+from subprocess import call
 from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser
 
@@ -21,32 +21,41 @@ def main(args=None):
 	ArConfig = SafeConfigParser()
 	ArConfig.read(fn_ar_cfg)
 
+	prefilter_clean = ArConfig.get('default','prefilter_clean')
 
 	#call prefilter
 	cmd_pref = [os.path.join(arsync_exec,'prefilter-avro'),'-d',args.date]
 	
-
-	try:
-		check_call(cmd_pref)
-	except Exception, err:
-
-		sys.stderr.write('Could not run prefilter-avro properly \n')
-		return 1
+	print "Calling prefilter-avro for date:%s" % args.date 
+	call(cmd_pref)
 
 	#transfer prefilter to hdfs
 	hdfs_path = "./"+args.tenant+"/mdata/"
 	fn_prefilter = "prefilter_"+date_under+".avro"
+	local_prefilter = os.path.join(arsync_lib,fn_prefilter)
 
+	print "Check if produced %s exists: %s" % (local_prefilter,os.path.exists(local_prefilter))
+
+	# Command to establish tentant's metric data hdfs folder 
+	cmd_hdfs_mkdir = ['hadoop','fs','-mkdir','-p',hdfs_path]
 	
+	# Put file to hdfs destination
+	cmd_hdfs = ['hadoop','fs','-put','-f',local_prefilter,hdfs_path]
 
-	cmd_hdfs = ['hadoop','fs','-put','-f',os.path.join(arsync_lib,fn_prefilter),hdfs_path]
+	# Command to clear prefilter data after hdfs transfer
+	cmd_clean = ['rm',local_prefilter]
 
-	try:
-		check_call(cmd_hdfs)
-	except Exception, err:
 
-		sys.stderr.write('Could not upload metric data to hdfs \n')
-		return 1
+	print "Establish if not present hdfs metric data directory"
+	call(cmd_hdfs_mkdir)
+
+	print "Transfer files to hdfs"
+	call(cmd_hdfs)
+
+	if prefilter_clean == "true":
+		print "System configured to clean prefilter data after transfer"
+		call(cmd_clean)
+
 
 	print "Metric Data of tenant %s for date %s uploaded successfully to hdfs" % (args.tenant , args.date)
 
