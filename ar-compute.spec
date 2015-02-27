@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
 Version: 1.6.0
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -66,6 +66,19 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
+* Fri Feb 27 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-4%{?dist}
+- Correct Cloudmon job name in global config
+- Fix minor issues add more verbosity
+- Add forgotten default_unknown entry from ops file
+- Optimize filtering of metric data by using also availability profile info
+- Minor changes to pig scripts for optimization of metric data filtering
+- Add some cleanup paramateres to ar-compute-engine.conf
+- Add Verbosity,clean up parameters and minor fixes to init scripts
+- Fix weight file to be referenced from inside job folder
+- Init script fixes
+- Add abil. to lookback up to 5 days for sync files in job folders
+- Simplify job daily cycle script
+- Add script to archive monthly sync data to hdfs (per tenant/all jobs)
 * Tue Feb 24 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-3%{?dist}
 - Whitespace fix
 - Get group name in which service belongs in a Av.Profile
