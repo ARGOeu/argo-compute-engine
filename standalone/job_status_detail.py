@@ -116,7 +116,7 @@ def main(args=None):
 	call(cmd_clean_mongo_status)
 
 	# Call pig
-	print "Submitting pig compute a/r job..."
+	print "Submitting pig compute status detail job..."
 	call(cmd_pig)
 
 	# Cleaning hdfs sync data 

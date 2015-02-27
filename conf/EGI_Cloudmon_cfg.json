@@ -5,10 +5,11 @@
   "ggroup":"NGI",
   "altg":"ops",
   "weight":"hepspec",
+  "aprofile":"egi-fedcloud",
   "egroup_tags":{
     "scope":"EGI",
-    "production":"1",
-    "monitored":"1"
+    "production":"Y",
+    "monitored":"Y"
   },
   "ggroup_tags":{
     "scope":"EGI",
