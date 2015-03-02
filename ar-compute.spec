@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
 Version: 1.6.0
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -66,6 +66,8 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
+* Mon Mar 02 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-6%{?dist}
+- Fix typo in ar-compute-engine.conf 
 * Fri Feb 27 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-5%{?dist}
 - Fix config filenames. Add More Verbosity
 - Correct Cloudmon job name in global config
