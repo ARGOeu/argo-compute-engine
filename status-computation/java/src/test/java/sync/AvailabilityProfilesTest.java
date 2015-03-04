@@ -30,7 +30,7 @@ public class AvailabilityProfilesTest {
 		// Instatiate class
 		AvailabilityProfiles avp = new AvailabilityProfiles();
 		avp.clearProfiles();
-		avp.loadProfileJson(jsonFile);
+		avp.loadJson(jsonFile);
 	   
 		// Check that only one availability profile was loaded
 		assertEquals("Only 1 av profile present",avp.getAvProfiles().size(),1);
@@ -77,14 +77,21 @@ public class AvailabilityProfilesTest {
 		assertEquals("accounting  list",avp.getProfileGroupServices("ap1", "information"),expServices);
 		
 		// Check Various Service Instances operation
-		assertEquals("group compute: CREAM-CE op",avp.getProfileGroupServiceOp("ap1", "compute", "CREAM-CE"),"AND");
-		assertEquals("group compute: ARC-CE op",avp.getProfileGroupServiceOp("ap1", "compute", "ARC-CE"),"AND");
-		assertEquals("group storage: SRMv2 op",avp.getProfileGroupServiceOp("ap1", "storage", "SRM"),"AND");
-		assertEquals("group storage: SRM op",avp.getProfileGroupServiceOp("ap1", "storage", "SRMv2"),"AND");
-		assertEquals("group information: Site-BDII op",avp.getProfileGroupServiceOp("ap1", "information", "Site-BDII"),"AND");
+		assertEquals("group compute: CREAM-CE op",avp.getProfileGroupServiceOp("ap1", "compute", "CREAM-CE"),"OR");
+		assertEquals("group compute: ARC-CE op",avp.getProfileGroupServiceOp("ap1", "compute", "ARC-CE"),"OR");
+		assertEquals("group storage: SRMv2 op",avp.getProfileGroupServiceOp("ap1", "storage", "SRM"),"OR");
+		assertEquals("group storage: SRM op",avp.getProfileGroupServiceOp("ap1", "storage", "SRMv2"),"OR");
+		assertEquals("group information: Site-BDII op",avp.getProfileGroupServiceOp("ap1", "information", "Site-BDII"),"OR");
+		assertEquals("get group by service: ",avp.getGroupByService("ap1", "CREAM-CE"),"compute");
+		assertEquals("get group by service: ",avp.getGroupByService("ap1", "SRMv2"),"storage");
 		// we check for an unexpected operation
-		assertNotEquals("group compute: CREAM-CE op",avp.getProfileGroupServiceOp("ap1", "compute", "CREAM-CE"),"OR");
-	
+		assertNotEquals("group compute: CREAM-CE op",avp.getProfileGroupServiceOp("ap1", "compute", "CREAM-CE"),"AND");
+		assertNotEquals("group compute: CREAM-CE op",avp.getProfileGroupServiceOp("ap1", "informationss", "CREAM-CE"),"AND");
+		assertNotEquals("group compute: CREAM-CE op",avp.getProfileGroupServiceOp("ap1", "storage", "CREAM-CE"),"FOO");
+		// check for metric profile operations and total operation
+		assertEquals("metric profile operations: AND",avp.getMetricOp("ap1"),"AND");
+		assertEquals("total profile operations: AND",avp.getMetricOp("ap1"),"AND");
+		
        
 	}
 

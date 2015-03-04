@@ -19,9 +19,13 @@ public class AvailabilityProfiles {
 	private HashMap<String,AvProfileItem> list;
 	
 	
-	AvailabilityProfiles(){
+	
+	
+	
+	public AvailabilityProfiles(){
 		
 		this.list = new HashMap<String,AvProfileItem>();
+		
 	}
 	
 	private class AvProfileItem {
@@ -29,13 +33,16 @@ public class AvailabilityProfiles {
 		private String name;
 		private String namespace;
 		private String metricProfile;
+		private String metricOp;
 		private String groupType;
 		private String op;
 		
 		private HashMap<String,ServGroupItem> groups;
+		private HashMap<String,String> serviceIndex;
 		
 		AvProfileItem(){
 			this.groups=new HashMap<String,ServGroupItem>();
+			this.serviceIndex = new HashMap<String,String>();
 		}
 		
 		private class ServGroupItem{
@@ -63,6 +70,7 @@ public class AvailabilityProfiles {
 			if (this.groups.containsKey(group))
 			{
 				this.groups.get(group).services.put(service, op);
+				this.serviceIndex.put(service, group);
 			}
 		}
 	}
@@ -70,6 +78,24 @@ public class AvailabilityProfiles {
 	
 	public void clearProfiles(){
 		this.list.clear();
+	}
+	
+	public String getTotalOp(String avProfile)
+	{
+		if (this.list.containsKey(avProfile)){
+			return this.list.get(avProfile).op;
+		}
+		
+		return "";
+	}
+	
+	public String getMetricOp(String avProfile)
+	{
+		if (this.list.containsKey(avProfile)){
+			return this.list.get(avProfile).metricOp;
+		}
+		
+		return "";
 	}
 	
 	// Return the available Group Names of a profile
@@ -95,9 +121,9 @@ public class AvailabilityProfiles {
 	{
 		if (this.list.containsKey(avProfile))
 		{
-			if (this.list.get("avProfile").groups.containsKey(groupName))
+			if (this.list.get(avProfile).groups.containsKey(groupName))
 			{
-				return this.list.get("avProfile").groups.get(groupName).op;
+				return this.list.get(avProfile).groups.get(groupName).op;
 			}
 		}
 		
@@ -184,8 +210,31 @@ public class AvailabilityProfiles {
 		return null;
 	}
 	
+	public String getGroupByService(String avProfile, String service) {
 	
-	public void loadProfileJson(File jsonFile) throws FileNotFoundException{
+		if (this.list.containsKey(avProfile)){
+			
+			return this.list.get(avProfile).serviceIndex.get(service);
+			
+		}
+		return null;
+		
+	}
+	
+	public boolean checkService(String avProfile, String service) {
+		
+		if (this.list.containsKey(avProfile)){
+			
+			if (this.list.get(avProfile).serviceIndex.containsKey(service)){
+				return true;
+			}
+			
+		}
+		return false;
+		
+	}
+	
+	public void loadJson(File jsonFile) throws FileNotFoundException{
 		
 		BufferedReader br = new BufferedReader(new FileReader(jsonFile));
 		JsonParser jsonParser = new JsonParser();
@@ -200,6 +249,7 @@ public class AvailabilityProfiles {
 		tmpAvp.name= jRootObj.get("name").getAsString();
 		tmpAvp.namespace = jRootObj.get("namespace").getAsString();
 		tmpAvp.metricProfile = jRootObj.get("metric_profile").getAsString();
+		tmpAvp.metricOp = jRootObj.get("metric_ops").getAsString();
 		tmpAvp.groupType = jRootObj.get("group_type").getAsString();
 		tmpAvp.op = jRootObj.get("operation").getAsString();
 		

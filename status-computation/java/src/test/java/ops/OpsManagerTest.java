@@ -34,7 +34,7 @@ public class OpsManagerTest {
 		// Instatiate class
 		OpsManager opsMgr = new OpsManager();
 		// Test loading file
-		opsMgr.openFile(JsonFile);
+		opsMgr.loadJson(JsonFile);
 		
 	    // Test the available states
 		ArrayList<String> avStates = new ArrayList<String>();
@@ -63,7 +63,8 @@ public class OpsManagerTest {
 		assertEquals("OK (AND) CRITICAL = CRITICAL",opsMgr.op("AND","OK","CRITICAL"),"CRITICAL");
 		assertEquals("DOWNTIME (AND) UNKNOWN = DOWNTIME",opsMgr.op("AND","DOWNTIME","UNKNOWN"),"DOWNTIME");
 		
-		
+		assertEquals("Default Downtime Status = DOWNTIME",opsMgr.getDefaultDown(),"DOWNTIME");
+		System.out.println(opsMgr.getDefaultMissingInt());
 	}
 
 }

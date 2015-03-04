@@ -58,6 +58,7 @@ private ArrayList<DowntimeItem> list;
     }
     
     public ArrayList<String> getPeriod(String hostname, String service){
+    	
     	ArrayList<String> period = new ArrayList<String>();
 		
     	for (DowntimeItem item : this.list)

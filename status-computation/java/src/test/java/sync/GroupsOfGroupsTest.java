@@ -6,6 +6,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
+
+import ops.ConfigManager;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -35,7 +38,25 @@ public class GroupsOfGroupsTest {
 		assertEquals(gg.getGroup("NGI", "MSFG-OPEN"),"NGI_FRANCE");
 		assertEquals(gg.getGroup("NGI", "HG-02-IASA"),"NGI_GRNET");
 		assertEquals(gg.getGroup("NGI", "NIIFI_SC"),"NGI_HU");
+		assertEquals(gg.getGroup("NGI", "KE-UONBI-01"),"AfricaArabia");
+		assertEquals(gg.getGroup("NGI", "RU-Novosibirsk-BINP"),"Russia");
 		
+		assertTrue(gg.checkSubGroup("KE-UONBI-01"));
+		assertTrue(gg.checkSubGroup("FRANCE-GRILLES-TESTBED"));
+		
+		
+		
+		// Test Tag Filtering
+		URL resJson = GroupsOfGroupsTest.class.getResource("/ops/config.json");
+		File cfgFile = new File(resJson.toURI());
+		ConfigManager cfgMgr = new ConfigManager();
+		cfgMgr.loadJson(cfgFile);
+		gg.filter(cfgMgr.ggroupTags);
+		
+		assertNotEquals(gg.getGroup("NGI", "KE-UONBI-01"),"AfricaArabia");
+		assertNotEquals(gg.getGroup("NGI", "RU-Novosibirsk-BINP"),"Russia");
+		assertTrue(gg.checkSubGroup("FRANCE-GRILLES-TESTBED") == false);
+	
 	}
 
 }
