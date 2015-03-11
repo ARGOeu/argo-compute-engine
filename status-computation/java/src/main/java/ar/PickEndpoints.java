@@ -85,60 +85,53 @@ public class PickEndpoints extends FilterFunc {
 	}
 	
 	public List<String> getCacheFiles() { 
-        List<String> list = new ArrayList<String>(); 
-        list.add(this.fnEgrp.concat("#egroups"));
-        list.add(this.fnGgrp.concat("#ggroups"));
-        list.add(this.fnCfg.concat("#cfg"));
-        list.add(this.fnMps.concat("#mps"));
-        list.add(this.fnAps.concat("#aps"));
-        return list; 
+		List<String> list = new ArrayList<String>(); 
+		list.add(this.fnEgrp.concat("#egroups"));
+		list.add(this.fnGgrp.concat("#ggroups"));
+		list.add(this.fnCfg.concat("#cfg"));
+		list.add(this.fnMps.concat("#mps"));
+		list.add(this.fnAps.concat("#aps"));
+		return list; 
 	} 
 	
 	@Override
-    public Boolean exec(Tuple input) throws IOException {
-        if (this.initialized==false)
-        {
-        	this.init();
-        }
+	public Boolean exec(Tuple input) throws IOException {
+		if (this.initialized==false)
+		{
+			this.init();
+		}
 		
 		if (input == null || input.size() == 0) return false;
-        
-        //Get Arguments
-        String hostname = (String)input.get(0);
-        String service = (String)input.get(1);
-        String metric = (String)input.get(2);
-        
-        //Only 1 profile per job
-        String prof = mpsMgr.getProfiles().get(0);
-        String aprof = apsMgr.getAvProfiles().get(0);
-        
-        // If filtering by profiles is enabled
-        if (this.filter == 1) {
-        	
-        	//Filter By availability profile
-            if (apsMgr.checkService(aprof, service) == false) return false;
-            //Filter By metric profile 
-            if (mpsMgr.checkProfileServiceMetric(prof, service, metric) == false ) return false;
-            //Filter By endpoint if belongs to an endpoint group
-        	
-        	
-        }
-       
-        if (egMgr.checkEndpoint(hostname, service) == false) return false;
-        
-        //Filter By endpoint group if belongs to supergroup
-        String groupname = egMgr.getGroup(this.cfgMgr.egroup, hostname, service);
-        if (ggMgr.checkSubGroup(groupname) == false) return false;
-        
-        
-        
-        
-        return true;
-        
-    }
-	
-	
-	 
+		
+		//Get Arguments
+		String hostname = (String)input.get(0);
+		String service = (String)input.get(1);
+		String metric = (String)input.get(2);
+		
+		//Only 1 profile per job
+		String prof = mpsMgr.getProfiles().get(0);
+		String aprof = apsMgr.getAvProfiles().get(0);
+		
+		// If filtering by profiles is enabled
+		if (this.filter == 1) {
+			
+			//Filter By availability profile
+			if (apsMgr.checkService(aprof, service) == false) return false;
+			//Filter By metric profile 
+			if (mpsMgr.checkProfileServiceMetric(prof, service, metric) == false ) return false;
+			//Filter By endpoint if belongs to an endpoint group
+			
+		}
+		
+		if (egMgr.checkEndpoint(hostname, service) == false) return false;
+		
+		//Filter By endpoint group if belongs to supergroup
+		String groupname = egMgr.getGroup(this.cfgMgr.egroup, hostname, service);
+		if (ggMgr.checkSubGroup(groupname) == false) return false;
+		
+		return true;
+		
+	}
 	
 	
 }
