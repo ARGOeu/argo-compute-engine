@@ -137,7 +137,7 @@ def main(args=None):
 		print "System configured to clean sync hdfs data after job"
 		call(cmd_clean_sync)
 
-	print "Excution of ar job %s for tenant %s for date %s completed!" % (args.job , args.tenant, args.date)
+	print "Execution of ar job %s for tenant %s for date %s completed!" % (args.job , args.tenant, args.date)
 
 if __name__ == "__main__":
 
