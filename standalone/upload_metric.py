@@ -1,11 +1,39 @@
 #!/usr/bin/env python
 
 # arg parsing related imports
-import os, sys
+import os, sys, logging
 from subprocess import call
 from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser
 
+def prepare_logger(log_file,log_level,log_name):
+	# Instantiate logger with proper name
+	logger = logging.getLogger(log_name)
+	logger.setLevel(logging.DEBUG)
+	# Define two handlers (file / console)
+	file_log = logging.FileHandler(log_file)
+	cmd_log = logging.StreamHandler()
+	# The log level for console is always up to info
+	cmd_log.setLevel(logging.INFO)
+	# The log level for file is parametized
+	if log_level == 'DEBUG' :
+		file_log.setLevel(logging.DEBUG)
+	elif log_level == 'INFO':
+		file_log.setLevel(logging.INFO)
+	elif log_level == 'WARNING':
+		file_log.setLevel(logging.WARNING)
+	elif log_level == 'ERROR':
+		file_log.setLevel(logging.ERROR)
+	elif log_level == 'CRITICAL':
+		file_log.setLevel(logging.CRITICAL)
+	# Define the format for the file log formatting
+	file_format = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+	file_log.setFormatter(file_format)
+	# Add handlers 
+	logger.addHandler(file_log)
+	logger.addHandler(cmd_log)
+
+	return logger
 
 
 def main(args=None):
@@ -21,12 +49,17 @@ def main(args=None):
 	ArConfig = SafeConfigParser()
 	ArConfig.read(fn_ar_cfg)
 
+	# Initialize logging
+	log_file = ArConfig.get('logging','log_file')
+	log_level = ArConfig.get('logging','log_level')
+	logger = prepare_logger(log_file,log_level,'[upload_metric.py]')
+
 	prefilter_clean = ArConfig.get('default','prefilter_clean')
 
 	#call prefilter
 	cmd_pref = [os.path.join(arsync_exec,'prefilter-avro'),'-d',args.date]
 	
-	print "Calling prefilter-avro for date:%s" % args.date 
+	logger.info("Calling prefilter-avro for date:%s",args.date) 
 	call(cmd_pref)
 
 	#transfer prefilter to hdfs
@@ -34,7 +67,7 @@ def main(args=None):
 	fn_prefilter = "prefilter_"+date_under+".avro"
 	local_prefilter = os.path.join(arsync_lib,fn_prefilter)
 
-	print "Check if produced %s exists: %s" % (local_prefilter,os.path.exists(local_prefilter))
+	logger.info("Check if produced %s exists: %s",local_prefilter,os.path.exists(local_prefilter))
 
 	# Command to establish tentant's metric data hdfs folder 
 	cmd_hdfs_mkdir = ['hadoop','fs','-mkdir','-p',hdfs_path]
@@ -45,19 +78,19 @@ def main(args=None):
 	# Command to clear prefilter data after hdfs transfer
 	cmd_clean = ['rm',local_prefilter]
 
-
-	print "Establish if not present hdfs metric data directory"
+	logger.info("Establish if not present hdfs metric data directory")
 	call(cmd_hdfs_mkdir)
 
-	print "Transfer files to hdfs"
+	logger.info("Establish if not present hdfs metric data directory")
 	call(cmd_hdfs)
 
 	if prefilter_clean == "true":
-		print "System configured to clean prefilter data after transfer"
+
+		logger.info("System configured to clean prefilter data after transfer")
 		call(cmd_clean)
 
-
-	print "Metric Data of tenant %s for date %s uploaded successfully to hdfs" % (args.tenant , args.date)
+	logger.info("Metric Data of tenant %s for date %s uploaded successfully to hdfs",args.tenant,args.date)
+	
 
 if __name__ == "__main__":
 
