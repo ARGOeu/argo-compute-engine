@@ -64,9 +64,9 @@ def main(args=None):
 
 	pig_params['mdata'] = mdata_path + 'prefilter_' + date_under + '.avro';
 	pig_params['p_mdata'] = mdata_path + 'prefilter_' + prev_date_under + '.avro';
-	pig_params['egs'] = sync_path + 'group_endpoints.avro';
-	pig_params['ggs'] = sync_path + 'group_groups.avro';
-	pig_params['mps'] = sync_path + 'poem_sync.avro';
+	pig_params['egs'] = sync_path + 'group_endpoints_' + date_under + '.avro';
+	pig_params['ggs'] = sync_path + 'group_groups_' + date_under + '.avro';
+	pig_params['mps'] = sync_path + 'poem_sync_' + date_under + '.avro';
 	pig_params['cfg'] = cfg_path + args.tenant + '_' + job_set[0] + '_cfg.json';
 	pig_params['aps'] = cfg_path + args.tenant + '_' + job_set[0] + '_ap.json';
 	pig_params['dt'] = args.date 
