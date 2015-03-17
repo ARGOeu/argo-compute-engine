@@ -2,7 +2,7 @@
 
 # arg parsing related imports
 import os, sys
-from argologger import prepare_logger
+from argologger import init_logger
 from subprocess import call
 from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser
@@ -21,9 +21,10 @@ def main(args=None):
 	ArConfig.read(fn_ar_cfg)
 
 	# Initialize logging
+	log_mode = ArConfig.get('logging','log_mode')
 	log_file = ArConfig.get('logging','log_file')
 	log_level = ArConfig.get('logging','log_level')
-	logger = prepare_logger(log_file,log_level,'[upload_metric.py]')
+	logger = init_logger(log_mode,log_file,log_level,'[upload_metric.py]')
 
 	prefilter_clean = ArConfig.get('default','prefilter_clean')
 
