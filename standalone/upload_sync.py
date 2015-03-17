@@ -22,7 +22,7 @@ def getSyncFile(dt,prefix,postfix,splitstr):
 			return file_path
 		else:
 			days_back = days_back + 1
-			print "False, try %s days back" + str(days_back)
+			print "False, try %s days back" % str(days_back)
 
 		if days_back > 3:
 			print "ERROR: Too many days without a file..."
@@ -132,7 +132,7 @@ def main(args=None):
 	call(cmd_putWeights)
 	print "Transfer downtimes"
 	call(cmd_putDowntimes)
-	print "Transfer avaliability profile"
+	print "Transfer availability profile"
 	call(cmd_putAps)
 	print "Transfer operations file"
 	call(cmd_putOps)
