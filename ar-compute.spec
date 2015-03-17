@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
 Version: 1.6.0
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -37,7 +37,6 @@ install --directory %{buildroot}/var/log/ar-compute
 install --directory %{buildroot}/etc
 install --directory %{buildroot}/etc/ar-compute
 
-install --mode 755 helpers/ar-compute.py                        %{buildroot}/usr/libexec/ar-compute/
 install --mode 644 status-computation/pig/*                     %{buildroot}/usr/libexec/ar-compute/pig/
 install --mode 644 status-computation/lib/avro/*                %{buildroot}/usr/libexec/ar-compute/lib/avro/
 install --mode 644 status-computation/lib/*.jar                 %{buildroot}/usr/libexec/ar-compute/lib/
@@ -55,7 +54,6 @@ mvn clean
 
 %files
 %defattr(0644,root,root)
-%attr(0755,root,root) /usr/libexec/ar-compute/ar-compute.py
 %attr(0755,root,root) /usr/libexec/ar-compute/pig/*.pig
 %attr(0755,root,root) /usr/libexec/ar-compute/lib/*
 %attr(0755,root,root) /usr/libexec/ar-compute/standalone/*.py
