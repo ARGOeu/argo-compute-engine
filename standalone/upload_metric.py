@@ -1,40 +1,11 @@
 #!/usr/bin/env python
 
 # arg parsing related imports
-import os, sys, logging
+import os, sys
+from argologger import prepare_logger
 from subprocess import call
 from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser
-
-def prepare_logger(log_file,log_level,log_name):
-	# Instantiate logger with proper name
-	logger = logging.getLogger(log_name)
-	logger.setLevel(logging.DEBUG)
-	# Define two handlers (file / console)
-	file_log = logging.FileHandler(log_file)
-	cmd_log = logging.StreamHandler()
-	# The log level for console is always up to info
-	cmd_log.setLevel(logging.INFO)
-	# The log level for file is parametized
-	if log_level == 'DEBUG' :
-		file_log.setLevel(logging.DEBUG)
-	elif log_level == 'INFO':
-		file_log.setLevel(logging.INFO)
-	elif log_level == 'WARNING':
-		file_log.setLevel(logging.WARNING)
-	elif log_level == 'ERROR':
-		file_log.setLevel(logging.ERROR)
-	elif log_level == 'CRITICAL':
-		file_log.setLevel(logging.CRITICAL)
-	# Define the format for the file log formatting
-	file_format = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-	file_log.setFormatter(file_format)
-	# Add handlers 
-	logger.addHandler(file_log)
-	logger.addHandler(cmd_log)
-
-	return logger
-
 
 def main(args=None):
 
