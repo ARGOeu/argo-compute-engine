@@ -132,7 +132,7 @@ def main(args=None):
 	call(cmd_putWeights)
 	print "Transfer downtimes"
 	call(cmd_putDowntimes)
-	print "Transfer avaliability profile"
+	print "Transfer availability profile"
 	call(cmd_putAps)
 	print "Transfer operations file"
 	call(cmd_putOps)
