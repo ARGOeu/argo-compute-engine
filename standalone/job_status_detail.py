@@ -36,6 +36,12 @@ def main(args=None):
 	log_mode = ArConfig.get('logging','log_mode')
 	log_file = ArConfig.get('logging','log_file')
 	log_level = ArConfig.get('logging','log_level')
+	logger = init_logger(log_mode,log_file,log_level,'[job_cycle.py]')
+
+	# Initialize logging
+	log_mode = ArConfig.get('logging','log_mode')
+	log_file = ArConfig.get('logging','log_file')
+	log_level = ArConfig.get('logging','log_level')
 	logger = init_logger(log_mode,log_file,log_level,'job_status.py]')
 
 	mongo_host = ArConfig.get('default','mongo_host')

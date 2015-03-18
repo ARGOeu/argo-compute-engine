@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 
-import os, sys, json, glob, tarfile
+import os
+import sys
+import json
+import glob
+import tarfile
+from argologger import init_logger
 from subprocess import call
 from datetime import datetime, timedelta
 from argparse import ArgumentParser
@@ -20,6 +25,11 @@ def main(args=None):
 	ArConfig = SafeConfigParser()
 	ArConfig.read(fn_ar_cfg)
 
+	# Initialize logging
+	log_mode = ArConfig.get('logging','log_mode')
+	log_file = ArConfig.get('logging','log_file')
+	log_level = ArConfig.get('logging','log_level')
+	logger = init_logger(log_mode,log_file,log_level,'[sync_backup.py]')
 
 	# Parse date argument
 	actual_date = datetime.strptime(args.date,'%Y-%m-%d')
@@ -51,7 +61,7 @@ def main(args=None):
 
 	# Add downtimes to the tar file 
 
-	print "Adding downtime files for %s of %s" % (month_ago.strftime("%B"),month_ago.year)
+	logger.info("Adding downtime files for %s of %s",month_ago.strftime("%B"),month_ago.year)
 	for f in downtime_list:
 		tar_path = args.tenant + '/' + os.path.basename(f)
 		print tar_path
@@ -61,7 +71,7 @@ def main(args=None):
 	for item in job_set:
 		jobsync_list = glob.glob(os.path.join(arsync_lib,args.tenant,item,query_down))
 
-		print "adding sync files for %s of %s for Job: %s" % (month_ago.strftime("%B"),month_ago.year,item)
+		logger.info("adding sync files for %s of %s for Job: %s",month_ago.strftime("%B"),month_ago.year,item)
 
 		for f in jobsync_list:
 			print tar_path
@@ -75,21 +85,21 @@ def main(args=None):
 	hdfs_dest = args.tenant + '/backup/sync/'
 	cmd_establish_hdfs = ['hadoop','fs','-mkdir','-p',hdfs_dest]
 
-	print "Establish hdfs backup directory: %s" % hdfs_dest
+	logger.info("Establish hdfs backup directory: %s",hdfs_dest)
 	call(cmd_establish_hdfs)
 
 	# Transfer tar archive to hdfs
 	cmd_hdfs_put = ['hadoop','fs','-put','-f',local_tar,hdfs_dest]
 
-	print "Transfer backup  from local:%s to hdfs:%s" % (local_tar,hdfs_dest) 
+	logger.info("Transfer backup  from local:%s to hdfs:%s",local_tar,hdfs_dest) 
 	call(cmd_hdfs_put)
 
 	# Clean up temporary tar
-	print "Cleanup tmp data"
+	logger.info("Cleanup tmp data")
 	if os.path.exists(local_tar):
 		os.remove(local_tar)
 
-	print "Backup Completed to hdfs"
+	logger.info("Backup Completed to hdfs")
 
 
 if __name__ == "__main__":
