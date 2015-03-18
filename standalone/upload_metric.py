@@ -21,6 +21,9 @@ def main(args=None):
 	ArConfig = SafeConfigParser()
 	ArConfig.read(fn_ar_cfg)
 
+	# Get mode from config file
+	ar_mode = ArConfig.get('default','mode')
+
 	prefilter_clean = ArConfig.get('default','prefilter_clean')
 
 	#call prefilter
