@@ -2,7 +2,7 @@
 
 # arg parsing related imports
 import os, sys
-from subprocess import check_call
+from argologger import init_logger
 from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser
 from pymongo import MongoClient
@@ -16,6 +16,12 @@ def main(args=None):
 
 	ArConfig = SafeConfigParser()
 	ArConfig.read(fn_ar_cfg)
+
+	# Initialize logging
+	log_mode = ArConfig.get('logging','log_mode')
+	log_file = ArConfig.get('logging','log_file')
+	log_level = ArConfig.get('logging','log_level')
+	logger = init_logger(log_mode,log_file,log_level,'[mongo_clean_ar.py]')
 	
 	mongo_host = ArConfig.get('default','mongo_host')
 	mongo_port = ArConfig.get('default','mongo_port')
@@ -35,71 +41,71 @@ def main(args=None):
 	#Create a date integer for use in the database queries
 	date_int = int(args.date.replace("-",""))
 
-	print "Connecting to mongo server: %s:%s" % (mongo_host,mongo_port)
+	logger.info("Connecting to mongo server: %s:%s",mongo_host,mongo_port)
 	client = MongoClient(str(mongo_host), int(mongo_port))
 
 	# for service collection cleanup do the following
-	print "Regarding service a/r data..."
+	logger.info("Regarding service a/r data...")
 
-	print "Opening database: %s" % db_service
+	logger.info("Opening database: %s",db_service)
 	db = client[db_service]
 
-	print "Opening collection: %s" % col_service
+	logger.info("Opening collection: %s",col_service)
 	col = db[col_service]
 
 	if args.profile:
 		num_of_rows = col.find({"dt": date_int,"ap":args.profile}).count()
-		print "Found %s entries for date %s and profile %s" % (num_of_rows,args.date,args.profile)	
+		logger.info("Found %s entries for date %s and profile %s",num_of_rows,args.date,args.profile)	
 	else:
 		num_of_rows = col.find({"dt": date_int}).count()
-		print "Found %s entries for date %s" % (num_of_rows,args.date)
+		logger.info("Found %s entries for date %s",num_of_rows,args.date)
 		
 
 	if num_of_rows > 0:	
 		
 		if args.profile:
-			print "Remove entries for date: %s and av.profile: %s" % (args.date,args.profile) 
+			logger.info("Remove entries for date: %s and av.profile: %s",args.date,args.profile) 
 			col.remove({"dt": date_int,"ap":args.profile})
 		else:
-			print "Remove entries for date: %s" % args.date 
+			logger.info("Remove entries for date: %s",args.date) 
 			col.remove({"dt": date_int})
 			
 
-		print "Entries Removed!"
+		logger.info("Entries Removed!")
 	else:
-		print "Zero entries found. No need to remove anything"
+		logger.info("Zero entries found. No need to remove anything")
 
 
 	# for service collection cleanup do the following
-	print "Regarding endpoint group a/r data..."
+	logger.info("Regarding endpoint group a/r data...")
 
-	print "Opening database: %s" % db_egroup
+	logger.info("Opening database: %s",db_egroup)
 	db = client[db_egroup]
 
-	print "Opening collection: %s" % col_egroup
+	logger.info("Opening collection: %s",col_egroup)
 	col = db[col_egroup]
 
 	if args.profile:
 		num_of_rows = col.find({"dt": date_int,"ap":args.profile}).count()
-		print "Found %s entries for date %s and profile %s" % (num_of_rows,args.date,args.profile)
+		logger.info("Found %s entries for date %s and profile %s",num_of_rows,args.date,args.profile)
 	else:
 		num_of_rows = col.find({"dt": date_int}).count()
-		print "Found %s entries for date %s" % (num_of_rows,args.date)
+		logger.info("Found %s entries for date %s",num_of_rows,args.date)
 		
 
 	if num_of_rows > 0:	
 		
 		if args.profile:
-			print "Remove entries for date: %s and av.profile: %s" % (args.date,args.profile) 
+			logger.info("Remove entries for date: %s and av.profile: %s",args.date,args.profile) 
 			col.remove({"dt": date_int,"ap":args.profile})
 		else:
-			print "Remove entries for date: %s" % args.date 
+			logger.info("Remove entries for date: %s",args.date) 
 			col.remove({"dt": date_int})
 			
 
-		print "Entries Removed!"
+		logger.info("Entries Removed!")
 	else:
-		print "Zero entries found. No need to remove anything"
+		logger.info("Zero entries found. No need to remove anything")
 
 
 if __name__ == "__main__":
