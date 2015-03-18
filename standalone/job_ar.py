@@ -39,11 +39,11 @@ def main(args=None):
 
 	# Proposed hdfs pathways
 	hdfs_mdata_path = './' + args.tenant + "/mdata/"
-	hdfs_sync_path = './scratch/sync/' + args.tenant + "/" + args.job + "/" + date_under + "/" 
+	hdfs_sync_path = './scratch/sync/' + args.tenant + '/' + args.job + '/' + date_under + '/'
 
 	# Proposed local pathways
 	local_mdata_path = arsync_lib
-	local_sync_path = arsync_lib + args.tenant + "/" + args.job + "/"
+	local_sync_path = '/tmp/scratch/sync/' + args.tenant + '/' + args.job + '/' + date_under + '/'
 	local_cfg_path = arcomp_conf 
 
 	if ar_mode == 'cluster':
