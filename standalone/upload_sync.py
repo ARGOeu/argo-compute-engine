@@ -39,14 +39,10 @@ def main(args=None):
 	arsync_lib = "/var/lib/ar-sync/"
 	arcomp_conf = "/etc/ar-compute/"
 
-
 	actual_date = datetime.strptime(args.date,'%Y-%m-%d')
 
 	# Create a second date used by the file formats
 	date_under = args.date.replace("-","_")
-
-
-	
 
 	# Initiate config file parser to read global ar-compute-engine.conf 
 	ArConfig = SafeConfigParser()
