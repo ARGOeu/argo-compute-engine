@@ -57,7 +57,7 @@ def main(args=None):
 		mode = 'local'
 		mdata_path = local_mdata_path
 		sync_path = local_sync_path
-		root_sync_path = arsync_lib
+		root_sync_path = local_sync_path
 		cfg_path = local_cfg_path
 		
 	# open job configuration file
