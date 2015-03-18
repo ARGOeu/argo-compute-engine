@@ -32,8 +32,14 @@ def main(args=None):
 	print "Calling prefilter-avro for date:%s" % args.date 
 	call(cmd_pref)
 
-	#transfer prefilter to hdfs
-	hdfs_path = "./"+args.tenant+"/mdata/"
+	if ar_mode == 'cluster':
+		# compose hdfs destination
+		# hdfs path = ./tenant/mdata/...
+		hdfs_path = "./"+args.tenant+"/mdata/"
+	else:
+		# compose local temporary destination
+		hdfs_path = "/tmp/"+args.tenant+"/mdata/"
+
 	fn_prefilter = "prefilter_"+date_under+".avro"
 	local_prefilter = os.path.join(arsync_lib,fn_prefilter)
 
