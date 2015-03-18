@@ -53,7 +53,7 @@ def main(args=None):
 	logger.info("Establish if not present hdfs metric data directory")
 	call(cmd_hdfs_mkdir)
 
-	logger.info("Establish if not present hdfs metric data directory")
+	logger.info("Transfer metric data")
 	call(cmd_hdfs)
 
 	if prefilter_clean == "true":
