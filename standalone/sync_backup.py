@@ -19,8 +19,8 @@ def main(args=None):
 	arsync_lib = "/var/lib/ar-sync/"
 	arcomp_conf = "/etc/ar-compute/"
 	arcomp_exec = "/usr/libexec/ar-compute/"
-	stdl_exec = "/usr/libexec/ar-compute/standalone"
-	pig_script_path = "/ufsr/libexec/ar-compute/pig/"
+	stdl_exec = "/usr/libexec/ar-compute/standalone/"
+	pig_script_path = "/usr/libexec/ar-compute/pig/"
 
 	ArConfig = SafeConfigParser()
 	ArConfig.read(fn_ar_cfg)
