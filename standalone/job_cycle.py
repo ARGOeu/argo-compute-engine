@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 # arg parsing related imports
-import os, sys
+import os
+import sys
+from argologger import init_logger
 from subprocess import call
 from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser
@@ -20,6 +22,12 @@ def main(args=None):
 	ArConfig = SafeConfigParser()
 	ArConfig.read(fn_ar_cfg)
 
+	# Initialize logging
+	log_mode = ArConfig.get('logging','log_mode')
+	log_file = ArConfig.get('logging','log_file')
+	log_level = ArConfig.get('logging','log_level')
+	logger = init_logger(log_mode,log_file,log_level,'[job_cycle.py]')
+
 	tenant = ArConfig.get("jobs","tenant")
 	job_set = ArConfig.get("jobs","job_set")
 	job_set = job_set.split(',')
@@ -28,17 +36,17 @@ def main(args=None):
 	#Command to upload the prefilter data
 	cmd_upload_metric = [os.path.join(sdl_exec,"upload_metric.py"),'-d',args.date,'-t',tenant]
 
-	print "UPLOAD METRIC DATA TO HDFS"
+	logger.info("UPLOAD METRIC DATA TO HDFS")
 	call(cmd_upload_metric)
 
 	#Command to submit job status detail
 
 	cmd_job_status = [os.path.join(sdl_exec,"job_status_detail.py"),'-d',args.date,'-t',tenant]
 
-	print "CALCULATE STATUS DETAIL"
+	logger.info("CALCULATE STATUS DETAIL")
 	call(cmd_job_status)
 
-	print "Iterate over a/r jobs and submit them"
+	logger.info("Iterate over a/r jobs and submit them")
 	#For each job genereate ar
 	for item in job_set:
 
