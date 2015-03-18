@@ -1,31 +1,34 @@
 #!/usr/bin/env python
 
 # arg parsing related imports
-import os, sys
+import os
+import sys
+from argologger import init_logger
 from datetime import datetime, timedelta
 from subprocess import call
 from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser
 
 
-def getSyncFile(dt,prefix,postfix,splitstr):
+def getSyncFile(dt, prefix, postfix, splitstr, logger):
 	days_back=0
 	while True:
 		target_dt = dt - timedelta(days=days_back)
 		date_split = target_dt.strftime('%Y'+splitstr+'%m'+splitstr+'%d')
 		file_path = prefix + date_split + postfix
 		
-		print "Check if %s exists..." % file_path
+		logger.info("Check if %s exists...",file_path)
 
 		if (os.path.exists(file_path)):
-			print "True"
+			logger.info("true")
 			return file_path
 		else:
 			days_back = days_back + 1
-			print "False, try %s days back" + str(days_back)
+			logger.warning("False, try %s days back",str(days_back))
 
 		if days_back > 3:
 			print "ERROR: Too many days without a file..."
+			logger.critical("ERROR: Too many days without a file...")
 			sys.exit(1)
 
 
@@ -51,6 +54,13 @@ def main(args=None):
 	# Initiate config file parser to read global ar-compute-engine.conf 
 	ArConfig = SafeConfigParser()
 	ArConfig.read(fn_ar_cfg)
+
+	# logger init
+	log_mode = ArConfig.get('logging','log_mode')
+	log_file = ArConfig.get('logging','log_file')
+	log_level = ArConfig.get('logging','log_level')
+	logger = init_logger(log_mode,log_file,log_level,'[upload_sync.py]')
+
 	
 	# Compose needed sync filenames using the correct prefixes, dates and file extensions (avro/json)
 
@@ -71,15 +81,15 @@ def main(args=None):
 
 	# Call downtimes latest info
 	cmd_call_downtimes = [os.path.join(arsync_exec,'downtime-sync'),'-d',args.date]
-	print "Calling downtime sync to give us latest downtime info"
-	call(cmd_call_downtimes)
+	logger.info("Calling downtime sync to give us latest downtime info")
+	#call(cmd_call_downtimes)
 
 	# Compose the local paths for files (paths+filenames)
-	local_egroups = getSyncFile(actual_date, os.path.join(arsync_job,"group_endpoints_") , '.avro','_')
-	local_ggroups = getSyncFile(actual_date, os.path.join(arsync_job,"group_groups_") , '.avro','_')
-	local_weights = getSyncFile(actual_date, os.path.join(arsync_job,"weights_sync_") , '.avro','_')
-	local_mps = getSyncFile(actual_date, os.path.join(arsync_job,"poem_sync_"), '.avro','_')
-	local_downtimes = getSyncFile(actual_date, os.path.join(arsync_lib,"downtimes_"), '.avro','-')
+	local_egroups = getSyncFile(actual_date, os.path.join(arsync_job,"group_endpoints_") , '.avro','_',logger)
+	local_ggroups = getSyncFile(actual_date, os.path.join(arsync_job,"group_groups_") , '.avro','_',logger)
+	local_weights = getSyncFile(actual_date, os.path.join(arsync_job,"weights_sync_") , '.avro','_',logger)
+	local_mps = getSyncFile(actual_date, os.path.join(arsync_job,"poem_sync_"), '.avro','_',logger)
+	local_downtimes = getSyncFile(actual_date, os.path.join(arsync_lib,"downtimes_"), '.avro','-',logger)
 
 	local_aps = os.path.join(arcomp_conf,fn_aps)
 	local_ops = os.path.join(arcomp_conf,fn_ops)
@@ -87,11 +97,10 @@ def main(args=None):
 	local_rec = os.path.join(arcomp_conf,fn_rec)
 
 	# Check filenames if exist
-	print "Check if %s exists: %s" % (local_aps,os.path.exists(local_aps))
-	print "Check if %s exists: %s" % (local_ops,os.path.exists(local_ops))
-	print "Check if %s exists: %s" % (local_cfg,os.path.exists(local_cfg))
-	print "Check if %s exists: %s" % (local_rec,os.path.exists(local_rec))
-	
+	logger.info("Check if %s exists: %s",(local_aps,os.path.exists(local_aps)))
+	logger.info("Check if %s exists: %s",(local_aps,os.path.exists(local_ops)))
+	logger.info("Check if %s exists: %s",(local_aps,os.path.exists(local_cfg)))
+	logger.info("Check if %s exists: %s",(local_aps,os.path.exists(local_rec)))
 
 	# Remove scratch sync directory in hdfs (cause we don't keep unarchived sync files)
 	cmd_clearHdfs = ['hadoop','fs','-rm','-r',hdfs_dest]
@@ -118,31 +127,31 @@ def main(args=None):
 	cmd_putRec = ['hadoop','fs','-put','-f',local_rec,hdfs_dest]
 	
 	#try:
-	print "Remove old hdfs scratch sync folder: %s" % hdfs_dest
+	logger.info("Remove old hdfs scratch sync folder: %s",hdfs_dest)
 	call(cmd_clearHdfs)
-	print "Establish new hdfs scratch sync folder %s" % hdfs_dest
+	logger.info("Establish new hdfs scratch sync folder %s",hdfs_dest)
 	call(cmd_estHdfs)
-	print "Transfer metric profile"
+	logger.info("Transfer metric profile")
 	call(cmd_putMps)
-	print "Transfer endpoint group topology"
+	logger.info("Transfer endpoint group topology")
 	call(cmd_putEgroups)
-	print "Transfer group of group topology"
+	logger.info("Transfer group of group topology")
 	call(cmd_putGgroups)
-	print "Transfer weight factors"
+	logger.info("Transfer weight factors")
 	call(cmd_putWeights)
-	print "Transfer downtimes"
+	logger.info("Transfer downtimes")
 	call(cmd_putDowntimes)
-	print "Transfer avaliability profile"
+	logger.info("Transfer avaliability profile")
 	call(cmd_putAps)
-	print "Transfer operations file"
+	logger.info("Transfer operations file")
 	call(cmd_putOps)
-	print "Transfer job configuration"
+	logger.info("Transfer job configuration")
 	call(cmd_putCfg)
-	print "Transfer recalculation requests"
+	logger.info("Transfer recalculation requests")
 	call(cmd_putRec)
 	
 
-	print "Sync Data of tenant %s for job %s for date %s uploaded successfully to hdfs" % (args.tenant , args.job, args.date)
+	logger.info("Sync Data of tenant %s for job %s for date %s uploaded successfully to hdfs",args.tenant , args.job, args.date)
 
 if __name__ == "__main__":
 
