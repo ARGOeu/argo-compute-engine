@@ -11,101 +11,114 @@ from datetime import datetime, timedelta
 from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser
 
+
 def main(args=None):
 
-	# default config 
-	fn_ar_cfg = "/etc/ar-compute-engine.conf"
-	arsync_exec = "/usr/libexec/ar-sync/"
-	arsync_lib = "/var/lib/ar-sync/"
-	arcomp_conf = "/etc/ar-compute/"
-	arcomp_exec = "/usr/libexec/ar-compute/"
-	stdl_exec = "/usr/libexec/ar-compute/standalone/"
-	pig_script_path = "/usr/libexec/ar-compute/pig/"
+    # default config
+    fn_ar_cfg = "/etc/ar-compute-engine.conf"
+    arsync_exec = "/usr/libexec/ar-sync/"
+    arsync_lib = "/var/lib/ar-sync/"
+    arcomp_conf = "/etc/ar-compute/"
+    arcomp_exec = "/usr/libexec/ar-compute/"
+    stdl_exec = "/usr/libexec/ar-compute/standalone/"
+    pig_script_path = "/usr/libexec/ar-compute/pig/"
 
-	ArConfig = SafeConfigParser()
-	ArConfig.read(fn_ar_cfg)
+    ArConfig = SafeConfigParser()
+    ArConfig.read(fn_ar_cfg)
 
-	# Initialize logging
-	log_mode = ArConfig.get('logging','log_mode')
-	log_file = ArConfig.get('logging','log_file')
-	log_level = ArConfig.get('logging','log_level')
-	logger = init_logger(log_mode,log_file,log_level,'[sync_backup.py]')
+    # Initialize logging
+    log_mode = ArConfig.get('logging', 'log_mode')
+    log_file = ArConfig.get('logging', 'log_file')
+    log_level = ArConfig.get('logging', 'log_level')
+    logger = init_logger(log_mode, log_file, log_level, '[sync_backup.py]')
 
-	# Parse date argument
-	actual_date = datetime.strptime(args.date,'%Y-%m-%d')
-	# Set day on the first of the month
-	actual_date = actual_date.replace(day=1)
-	# First day of the month minus one day gets us back one month ago (or even year ago)
-	month_ago = actual_date - timedelta(days=1)
+    # Parse date argument
+    actual_date = datetime.strptime(args.date, '%Y-%m-%d')
+    # Set day on the first of the month
+    actual_date = actual_date.replace(day=1)
+    # First day of the month minus one day gets us back one month ago (or even
+    # year ago)
+    month_ago = actual_date - timedelta(days=1)
 
-	fn_sync_tar = 'sync_backup_' + args.tenant + '_' + str(month_ago.strftime("%B")) + '_' + str(month_ago.year) + '.tar'
-	
-	local_tar = os.path.join('/tmp',fn_sync_tar)
+    fn_sync_tar = 'sync_backup_' + args.tenant + '_' + \
+        str(month_ago.strftime("%B")) + '_' + str(month_ago.year) + '.tar'
 
-	# Check if tar file already exists from a previous backup try and remove it
-	if os.path.exists(local_tar):
-		os.remove(local_tar)
+    local_tar = os.path.join('/tmp', fn_sync_tar)
 
-	sync_tar = tarfile.open(local_tar,mode='w')
+    # Check if tar file already exists from a previous backup try and remove it
+    if os.path.exists(local_tar):
+        os.remove(local_tar)
 
-	# Grab all available jobs in the system
-	job_set = ArConfig.get("jobs","job_set")
-	job_set = job_set.split(',')
+    sync_tar = tarfile.open(local_tar, mode='w')
 
-	# Create query strings to list appropriate files
-	query_down = '*_' + month_ago.strftime("%Y") + "_" + month_ago.strftime("%m") + '_*.avro'
-	query_dash = '*_' + month_ago.strftime("%Y") + "-" + month_ago.strftime("%m") + '-*.avro'
-	
-	# Downtimes are special because they always reside in the ar-sync root (might change in the future)
-	downtime_list = glob.glob(os.path.join(arsync_lib,query_dash))
+    # Grab all available jobs in the system
+    job_set = ArConfig.get("jobs", "job_set")
+    job_set = job_set.split(',')
 
-	# Add downtimes to the tar file 
+    # Create query strings to list appropriate files
+    query_down = '*_' + \
+        month_ago.strftime("%Y") + "_" + month_ago.strftime("%m") + '_*.avro'
+    query_dash = '*_' + \
+        month_ago.strftime("%Y") + "-" + month_ago.strftime("%m") + '-*.avro'
 
-	logger.info("Adding downtime files for %s of %s",month_ago.strftime("%B"),month_ago.year)
-	for f in downtime_list:
-		tar_path = args.tenant + '/' + os.path.basename(f)
-		print tar_path
-		sync_tar.add(f,tar_path)
+    # Downtimes are special because they always reside in the ar-sync root
+    # (might change in the future)
+    downtime_list = glob.glob(os.path.join(arsync_lib, query_dash))
 
-	# Iterate over job folders
-	for item in job_set:
-		jobsync_list = glob.glob(os.path.join(arsync_lib,args.tenant,item,query_down))
+    # Add downtimes to the tar file
 
-		logger.info("adding sync files for %s of %s for Job: %s",month_ago.strftime("%B"),month_ago.year,item)
+    logger.info("Adding downtime files for %s of %s",
+                month_ago.strftime("%B"), month_ago.year)
+    for f in downtime_list:
+        tar_path = args.tenant + '/' + os.path.basename(f)
+        print tar_path
+        sync_tar.add(f, tar_path)
 
-		for f in jobsync_list:
-			print tar_path
-			tar_path = args.tenant + '/' + item + '/' + os.path.basename(f)
-			sync_tar.add(f,tar_path)
-	
+    # Iterate over job folders
+    for item in job_set:
+        jobsync_list = glob.glob(
+            os.path.join(arsync_lib, args.tenant, item, query_down))
 
-	sync_tar.close()
+        logger.info("adding sync files for %s of %s for Job: %s",
+                    month_ago.strftime("%B"), month_ago.year, item)
 
-	# Create HDFS backup path
-	hdfs_dest = args.tenant + '/backup/sync/'
-	cmd_establish_hdfs = ['hadoop','fs','-mkdir','-p',hdfs_dest]
+        for f in jobsync_list:
+            print tar_path
+            tar_path = args.tenant + '/' + item + '/' + os.path.basename(f)
+            sync_tar.add(f, tar_path)
 
-	logger.info("Establish hdfs backup directory: %s",hdfs_dest)
-	call(cmd_establish_hdfs)
+    sync_tar.close()
 
-	# Transfer tar archive to hdfs
-	cmd_hdfs_put = ['hadoop','fs','-put','-f',local_tar,hdfs_dest]
+    # Create HDFS backup path
+    hdfs_dest = args.tenant + '/backup/sync/'
+    cmd_establish_hdfs = ['hadoop', 'fs', '-mkdir', '-p', hdfs_dest]
 
-	logger.info("Transfer backup  from local:%s to hdfs:%s",local_tar,hdfs_dest) 
-	call(cmd_hdfs_put)
+    logger.info("Establish hdfs backup directory: %s", hdfs_dest)
+    call(cmd_establish_hdfs)
 
-	# Clean up temporary tar
-	logger.info("Cleanup tmp data")
-	if os.path.exists(local_tar):
-		os.remove(local_tar)
+    # Transfer tar archive to hdfs
+    cmd_hdfs_put = ['hadoop', 'fs', '-put', '-f', local_tar, hdfs_dest]
 
-	logger.info("Backup Completed to hdfs")
+    logger.info(
+        "Transfer backup  from local:%s to hdfs:%s", local_tar, hdfs_dest)
+    call(cmd_hdfs_put)
+
+    # Clean up temporary tar
+    logger.info("Cleanup tmp data")
+    if os.path.exists(local_tar):
+        os.remove(local_tar)
+
+    logger.info("Backup Completed to hdfs")
 
 
 if __name__ == "__main__":
-	# Feed Argument parser with the description of the 3 arguments we need (input_file,output_file,schema_file)
-	arg_parser = ArgumentParser(description="Initiate an a/r computation job")
-	arg_parser.add_argument("-d","--date",help="date month will be targeted", dest="date", metavar="DATE", required="TRUE")
-	arg_parser.add_argument("-t","--tenant",help="tenant owner ", dest="tenant", metavar= "STRING", required="TRUE")
-	# Parse the command line arguments accordingly and introduce them to main...
-	sys.exit(main(arg_parser.parse_args()))
+    # Feed Argument parser with the description of the 3 arguments we need
+    # (input_file,output_file,schema_file)
+    arg_parser = ArgumentParser(description="Initiate an a/r computation job")
+    arg_parser.add_argument(
+        "-d", "--date", help="date month will be targeted", dest="date", metavar="DATE", required="TRUE")
+    arg_parser.add_argument(
+        "-t", "--tenant", help="tenant owner ", dest="tenant", metavar="STRING", required="TRUE")
+    # Parse the command line arguments accordingly and introduce them to
+    # main...
+    sys.exit(main(arg_parser.parse_args()))

@@ -11,155 +11,167 @@ from ConfigParser import SafeConfigParser
 
 
 def getSyncFile(dt, prefix, postfix, splitstr, logger):
-	days_back=0
-	while True:
-		target_dt = dt - timedelta(days=days_back)
-		date_split = target_dt.strftime('%Y'+splitstr+'%m'+splitstr+'%d')
-		file_path = prefix + date_split + postfix
-		
-		logger.info("Check if %s exists...",file_path)
+    days_back = 0
+    while True:
+        target_dt = dt - timedelta(days=days_back)
+        date_split = target_dt.strftime(
+            '%Y' + splitstr + '%m' + splitstr + '%d')
+        file_path = prefix + date_split + postfix
 
-		if (os.path.exists(file_path)):
-			logger.info("true")
-			return file_path
-		else:
-			days_back = days_back + 1
-			logger.warning("False, try %s days back",str(days_back))
+        logger.info("Check if %s exists...", file_path)
 
-		if days_back > 3:
-			print "ERROR: Too many days without a file..."
-			logger.critical("ERROR: Too many days without a file...")
-			sys.exit(1)
+        if (os.path.exists(file_path)):
+            logger.info("true")
+            return file_path
+        else:
+            days_back = days_back + 1
+            logger.warning("False, try %s days back", str(days_back))
 
-
+        if days_back > 3:
+            print "ERROR: Too many days without a file..."
+            logger.critical("ERROR: Too many days without a file...")
+            sys.exit(1)
 
 
 def main(args=None):
 
-	# Default core paths 
-	fn_ar_cfg = "/etc/ar-compute-engine.conf"
-	arsync_exec = "/usr/libexec/ar-sync/"
-	arsync_lib = "/var/lib/ar-sync/"
-	arcomp_conf = "/etc/ar-compute/"
+    # Default core paths
+    fn_ar_cfg = "/etc/ar-compute-engine.conf"
+    arsync_exec = "/usr/libexec/ar-sync/"
+    arsync_lib = "/var/lib/ar-sync/"
+    arcomp_conf = "/etc/ar-compute/"
 
+    actual_date = datetime.strptime(args.date, '%Y-%m-%d')
 
-	actual_date = datetime.strptime(args.date,'%Y-%m-%d')
+    # Create a second date used by the file formats
+    date_under = args.date.replace("-", "_")
 
-	# Create a second date used by the file formats
-	date_under = args.date.replace("-","_")
+    # Initiate config file parser to read global ar-compute-engine.conf
+    ArConfig = SafeConfigParser()
+    ArConfig.read(fn_ar_cfg)
 
+    # logger init
+    log_mode = ArConfig.get('logging', 'log_mode')
+    log_file = ArConfig.get('logging', 'log_file')
+    log_level = ArConfig.get('logging', 'log_level')
+    logger = init_logger(log_mode, log_file, log_level, '[upload_sync.py]')
 
-	
+    # Compose needed sync filenames using the correct prefixes, dates and file
+    # extensions (avro/json)
 
-	# Initiate config file parser to read global ar-compute-engine.conf 
-	ArConfig = SafeConfigParser()
-	ArConfig.read(fn_ar_cfg)
+    fn_ops = args.tenant + '_ops.json'
+    fn_aps = args.tenant + '_' + args.job + '_ap.json'
+    fn_cfg = args.tenant + '_' + args.job + '_cfg.json'
+    fn_rec = args.tenant + '_recalc.json'
 
-	# logger init
-	log_mode = ArConfig.get('logging','log_mode')
-	log_file = ArConfig.get('logging','log_file')
-	log_level = ArConfig.get('logging','log_level')
-	logger = init_logger(log_mode,log_file,log_level,'[upload_sync.py]')
+    # compose hdfs temporary destination
+    # hdfs dest = ./tenant/sync/job/date/...
+    # sync files are not meant to be kept in hdfs (unless archived in batches)
+    hdfs_dest = './scratch/sync/' + args.tenant + \
+        '/' + args.job + '/' + date_under + '/'
 
-	
-	# Compose needed sync filenames using the correct prefixes, dates and file extensions (avro/json)
+    # Compose the local ar-sync files job folder
+    # arsync job = /var/lib/ar-sync/tenant/job/...
+    arsync_job = arsync_lib + args.tenant + '/' + args.job + '/'
 
-	fn_ops = args.tenant + '_ops.json'
-	fn_aps = args.tenant + '_' + args.job + '_ap.json'
-	fn_cfg = args.tenant + '_' + args.job + '_cfg.json'
-	fn_rec = args.tenant + '_recalc.json'
+    # Call downtimes latest info
+    cmd_call_downtimes = [
+        os.path.join(arsync_exec, 'downtime-sync'), '-d', args.date]
+    logger.info("Calling downtime sync to give us latest downtime info")
+    # call(cmd_call_downtimes)
 
-	# compose hdfs temporary destination
-	# hdfs dest = ./tenant/sync/job/date/...
-	# sync files are not meant to be kept in hdfs (unless archived in batches)
-	hdfs_dest = './scratch/sync/' + args.tenant + '/' + args.job + '/' + date_under + '/'
-	
-	# Compose the local ar-sync files job folder 
-	# arsync job = /var/lib/ar-sync/tenant/job/...
-	arsync_job = arsync_lib + args.tenant + '/' + args.job + '/'
+    # Compose the local paths for files (paths+filenames)
+    local_egroups = getSyncFile(actual_date, os.path.join(
+        arsync_job, "group_endpoints_"), '.avro', '_', logger)
+    local_ggroups = getSyncFile(
+        actual_date, os.path.join(arsync_job, "group_groups_"), '.avro', '_', logger)
+    local_weights = getSyncFile(
+        actual_date, os.path.join(arsync_job, "weights_sync_"), '.avro', '_', logger)
+    local_mps = getSyncFile(
+        actual_date, os.path.join(arsync_job, "poem_sync_"), '.avro', '_', logger)
+    local_downtimes = getSyncFile(
+        actual_date, os.path.join(arsync_lib, "downtimes_"), '.avro', '-', logger)
 
+    local_aps = os.path.join(arcomp_conf, fn_aps)
+    local_ops = os.path.join(arcomp_conf, fn_ops)
+    local_cfg = os.path.join(arcomp_conf, fn_cfg)
+    local_rec = os.path.join(arcomp_conf, fn_rec)
 
-	# Call downtimes latest info
-	cmd_call_downtimes = [os.path.join(arsync_exec,'downtime-sync'),'-d',args.date]
-	logger.info("Calling downtime sync to give us latest downtime info")
-	#call(cmd_call_downtimes)
+    # Check filenames if exist
+    logger.info("Check if %s exists: %s", local_aps, os.path.exists(local_aps))
+    logger.info("Check if %s exists: %s", local_aps, os.path.exists(local_ops))
+    logger.info("Check if %s exists: %s", local_aps, os.path.exists(local_cfg))
+    logger.info("Check if %s exists: %s", local_aps, os.path.exists(local_rec))
 
-	# Compose the local paths for files (paths+filenames)
-	local_egroups = getSyncFile(actual_date, os.path.join(arsync_job,"group_endpoints_") , '.avro','_',logger)
-	local_ggroups = getSyncFile(actual_date, os.path.join(arsync_job,"group_groups_") , '.avro','_',logger)
-	local_weights = getSyncFile(actual_date, os.path.join(arsync_job,"weights_sync_") , '.avro','_',logger)
-	local_mps = getSyncFile(actual_date, os.path.join(arsync_job,"poem_sync_"), '.avro','_',logger)
-	local_downtimes = getSyncFile(actual_date, os.path.join(arsync_lib,"downtimes_"), '.avro','-',logger)
+    # Remove scratch sync directory in hdfs (cause we don't keep unarchived
+    # sync files)
+    cmd_clearHdfs = ['hadoop', 'fs', '-rm', '-r', hdfs_dest]
+    # Establish new scratch sync directory in hdfs for this job
+    cmd_estHdfs = ['hadoop', 'fs', '-mkdir', '-p', hdfs_dest]
+    # Transfer endpoint groups topo from local to hdfs
+    cmd_putEgroups = ['hadoop', 'fs', '-put', '-f',
+                      local_egroups, hdfs_dest + 'group_endpoints.avro']
+    # Transfer group of groups topo from local to hdfs
+    cmd_putGgroups = ['hadoop', 'fs', '-put', '-f',
+                      local_ggroups, hdfs_dest + 'group_groups.avro']
+    # Transfer weight factors from local to hdfs
+    cmd_putWeights = ['hadoop', 'fs', '-put', '-f',
+                      local_weights, hdfs_dest + 'weights_sync.avro']
+    # Transfer metric profile from local to hdfs
+    cmd_putMps = ['hadoop', 'fs', '-put', '-f',
+                  local_mps, hdfs_dest + 'poem_sync.avro']
+    # Transfer downtime info from local to hdfs
+    cmd_putDowntimes = ['hadoop', 'fs', '-put', '-f',
+                        local_downtimes, hdfs_dest + 'downtimes.avro']
 
-	local_aps = os.path.join(arcomp_conf,fn_aps)
-	local_ops = os.path.join(arcomp_conf,fn_ops)
-	local_cfg = os.path.join(arcomp_conf,fn_cfg)
-	local_rec = os.path.join(arcomp_conf,fn_rec)
+    # Transfer availability profile from local to hdfs
+    cmd_putAps = ['hadoop', 'fs', '-put', '-f', local_aps, hdfs_dest]
+    # Transfer operations from local to hdfs
+    cmd_putOps = ['hadoop', 'fs', '-put', '-f', local_ops, hdfs_dest]
+    # Transfer job configuration file from local to hdfs
+    cmd_putCfg = ['hadoop', 'fs', '-put', '-f', local_cfg, hdfs_dest]
+    # Transfer recalculations requests (if any) from local to hdfs
+    cmd_putRec = ['hadoop', 'fs', '-put', '-f', local_rec, hdfs_dest]
 
-	# Check filenames if exist
-	logger.info("Check if %s exists: %s",local_aps,os.path.exists(local_aps))
-	logger.info("Check if %s exists: %s",local_aps,os.path.exists(local_ops))
-	logger.info("Check if %s exists: %s",local_aps,os.path.exists(local_cfg))
-	logger.info("Check if %s exists: %s",local_aps,os.path.exists(local_rec))
+    # try:
+    logger.info("Remove old hdfs scratch sync folder: %s", hdfs_dest)
+    call(cmd_clearHdfs)
+    logger.info("Establish new hdfs scratch sync folder %s", hdfs_dest)
+    call(cmd_estHdfs)
+    logger.info("Transfer metric profile")
+    call(cmd_putMps)
+    logger.info("Transfer endpoint group topology")
+    call(cmd_putEgroups)
+    logger.info("Transfer group of group topology")
+    call(cmd_putGgroups)
+    logger.info("Transfer weight factors")
+    call(cmd_putWeights)
+    logger.info("Transfer downtimes")
+    call(cmd_putDowntimes)
+    logger.info("Transfer avaliability profile")
+    call(cmd_putAps)
+    logger.info("Transfer operations file")
+    call(cmd_putOps)
+    logger.info("Transfer job configuration")
+    call(cmd_putCfg)
+    logger.info("Transfer recalculation requests")
+    call(cmd_putRec)
 
-	# Remove scratch sync directory in hdfs (cause we don't keep unarchived sync files)
-	cmd_clearHdfs = ['hadoop','fs','-rm','-r',hdfs_dest]
-	# Establish new scratch sync directory in hdfs for this job
-	cmd_estHdfs = ['hadoop','fs','-mkdir','-p',hdfs_dest]
-	# Transfer endpoint groups topo from local to hdfs
-	cmd_putEgroups =  ['hadoop','fs','-put','-f',local_egroups,hdfs_dest+'group_endpoints.avro']
-	# Transfer group of groups topo from local to hdfs 
-	cmd_putGgroups = ['hadoop','fs','-put','-f',local_ggroups,hdfs_dest+'group_groups.avro']
-	# Transfer weight factors from local to hdfs
-	cmd_putWeights = ['hadoop','fs','-put','-f',local_weights,hdfs_dest+'weights_sync.avro']
-	# Transfer metric profile from local to hdfs
-	cmd_putMps =  ['hadoop','fs','-put','-f',local_mps,hdfs_dest+'poem_sync.avro']
-	# Transfer downtime info from local to hdfs
-	cmd_putDowntimes = ['hadoop','fs','-put','-f',local_downtimes,hdfs_dest+'downtimes.avro']
-	
-	# Transfer availability profile from local to hdfs
-	cmd_putAps = ['hadoop','fs','-put','-f',local_aps,hdfs_dest]
-	# Transfer operations from local to hdfs 
-	cmd_putOps = ['hadoop','fs','-put','-f',local_ops,hdfs_dest]
-	# Transfer job configuration file from local to hdfs
-	cmd_putCfg = ['hadoop','fs','-put','-f',local_cfg,hdfs_dest]
-	# Transfer recalculations requests (if any) from local to hdfs
-	cmd_putRec = ['hadoop','fs','-put','-f',local_rec,hdfs_dest]
-	
-	#try:
-	logger.info("Remove old hdfs scratch sync folder: %s",hdfs_dest)
-	call(cmd_clearHdfs)
-	logger.info("Establish new hdfs scratch sync folder %s",hdfs_dest)
-	call(cmd_estHdfs)
-	logger.info("Transfer metric profile")
-	call(cmd_putMps)
-	logger.info("Transfer endpoint group topology")
-	call(cmd_putEgroups)
-	logger.info("Transfer group of group topology")
-	call(cmd_putGgroups)
-	logger.info("Transfer weight factors")
-	call(cmd_putWeights)
-	logger.info("Transfer downtimes")
-	call(cmd_putDowntimes)
-	logger.info("Transfer avaliability profile")
-	call(cmd_putAps)
-	logger.info("Transfer operations file")
-	call(cmd_putOps)
-	logger.info("Transfer job configuration")
-	call(cmd_putCfg)
-	logger.info("Transfer recalculation requests")
-	call(cmd_putRec)
-	
-
-	logger.info("Sync Data of tenant %s for job %s for date %s uploaded successfully to hdfs",args.tenant , args.job, args.date)
+    logger.info("Sync Data of tenant %s for job %s for date %s uploaded successfully to hdfs",
+                args.tenant, args.job, args.date)
 
 if __name__ == "__main__":
 
-	# Feed Argument parser with the description of the 3 arguments we need (input_file,output_file,schema_file)
-	arg_parser = ArgumentParser(description="Uploading sync data to hdfs")
-	arg_parser.add_argument("-d","--date",help="date", dest="date", metavar="DATE", required="TRUE")
-	arg_parser.add_argument("-t","--tenant",help="tenant owner", dest="tenant", metavar= "STRING", required="TRUE")
-	arg_parser.add_argument("-j","--job",help="job name", dest="job", metavar= "STRING", required="TRUE")
+    # Feed Argument parser with the description of the 3 arguments we need
+    # (input_file,output_file,schema_file)
+    arg_parser = ArgumentParser(description="Uploading sync data to hdfs")
+    arg_parser.add_argument(
+        "-d", "--date", help="date", dest="date", metavar="DATE", required="TRUE")
+    arg_parser.add_argument(
+        "-t", "--tenant", help="tenant owner", dest="tenant", metavar="STRING", required="TRUE")
+    arg_parser.add_argument(
+        "-j", "--job", help="job name", dest="job", metavar="STRING", required="TRUE")
 
-	# Parse the command line arguments accordingly and introduce them to main...
-	sys.exit(main(arg_parser.parse_args()))
+    # Parse the command line arguments accordingly and introduce them to
+    # main...
+    sys.exit(main(arg_parser.parse_args()))
