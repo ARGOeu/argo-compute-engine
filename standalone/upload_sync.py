@@ -97,10 +97,10 @@ def main(args=None):
 	local_rec = os.path.join(arcomp_conf,fn_rec)
 
 	# Check filenames if exist
-	logger.info("Check if %s exists: %s",(local_aps,os.path.exists(local_aps)))
-	logger.info("Check if %s exists: %s",(local_aps,os.path.exists(local_ops)))
-	logger.info("Check if %s exists: %s",(local_aps,os.path.exists(local_cfg)))
-	logger.info("Check if %s exists: %s",(local_aps,os.path.exists(local_rec)))
+	logger.info("Check if %s exists: %s",local_aps,os.path.exists(local_aps))
+	logger.info("Check if %s exists: %s",local_aps,os.path.exists(local_ops))
+	logger.info("Check if %s exists: %s",local_aps,os.path.exists(local_cfg))
+	logger.info("Check if %s exists: %s",local_aps,os.path.exists(local_rec))
 
 	# Remove scratch sync directory in hdfs (cause we don't keep unarchived sync files)
 	cmd_clearHdfs = ['hadoop','fs','-rm','-r',hdfs_dest]
