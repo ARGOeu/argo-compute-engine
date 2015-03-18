@@ -42,7 +42,7 @@ def main(args=None):
 	hdfs_sync_path = './scratch/sync/' + args.tenant + '/' + args.job + '/' + date_under + '/'
 
 	# Proposed local pathways
-	local_mdata_path = arsync_lib
+	local_mdata_path = '/tmp/' + args.tenant + "/mdata/"
 	local_sync_path = '/tmp/scratch/sync/' + args.tenant + '/' + args.job + '/' + date_under + '/'
 	local_cfg_path = arcomp_conf 
 
