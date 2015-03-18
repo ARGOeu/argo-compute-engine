@@ -47,7 +47,8 @@ def main(args=None):
 	# Initiate config file parser to read global ar-compute-engine.conf 
 	ArConfig = SafeConfigParser()
 	ArConfig.read(fn_ar_cfg)
-	
+	ar_mode = ArConfig.get('default','mode')
+
 	# Compose needed sync filenames using the correct prefixes, dates and file extensions (avro/json)
 
 	fn_ops = args.tenant + '_ops.json'
