@@ -39,19 +39,18 @@ def main(args=None):
 	arsync_lib = "/var/lib/ar-sync/"
 	arcomp_conf = "/etc/ar-compute/"
 
-
 	actual_date = datetime.strptime(args.date,'%Y-%m-%d')
 
 	# Create a second date used by the file formats
 	date_under = args.date.replace("-","_")
 
-
-	
-
 	# Initiate config file parser to read global ar-compute-engine.conf 
 	ArConfig = SafeConfigParser()
 	ArConfig.read(fn_ar_cfg)
-	
+
+	# Get mode from config file
+	ar_mode = ArConfig.get('default','mode')
+
 	# Compose needed sync filenames using the correct prefixes, dates and file extensions (avro/json)
 
 	fn_ops = args.tenant + '_ops.json'
@@ -59,10 +58,14 @@ def main(args=None):
 	fn_cfg = args.tenant + '_' + args.job + '_cfg.json'
 	fn_rec = args.tenant + '_recalc.json'
 
-	# compose hdfs temporary destination
-	# hdfs dest = ./tenant/sync/job/date/...
-	# sync files are not meant to be kept in hdfs (unless archived in batches)
-	hdfs_dest = './scratch/sync/' + args.tenant + '/' + args.job + '/' + date_under + '/'
+	if ar_mode == 'cluster':
+		# compose hdfs temporary destination
+		# hdfs dest = ./scratch/sync/tenant/job/date/...
+		# sync files are not meant to be kept in hdfs (unless archived in batches)
+		hdfs_dest = './scratch/sync/' + args.tenant + '/' + args.job + '/' + date_under + '/'
+	else:
+		# compose local temporary destination
+		hdfs_dest = '/tmp/scratch/sync/' + args.tenant + '/' + args.job + '/' + date_under + '/'
 	
 	# Compose the local ar-sync files job folder 
 	# arsync job = /var/lib/ar-sync/tenant/job/...
