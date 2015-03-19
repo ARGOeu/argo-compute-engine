@@ -143,7 +143,7 @@ def main(args=None):
         log.info("System configured to clean sync hdfs data after job")
         run_cmd(cmd_clean_sync, log)
 
-    log.info("Excution of status job for tenant %s for date %s completed!",
+    log.info("Execution of status job for tenant %s for date %s completed!",
              args.tenant, args.date)
 
 if __name__ == "__main__":
