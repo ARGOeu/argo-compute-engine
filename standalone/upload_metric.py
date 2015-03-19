@@ -26,10 +26,21 @@ def main(args=None):
 
 	prefilter_clean = ArConfig.get('default','prefilter_clean')
 
+	# Initialize logging
+    log_mode = ArConfig.get('logging', 'log_mode')
+    log_file='none'
+
+    if log_mode=='file':
+		log_file = ArConfig.get('logging', 'log_file')	
+    
+    log_level = ArConfig.get('logging', 'log_level')
+    logger = init_logger(log_mode, log_file, log_level, '[upload_metric.py]')
+
 	#call prefilter
 	cmd_pref = [os.path.join(arsync_exec,'prefilter-avro'),'-d',args.date]
 	
-	print "Calling prefilter-avro for date:%s" % args.date 
+	logger.info("Calling prefilter-avro for date:%s",args.date)
+
 	call(cmd_pref)
 
 	if ar_mode == 'cluster':
@@ -43,7 +54,7 @@ def main(args=None):
 	fn_prefilter = "prefilter_"+date_under+".avro"
 	local_prefilter = os.path.join(arsync_lib,fn_prefilter)
 
-	print "Check if produced %s exists: %s" % (local_prefilter,os.path.exists(local_prefilter))
+	logger.info("Check if produced %s exists: %s",local_prefilter,os.path.exists(local_prefilter))
 
 	# Command to establish tentant's metric data hdfs folder 
 	cmd_hdfs_mkdir = ['hadoop','fs','-mkdir','-p',hdfs_path]
@@ -55,18 +66,18 @@ def main(args=None):
 	cmd_clean = ['rm',local_prefilter]
 
 
-	print "Establish if not present hdfs metric data directory"
+	logger.info("Establish if not present hdfs metric data directory")
 	call(cmd_hdfs_mkdir)
 
-	print "Transfer files to hdfs"
+	logger.info("Transfer files to hdfs")
 	call(cmd_hdfs)
 
 	if prefilter_clean == "true":
-		print "System configured to clean prefilter data after transfer"
+		logger.info("System configured to clean prefilter data after transfer")
 		call(cmd_clean)
 
 
-	print "Metric Data of tenant %s for date %s uploaded successfully to hdfs" % (args.tenant , args.date)
+	logger.info("Metric Data of tenant %s for date %s uploaded successfully to hdfs",args.tenant , args.date)
 
 if __name__ == "__main__":
 
