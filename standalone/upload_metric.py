@@ -34,7 +34,7 @@ def main(args=None):
         log_file = ArConfig.get('logging', 'log_file')
 
     log_level = ArConfig.get('logging', 'log_level')
-    log = init_log(log_mode, log_file, log_level, '[upload_metric.py]')
+    log = init_log(log_mode, log_file, log_level, 'argo.upload_metric')
 
     # call prefilter
     cmd_pref = [os.path.join(arsync_exec, 'prefilter-avro'), '-d', args.date]
@@ -64,10 +64,10 @@ def main(args=None):
     cmd_hdfs = ['hadoop', 'fs', '-put', '-f', local_prefilter, hdfs_path]
 
     # Command to clear prefilter data after hdfs transfer
-    cmd_clean = ['rm', local_prefilter]
+    cmd_clean = ['rm','-f', local_prefilter]
 
     log.info("Establish if not present hdfs metric data directory")
-    run_cmd(cmd_hdfs_mkdir)
+    run_cmd(cmd_hdfs_mkdir, log)
 
     log.info("Transfer files to hdfs")
     run_cmd(cmd_hdfs, log)

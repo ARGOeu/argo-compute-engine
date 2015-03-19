@@ -26,6 +26,16 @@ def main(args=None):
     ArConfig = SafeConfigParser()
     ArConfig.read(fn_ar_cfg)
 
+    # Initialize logging
+    log_mode = ArConfig.get('logging', 'log_mode')
+    log_file = 'none'
+
+    if log_mode == 'file':
+        log_file = ArConfig.get('logging', 'log_file')
+
+    log_level = ArConfig.get('logging', 'log_level')
+    log = init_log(log_mode, log_file, log_level, 'argo.sync_backup')
+
     # Parse date argument
     actual_date = datetime.strptime(args.date, '%Y-%m-%d')
     # Set day on the first of the month

@@ -27,7 +27,7 @@ def main(args=None):
         log_file = ArConfig.get('logging', 'log_file')
 
     log_level = ArConfig.get('logging', 'log_level')
-    log = init_log(log_mode, log_file, log_level, '[job_cycle.py]')
+    log = init_log(log_mode, log_file, log_level, 'argo.job_cycle')
 
     tenant = ArConfig.get("jobs", "tenant")
     job_set = ArConfig.get("jobs", "job_set")

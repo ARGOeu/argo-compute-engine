@@ -25,7 +25,7 @@ def main(args=None):
         log_file = ArConfig.get('logging', 'log_file')
 
     log_level = ArConfig.get('logging', 'log_level')
-    log = init_log(log_mode, log_file, log_level, '[mongo_clean_status.py]')
+    log = init_log(log_mode, log_file, log_level, 'argo.mongo_clean_status')
 
     mongo_host = ArConfig.get('default', 'mongo_host')
     mongo_port = ArConfig.get('default', 'mongo_port')

@@ -39,7 +39,7 @@ def main(args=None):
         log_file = ArConfig.get('logging', 'log_file')
 
     log_level = ArConfig.get('logging', 'log_level')
-    log = init_log(log_mode, log_file, log_level, '[job_status_detail.py]')
+    log = init_log(log_mode, log_file, log_level, 'argo.job_status_detail')
 
     mongo_host = ArConfig.get('default', 'mongo_host')
     mongo_port = ArConfig.get('default', 'mongo_port')
@@ -124,7 +124,7 @@ def main(args=None):
         stdl_exec, "upload_sync.py"), '-d', args.date, '-t', args.tenant, '-j', job_set[0]]
 
     # Command to clean hdfs data
-    cmd_clean_sync = ['hadoop', 'fs', '-rm', '-r', hdfs_sync_path]
+    cmd_clean_sync = ['hadoop', 'fs', '-rm', '-r','-f', hdfs_sync_path]
 
     # Upload data to hdfs
     log.info("Uploading sync data to hdfs...")

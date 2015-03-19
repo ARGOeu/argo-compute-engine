@@ -57,7 +57,7 @@ def main(args=None):
         log_file = ArConfig.get('logging', 'log_file')
 
     log_level = ArConfig.get('logging', 'log_level')
-    log = init_log(log_mode, log_file, log_level, '[upload_sync.py]')
+    log = init_log(log_mode, log_file, log_level, 'argo.upload_sync')
 
     # Get mode from config file
     ar_mode = ArConfig.get('default', 'mode')
@@ -118,7 +118,7 @@ def main(args=None):
 
     # Remove scratch sync directory in hdfs (cause we don't keep unarchived
     # sync files)
-    cmd_clearHdfs = ['hadoop', 'fs', '-rm', '-r', hdfs_dest]
+    cmd_clearHdfs = ['hadoop', 'fs', '-rm', '-r','-f', hdfs_dest]
     # Establish new scratch sync directory in hdfs for this job
     cmd_estHdfs = ['hadoop', 'fs', '-mkdir', '-p', hdfs_dest]
     # Transfer endpoint groups topo from local to hdfs
