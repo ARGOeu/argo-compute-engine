@@ -1,4 +1,4 @@
-#!/usr/bin/env pythn
+#!/usr/bin/env python
 
 import logging
 import logging.handlers
