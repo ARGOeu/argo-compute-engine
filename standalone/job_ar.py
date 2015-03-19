@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
 # arg parsing related imports
-import os, sys, json
+import os
+import sys
+import json
+from argolog import init_log
+from argorun import run_cmd
 from datetime import datetime, timedelta
-from subprocess import call
 from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser
 
@@ -27,6 +30,16 @@ def main(args=None):
 
 	ArConfig = SafeConfigParser()
 	ArConfig.read(fn_ar_cfg)
+
+	# Initialize logging
+	log_mode = ArConfig.get('logging', 'log_mode')
+	log_file='none'
+
+	if log_mode=='file':
+		log_file = ArConfig.get('logging', 'log_file')	
+    
+	log_level = ArConfig.get('logging', 'log_level')
+	log = init_log(log_mode, log_file, log_level, '[job_ar.py]')
 
 	mongo_host = ArConfig.get('default','mongo_host')
 	mongo_port = ArConfig.get('default','mongo_port')
@@ -121,23 +134,23 @@ def main(args=None):
 	cmd_clean_sync = ['hadoop','fs','-rm','-r',hdfs_sync_path]
 
 	# Upload data to hdfs
-	print "Uploading sync data to hdfs..."
-	call(cmd_upload_sync)
+	log.info("Uploading sync data to hdfs...")
+	run_cmd(cmd_upload_sync,log)
 
 	# Clean data from mongo
-	print "Cleaning data from mongodb"
-	call(cmd_clean_mongo_ar)
+	log.info("Cleaning data from mongodb")
+	run_cmd(cmd_clean_mongo_ar,log)
 
 	# Call pig
-	print "Submitting pig compute a/r job..."
-	call(cmd_pig)
+	log.info("Submitting pig compute a/r job...")
+	run_cmd(cmd_pig,log)
 
 	# Cleaning hdfs sync data 
 	if sync_clean == "true":
-		print "System configured to clean sync hdfs data after job"
-		call(cmd_clean_sync)
+		log.info("System configured to clean sync hdfs data after job")
+		run_cmd(cmd_clean_sync,log)
 
-	print "Execution of ar job %s for tenant %s for date %s completed!" % (args.job , args.tenant, args.date)
+	log.info("Execution of ar job %s for tenant %s for date %s completed!",args.job , args.tenant, args.date)
 
 if __name__ == "__main__":
 
