@@ -118,7 +118,7 @@ def main(args=None):
 
     # Remove scratch sync directory in hdfs (cause we don't keep unarchived
     # sync files)
-    cmd_clearHdfs = ['hadoop', 'fs', '-rm', '-r','-f', hdfs_dest]
+    cmd_clearHdfs = ['hadoop', 'fs', '-rm', '-r', '-f', hdfs_dest]
     # Establish new scratch sync directory in hdfs for this job
     cmd_estHdfs = ['hadoop', 'fs', '-mkdir', '-p', hdfs_dest]
     # Transfer endpoint groups topo from local to hdfs

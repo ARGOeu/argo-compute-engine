@@ -124,7 +124,7 @@ def main(args=None):
         stdl_exec, "upload_sync.py"), '-d', args.date, '-t', args.tenant, '-j', job_set[0]]
 
     # Command to clean hdfs data
-    cmd_clean_sync = ['hadoop', 'fs', '-rm', '-r','-f', hdfs_sync_path]
+    cmd_clean_sync = ['hadoop', 'fs', '-rm', '-r', '-f', hdfs_sync_path]
 
     # Upload data to hdfs
     log.info("Uploading sync data to hdfs...")

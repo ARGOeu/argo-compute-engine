@@ -64,7 +64,7 @@ def main(args=None):
     cmd_hdfs = ['hadoop', 'fs', '-put', '-f', local_prefilter, hdfs_path]
 
     # Command to clear prefilter data after hdfs transfer
-    cmd_clean = ['rm','-f', local_prefilter]
+    cmd_clean = ['rm', '-f', local_prefilter]
 
     log.info("Establish if not present hdfs metric data directory")
     run_cmd(cmd_hdfs_mkdir, log)

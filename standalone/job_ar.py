@@ -141,18 +141,19 @@ def main(args=None):
         stdl_exec, "upload_sync.py"), '-d', args.date, '-t', args.tenant, '-j', args.job]
 
     # Command to clean hdfs data
-    cmd_clean_sync = ['hadoop', 'fs', '-rm', '-r','-f', hdfs_sync_path]
+    cmd_clean_sync = ['hadoop', 'fs', '-rm', '-r', '-f', hdfs_sync_path]
 
     # Upload data to hdfs
     log.info("Uploading sync data to hdfs...")
     run_cmd(cmd_upload_sync, log)
 
     # Clean data from mongo
-    log.info("Cleaning data from mongodb")
+    log.info("Cleaning data from mongodb...")
     run_cmd(cmd_clean_mongo_ar, log)
 
     # Call pig
-    log.info("Submitting pig compute a/r job...")
+    log.info("Submitting pig compute a/r job:%s for tenant:%s and date:%s ...",
+             args.job, args.tenant, args.date)
     run_cmd(cmd_pig, log)
 
     # Cleaning hdfs sync data
