@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 
-import os, sys, json, glob, tarfile
-from subprocess import call
+import os
+import sys
+import json
+import glob
+import tarfile
+from argolog import init_log
+from argorun import run_cmd
 from datetime import datetime, timedelta
 from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser
@@ -51,20 +56,18 @@ def main(args=None):
 
 	# Add downtimes to the tar file 
 
-	print "Adding downtime files for %s of %s" % (month_ago.strftime("%B"),month_ago.year)
+	log.info("Adding downtime files for %s of %s",month_ago.strftime("%B"),month_ago.year)
 	for f in downtime_list:
 		tar_path = args.tenant + '/' + os.path.basename(f)
-		print tar_path
 		sync_tar.add(f,tar_path)
 
 	# Iterate over job folders
 	for item in job_set:
 		jobsync_list = glob.glob(os.path.join(arsync_lib,args.tenant,item,query_down))
 
-		print "adding sync files for %s of %s for Job: %s" % (month_ago.strftime("%B"),month_ago.year,item)
+		log.info("adding sync files for %s of %s for Job: %s",month_ago.strftime("%B"),month_ago.year,item)
 
 		for f in jobsync_list:
-			print tar_path
 			tar_path = args.tenant + '/' + item + '/' + os.path.basename(f)
 			sync_tar.add(f,tar_path)
 	
@@ -75,21 +78,21 @@ def main(args=None):
 	hdfs_dest = args.tenant + '/backup/sync/'
 	cmd_establish_hdfs = ['hadoop','fs','-mkdir','-p',hdfs_dest]
 
-	print "Establish hdfs backup directory: %s" % hdfs_dest
-	call(cmd_establish_hdfs)
+	log.info("Establish hdfs backup directory: %s",hdfs_dest)
+	run_cmd(cmd_establish_hdfs,log)
 
 	# Transfer tar archive to hdfs
 	cmd_hdfs_put = ['hadoop','fs','-put','-f',local_tar,hdfs_dest]
 
-	print "Transfer backup  from local:%s to hdfs:%s" % (local_tar,hdfs_dest) 
-	call(cmd_hdfs_put)
+	log.info("Transfer backup  from local:%s to hdfs:%s",local_tar,hdfs_dest) 
+	run_cmd(cmd_hdfs_put,log)
 
 	# Clean up temporary tar
-	print "Cleanup tmp data"
+	log.info("Cleanup tmp data")
 	if os.path.exists(local_tar):
 		os.remove(local_tar)
 
-	print "Backup Completed to hdfs"
+	log.info("Backup Completed to hdfs")
 
 
 if __name__ == "__main__":
