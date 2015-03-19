@@ -1,4 +1,4 @@
-#!/usr/bin/env pythn
+#!/usr/bin/env python
 
 from subprocess import check_call, CalledProcessError
 from os import path
