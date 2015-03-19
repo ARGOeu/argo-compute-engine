@@ -2,7 +2,8 @@
 
 # arg parsing related imports
 import os, sys
-from subprocess import call
+from argolog import init_log
+from argorun import run_cmd
 from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser
 
@@ -10,7 +11,6 @@ from ConfigParser import SafeConfigParser
 
 def main(args=None):
 
-	
 	# default config 
 	fn_ar_cfg = "/etc/ar-compute-engine.conf"
 	arsync_exec = "/usr/libexec/ar-sync/"
@@ -27,21 +27,21 @@ def main(args=None):
 	prefilter_clean = ArConfig.get('default','prefilter_clean')
 
 	# Initialize logging
-    log_mode = ArConfig.get('logging', 'log_mode')
-    log_file='none'
+	log_mode = ArConfig.get('logging', 'log_mode')
+	log_file='none'
 
-    if log_mode=='file':
+	if log_mode=='file':
 		log_file = ArConfig.get('logging', 'log_file')	
     
-    log_level = ArConfig.get('logging', 'log_level')
-    logger = init_logger(log_mode, log_file, log_level, '[upload_metric.py]')
+	log_level = ArConfig.get('logging', 'log_level')
+	log = init_log(log_mode, log_file, log_level, '[upload_metric.py]')
 
 	#call prefilter
 	cmd_pref = [os.path.join(arsync_exec,'prefilter-avro'),'-d',args.date]
 	
-	logger.info("Calling prefilter-avro for date:%s",args.date)
+	log.info("Calling prefilter-avro for date:%s",args.date)
 
-	call(cmd_pref)
+	run_cmd(cmd_pref,log)
 
 	if ar_mode == 'cluster':
 		# compose hdfs destination
@@ -54,7 +54,7 @@ def main(args=None):
 	fn_prefilter = "prefilter_"+date_under+".avro"
 	local_prefilter = os.path.join(arsync_lib,fn_prefilter)
 
-	logger.info("Check if produced %s exists: %s",local_prefilter,os.path.exists(local_prefilter))
+	log.info("Check if produced %s exists: %s",local_prefilter,os.path.exists(local_prefilter))
 
 	# Command to establish tentant's metric data hdfs folder 
 	cmd_hdfs_mkdir = ['hadoop','fs','-mkdir','-p',hdfs_path]
@@ -65,19 +65,18 @@ def main(args=None):
 	# Command to clear prefilter data after hdfs transfer
 	cmd_clean = ['rm',local_prefilter]
 
+	log.info("Establish if not present hdfs metric data directory")
+	run_cmd(cmd_hdfs_mkdir)
 
-	logger.info("Establish if not present hdfs metric data directory")
-	call(cmd_hdfs_mkdir)
-
-	logger.info("Transfer files to hdfs")
-	call(cmd_hdfs)
+	log.info("Transfer files to hdfs")
+	run_cmd(cmd_hdfs,log)
 
 	if prefilter_clean == "true":
-		logger.info("System configured to clean prefilter data after transfer")
-		call(cmd_clean)
+		log.info("System configured to clean prefilter data after transfer")
+		run_cmd(cmd_clean,log)
 
 
-	logger.info("Metric Data of tenant %s for date %s uploaded successfully to hdfs",args.tenant , args.date)
+	log.info("Metric Data of tenant %s for date %s uploaded successfully to hdfs",args.tenant , args.date)
 
 if __name__ == "__main__":
 
