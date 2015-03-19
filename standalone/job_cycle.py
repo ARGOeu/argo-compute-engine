@@ -48,13 +48,13 @@ def main(args=None):
     cmd_job_status = [
         os.path.join(sdl_exec, "job_status_detail.py"), '-d', args.date, '-t', tenant]
 
-    log.info("Job Cycle: Run status detail job")
+    log.info("Job Cycle: Run status detail job for tenant:%s and date: %s",tenant,args.date)
     run_cmd(cmd_job_status, log)
 
     log.info("Job Cycle: Iterate over a/r jobs and submit them")
     # For each job genereate ar
     for item in job_set:
-
+        log.info("Job Cycle: tenant %s has job named %s",tenant,item)
         cmd_job_ar = [
             os.path.join(sdl_exec, "job_ar.py"), '-d', args.date, '-t', tenant, '-j', item]
         run_cmd(cmd_job_ar, log)
