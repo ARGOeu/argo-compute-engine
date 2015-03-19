@@ -9,116 +9,121 @@ from ConfigParser import SafeConfigParser
 from pymongo import MongoClient
 
 
-
 def main(args=None):
 
-	# default config 
-	fn_ar_cfg = "/etc/ar-compute-engine.conf"
+    # default config
+    fn_ar_cfg = "/etc/ar-compute-engine.conf"
 
-	ArConfig = SafeConfigParser()
-	ArConfig.read(fn_ar_cfg)
+    ArConfig = SafeConfigParser()
+    ArConfig.read(fn_ar_cfg)
 
-	# Initialize logging
-	log_mode = ArConfig.get('logging', 'log_mode')
-	log_file='none'
+    # Initialize logging
+    log_mode = ArConfig.get('logging', 'log_mode')
+    log_file = 'none'
 
-	if log_mode=='file':
-		log_file = ArConfig.get('logging', 'log_file')	
-    
-	log_level = ArConfig.get('logging', 'log_level')
-	log = init_log(log_mode, log_file, log_level, '[mongo_clean_status.py]')
-	
-	mongo_host = ArConfig.get('default','mongo_host')
-	mongo_port = ArConfig.get('default','mongo_port')
+    if log_mode == 'file':
+        log_file = ArConfig.get('logging', 'log_file')
 
-	mongo_service_dest = ArConfig.get('datastore_mapping','service_dest')
-	mongo_egroup_dest = ArConfig.get('datastore_mapping','egroup_dest')
+    log_level = ArConfig.get('logging', 'log_level')
+    log = init_log(log_mode, log_file, log_level, '[mongo_clean_status.py]')
 
-	#Split db.collection path strings to obtain database name and collection name
-	mongo_service_dest = mongo_service_dest.split('.')
-	db_service = mongo_service_dest[0]
-	col_service = mongo_service_dest[1]
+    mongo_host = ArConfig.get('default', 'mongo_host')
+    mongo_port = ArConfig.get('default', 'mongo_port')
 
-	mongo_egroup_dest = mongo_egroup_dest.split('.')
-	db_egroup = mongo_egroup_dest[0]
-	col_egroup = mongo_egroup_dest[1]
+    mongo_service_dest = ArConfig.get('datastore_mapping', 'service_dest')
+    mongo_egroup_dest = ArConfig.get('datastore_mapping', 'egroup_dest')
 
-	#Create a date integer for use in the database queries
-	date_int = int(args.date.replace("-",""))
+    # Split db.collection path strings to obtain database name and collection
+    # name
+    mongo_service_dest = mongo_service_dest.split('.')
+    db_service = mongo_service_dest[0]
+    col_service = mongo_service_dest[1]
 
-	log.info("Connecting to mongo server: %s:%s",mongo_host,mongo_port)
-	client = MongoClient(str(mongo_host), int(mongo_port))
+    mongo_egroup_dest = mongo_egroup_dest.split('.')
+    db_egroup = mongo_egroup_dest[0]
+    col_egroup = mongo_egroup_dest[1]
 
-	# for service collection cleanup do the following
-	log.info("Regarding service a/r data...")
+    # Create a date integer for use in the database queries
+    date_int = int(args.date.replace("-", ""))
 
-	log.info("Opening database: %s",db_service)
-	db = client[db_service]
+    log.info("Connecting to mongo server: %s:%s", mongo_host, mongo_port)
+    client = MongoClient(str(mongo_host), int(mongo_port))
 
-	log.info("Opening collection: %s",col_service)
-	col = db[col_service]
+    # for service collection cleanup do the following
+    log.info("Regarding service a/r data...")
 
-	if args.profile:
-		num_of_rows = col.find({"dt": date_int,"ap":args.profile}).count()
-		log.info("Found %s entries for date %s and profile %s",num_of_rows,args.date,args.profile)	
-	else:
-		num_of_rows = col.find({"dt": date_int}).count()
-		log.info("Found %s entries for date %s",num_of_rows,args.date)
-		
+    log.info("Opening database: %s", db_service)
+    db = client[db_service]
 
-	if num_of_rows > 0:	
-		
-		if args.profile:
-			log.info("Remove entries for date: %s and av.profile: %s",args.date,args.profile) 
-			col.remove({"dt": date_int,"ap":args.profile})
-		else:
-			log.info("Remove entries for date: %s",args.date) 
-			col.remove({"dt": date_int})
+    log.info("Opening collection: %s", col_service)
+    col = db[col_service]
 
-		log.info("Entries Removed!")
+    if args.profile:
+        num_of_rows = col.find({"dt": date_int, "ap": args.profile}).count()
+        log.info("Found %s entries for date %s and profile %s",
+                 num_of_rows, args.date, args.profile)
+    else:
+        num_of_rows = col.find({"dt": date_int}).count()
+        log.info("Found %s entries for date %s", num_of_rows, args.date)
 
-	else:
-		log.info("Zero entries found. No need to remove anything")
+    if num_of_rows > 0:
 
+        if args.profile:
+            log.info(
+                "Remove entries for date: %s and av.profile: %s", args.date, args.profile)
+            col.remove({"dt": date_int, "ap": args.profile})
+        else:
+            log.info("Remove entries for date: %s", args.date)
+            col.remove({"dt": date_int})
 
-	# for service collection cleanup do the following
-	log.info("Regarding endpoint group a/r data...")
+        log.info("Entries Removed!")
 
-	log.info("Opening database: %s",db_egroup)
-	db = client[db_egroup]
+    else:
+        log.info("Zero entries found. No need to remove anything")
 
-	log.info("Opening collection: %s",col_egroup)
-	col = db[col_egroup]
+    # for service collection cleanup do the following
+    log.info("Regarding endpoint group a/r data...")
 
-	if args.profile:
-		num_of_rows = col.find({"dt": date_int,"ap":args.profile}).count()
-		log.info("Found %s entries for date %s and profile %s",num_of_rows,args.date,args.profile)
-	else:
-		num_of_rows = col.find({"dt": date_int}).count()
-		log.info("Found %s entries for date %s",num_of_rows,args.date)
-		
+    log.info("Opening database: %s", db_egroup)
+    db = client[db_egroup]
 
-	if num_of_rows > 0:	
-		
-		if args.profile:
-			log.info("Remove entries for date: %s and av.profile: %s",args.date,args.profile) 
-			col.remove({"dt": date_int,"ap":args.profile})
-		else:
-			log.info("Remove entries for date: %s",args.date) 
-			col.remove({"dt": date_int})
-			
+    log.info("Opening collection: %s", col_egroup)
+    col = db[col_egroup]
 
-		log.info("Entries Removed!")
-	else:
-		log.info("Zero entries found. No need to remove anything")
+    if args.profile:
+        num_of_rows = col.find({"dt": date_int, "ap": args.profile}).count()
+        log.info("Found %s entries for date %s and profile %s",
+                 num_of_rows, args.date, args.profile)
+    else:
+        num_of_rows = col.find({"dt": date_int}).count()
+        log.info("Found %s entries for date %s", num_of_rows, args.date)
+
+    if num_of_rows > 0:
+
+        if args.profile:
+            log.info(
+                "Remove entries for date: %s and av.profile: %s", args.date, args.profile)
+            col.remove({"dt": date_int, "ap": args.profile})
+        else:
+            log.info("Remove entries for date: %s", args.date)
+            col.remove({"dt": date_int})
+
+        log.info("Entries Removed!")
+    else:
+        log.info("Zero entries found. No need to remove anything")
 
 
 if __name__ == "__main__":
 
-	# Feed Argument parser with the description of the 3 arguments we need (input_file,output_file,schema_file)
-	arg_parser = ArgumentParser(description="clean status detail data for a day")
-	arg_parser.add_argument("-d","--date",help="date", dest="date", metavar="DATE", required="TRUE")
-	arg_parser.add_argument("-p","--profile",help="availability profile",dest="profile",metavar="STRING")
+    # Feed Argument parser with the description of the 3 arguments we need
+    # (input_file,output_file,schema_file)
+    arg_parser = ArgumentParser(
+        description="clean status detail data for a day")
+    arg_parser.add_argument(
+        "-d", "--date", help="date", dest="date", metavar="DATE", required="TRUE")
+    arg_parser.add_argument(
+        "-p", "--profile", help="availability profile", dest="profile", metavar="STRING")
 
-	# Parse the command line arguments accordingly and introduce them to main...
-	sys.exit(main(arg_parser.parse_args()))
+    # Parse the command line arguments accordingly and introduce them to
+    # main...
+    sys.exit(main(arg_parser.parse_args()))

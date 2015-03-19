@@ -3,6 +3,7 @@
 import logging
 import logging.handlers
 
+
 def init_log(log_mode, log_file, log_level, log_name):
     # Instantiate logger with proper name
     log = logging.getLogger(log_name)
