@@ -111,6 +111,10 @@ def main(args=None):
         cmd_pig.append('-param')
         cmd_pig.append(item + '=' + pig_params[item])
 
+    # Append Pig logfile option
+    cmd_pig.append('-l')
+    cmd_pig.append('/var/log/pig/errors/')
+
     # Append Pig Executionable Script
     cmd_pig.append('-f')
     cmd_pig.append(pig_script_path + 'compute-status.pig')

@@ -34,6 +34,8 @@ install --directory %{buildroot}/usr/libexec/ar-compute/lib/avro
 install --directory %{buildroot}/usr/libexec/ar-compute/standalone
 install --directory %{buildroot}/var/lib/ar-compute
 install --directory %{buildroot}/var/log/ar-compute
+install --directory %{buildroot}/var/log/pig
+install --directory %{buildroot}/var/log/pig/errors
 install --directory %{buildroot}/etc
 install --directory %{buildroot}/etc/ar-compute
 
@@ -62,10 +64,14 @@ mvn clean
 %attr(0755,root,root) /usr/libexec/ar-compute/MyUDF.jar
 %attr(0750,root,root) /var/lib/ar-compute
 %attr(0750,root,root) /var/log/ar-compute
+%attr(0750,root,root) /var/log/pig
+%attr(0750,root,root) /var/log/pig/errors
 %attr(0644,root,root) /etc/ar-compute-engine.conf
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
+* Thu Mar 26 2015 Dimitrios Folias <folias@lab.grid.auth.gr> - 1.6.0-7%{?dist}
+- Added directories for pig exceptions stack trace error logs
 * Mon Mar 02 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-6%{?dist}
 - Fix typo in ar-compute-engine.conf 
 * Fri Feb 27 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-5%{?dist}
