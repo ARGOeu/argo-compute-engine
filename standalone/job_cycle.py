@@ -14,7 +14,7 @@ def main(args=None):
     # default config
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
     arcomp_conf = "/etc/ar-compute/"
-    sdl_exec = "/usr/libexec/ar-compute/standalone/"
+    sdl_exec = "/usr/libexec/ar-compute/bin/"
 
     ArConfig = SafeConfigParser()
     ArConfig.read(fn_ar_cfg)
