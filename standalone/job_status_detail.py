@@ -113,7 +113,7 @@ def main(args=None):
 
     # Append Pig logfile option
     cmd_pig.append('-l')
-    cmd_pig.append('/var/log/pig/errors/')
+    cmd_pig.append('/var/log/pig/exceptions/')
 
     # Append Pig Executionable Script
     cmd_pig.append('-f')
