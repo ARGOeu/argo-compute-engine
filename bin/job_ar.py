@@ -19,7 +19,7 @@ def main(args=None):
     arsync_lib = "/var/lib/ar-sync/"
     arcomp_conf = "/etc/ar-compute/"
     arcomp_exec = "/usr/libexec/ar-compute/"
-    stdl_exec = "/usr/libexec/ar-compute/standalone"
+    stdl_exec = "/usr/libexec/ar-compute/bin"
     pig_script_path = "/usr/libexec/ar-compute/pig/"
 
     actual_date = datetime.strptime(args.date, '%Y-%m-%d')
