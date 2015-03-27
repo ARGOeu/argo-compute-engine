@@ -21,7 +21,6 @@ def main(args=None):
     arcomp_conf = "/etc/ar-compute/"
     arcomp_exec = "/usr/libexec/ar-compute/"
     stdl_exec = "/usr/libexec/ar-compute/bin"
-    pig_script_path = "/ufsr/libexec/ar-compute/pig/"
 
     ArConfig = SafeConfigParser()
     ArConfig.read(fn_ar_cfg)
