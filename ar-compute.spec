@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.6.0
-Release: 6%{?dist}
+Version: 1.6.1
+Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -31,7 +31,7 @@ install --directory %{buildroot}/usr/libexec/ar-compute
 install --directory %{buildroot}/usr/libexec/ar-compute/pig
 install --directory %{buildroot}/usr/libexec/ar-compute/lib
 install --directory %{buildroot}/usr/libexec/ar-compute/lib/avro
-install --directory %{buildroot}/usr/libexec/ar-compute/standalone
+install --directory %{buildroot}/usr/libexec/ar-compute/bin
 install --directory %{buildroot}/var/lib/ar-compute
 install --directory %{buildroot}/var/log/ar-compute
 install --directory %{buildroot}/etc
@@ -43,7 +43,7 @@ install --mode 644 status-computation/lib/avro/*                %{buildroot}/usr
 install --mode 644 status-computation/lib/*.jar                 %{buildroot}/usr/libexec/ar-compute/lib/
 install --mode 644 status-computation/lib/*.sh                  %{buildroot}/usr/libexec/ar-compute/lib/
 install --mode 644 status-computation/lib/*.py                  %{buildroot}/usr/libexec/ar-compute/lib/
-install --mode 755 standalone/*.py                              %{buildroot}/usr/libexec/ar-compute/standalone/
+install --mode 755 bin/*.py                                     %{buildroot}/usr/libexec/ar-compute/bin/
 install --mode 644 status-computation/java/target/MyUDF-1.0.jar %{buildroot}/usr/libexec/ar-compute/MyUDF.jar
 install --mode 644 conf/ar-compute-engine.conf                  %{buildroot}/etc/
 install --mode 644 conf/*.json                                  %{buildroot}/etc/ar-compute
@@ -58,7 +58,7 @@ mvn clean
 %attr(0755,root,root) /usr/libexec/ar-compute/ar-compute.py
 %attr(0755,root,root) /usr/libexec/ar-compute/pig/*.pig
 %attr(0755,root,root) /usr/libexec/ar-compute/lib/*
-%attr(0755,root,root) /usr/libexec/ar-compute/standalone/*.py
+%attr(0755,root,root) /usr/libexec/ar-compute/bin/*.py
 %attr(0755,root,root) /usr/libexec/ar-compute/MyUDF.jar
 %attr(0750,root,root) /var/lib/ar-compute
 %attr(0750,root,root) /var/log/ar-compute
@@ -66,6 +66,8 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
+* Thu Mar 26 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.1-1%{?dist}
+- Renameing of standalone folder to bin
 * Mon Mar 02 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-6%{?dist}
 - Fix typo in ar-compute-engine.conf 
 * Fri Feb 27 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-5%{?dist}
