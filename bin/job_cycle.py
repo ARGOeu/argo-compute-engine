@@ -19,6 +19,13 @@ def main(args=None):
     ArConfig = SafeConfigParser()
     ArConfig.read(fn_ar_cfg)
 
+    # Set hadoop and pig clients logging settings
+    os.environ["HADOOP_LOG_DIR"] = "/tmp"
+    os.environ["HADOOP_LOGFILE"] = "hadoop.log"
+    os.environ["HADOOP_ROOT_LOGGER"] = "INFO,console,RFA"
+    os.environ["PIG_LOG_DIR"] = "/tmp"
+    os.environ["PIG_LOGFILE"] = "pig.log"
+
     # Initialize logging
     log_mode = ArConfig.get('logging', 'log_mode')
     log_file = 'none'
