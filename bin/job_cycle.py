@@ -26,6 +26,10 @@ def main(args=None):
     if log_mode == 'file':
         log_file = ArConfig.get('logging', 'log_file')
 
+    if log_mode == 'syslog':
+        # Set hadoop logger settings
+        os.environ["HADOOP_ROOT_LOGGER"] = ArConfig.get('logging', 'hadoop_log_opts')
+
     log_level = ArConfig.get('logging', 'log_level')
     log = init_log(log_mode, log_file, log_level, 'argo.job_cycle')
 
