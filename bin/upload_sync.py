@@ -36,8 +36,6 @@ def main(args=None):
 
     # Default core paths
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
-    arsync_exec = "/usr/libexec/ar-sync/"
-    arsync_lib = "/var/lib/ar-sync/"
     arcomp_conf = "/etc/ar-compute/"
 
     actual_date = datetime.strptime(args.date, '%Y-%m-%d')
@@ -48,6 +46,10 @@ def main(args=None):
     # Initiate config file parser to read global ar-compute-engine.conf
     ArConfig = SafeConfigParser()
     ArConfig.read(fn_ar_cfg)
+
+    # Get sync exec and path
+    arsync_exec = ArConfig.get('connectors', 'sync_exec')
+    arsync_lib = ArConfig.get('connectors', 'sync_path')
 
     # Initialize logging
     log_mode = ArConfig.get('logging', 'log_mode')
