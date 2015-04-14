@@ -13,13 +13,14 @@ def main(args=None):
 
     # default config
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
-    arsync_exec = "/usr/libexec/ar-sync/"
-    arsync_lib = "/var/lib/ar-sync/"
-
     date_under = args.date.replace("-", "_")
 
     ArConfig = SafeConfigParser()
     ArConfig.read(fn_ar_cfg)
+
+    # Get sync exec and path
+    arsync_exec = ArConfig.get('connectors', 'sync_exec')
+    arsync_lib = ArConfig.get('connectors', 'sync_path')
 
     # Get mode from config file
     ar_mode = ArConfig.get('default', 'mode')
