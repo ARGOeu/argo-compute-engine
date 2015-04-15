@@ -55,7 +55,7 @@ def main(args=None):
     sync_tar = tarfile.open(local_tar, mode='w')
 
     # Grab all available jobs in the system
-    job_set = ArConfig.get("jobs", "job_set")
+    job_set = ArConfig.get("jobs", args.tenant+"_jobs")
     job_set = job_set.split(',')
 
     # Create query strings to list appropriate files
