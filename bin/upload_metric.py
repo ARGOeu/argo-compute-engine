@@ -37,12 +37,20 @@ def main(args=None):
     log_level = ArConfig.get('logging', 'log_level')
     log = init_log(log_mode, log_file, log_level, 'argo.upload_metric')
 
-    # call prefilter
-    cmd_pref = [os.path.join(arsync_exec, 'prefilter-avro'), '-d', args.date]
-
-    log.info("Calling prefilter-avro for date:%s", args.date)
-
-    run_cmd(cmd_pref, log)
+    # call prefilter if necessary for specified tenant
+    if ArConfig.has_option('jobs', 'prefilter'):
+        prefilter_exec = ArConfig.get('jobs', 'prefilter')
+        cmd_pref = [os.path.join(arsync_exec, prefilter_exec), '-d', args.date]
+        
+        log.info("Calling %s for date: %s", os.path.join(arsync_exec, prefilter_exec), args.date)
+        
+        run_cmd(cmd_pref, log)
+        
+        fn_prefilter = "prefilter_" + date_under + ".avro"
+        local_prefilter = os.path.join(arsync_lib, arg_parser.parse_args().tenant, fn_prefilter)
+        
+        log.info("Check if produced %s exists: %s",
+                 local_prefilter, os.path.exists(local_prefilter))
 
     if ar_mode == 'cluster':
         # compose hdfs destination
