@@ -101,7 +101,7 @@ def main(args=None):
     local_ggroups = getSyncFile(
         actual_date, os.path.join(arsync_job, "group_groups_"), '.avro', '_', log)
     local_weights = getSyncFile(
-        actual_date, os.path.join(arsync_job, "weights_sync_"), '.avro', '_', log)
+        actual_date, os.path.join(arsync_job, "weights_"), '.avro', '_', log)
     local_mps = getSyncFile(
         actual_date, os.path.join(arsync_job, "poem_sync_"), '.avro', '_', log)
     local_downtimes = getSyncFile(
