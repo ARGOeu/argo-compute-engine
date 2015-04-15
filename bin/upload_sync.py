@@ -90,8 +90,8 @@ def main(args=None):
 
     # Call downtimes latest info
     cmd_call_downtimes = [
-        os.path.join(arsync_exec, 'downtime-sync'), '-d', args.date]
-    log.info("Calling downtime sync to give us latest downtime info")
+        os.path.join(arsync_exec, 'downtimes-gocdb-connector.py'), '-d', args.date]
+    log.info("Calling downtime sync connector to give us latest downtime info")
 
     run_cmd(cmd_call_downtimes, log)
 
