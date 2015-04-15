@@ -105,7 +105,7 @@ def main(args=None):
     local_mps = getSyncFile(
         actual_date, os.path.join(arsync_job, "poem_sync_"), '.avro', '_', log)
     local_downtimes = getSyncFile(
-        actual_date, os.path.join(arsync_job, "downtimes_"), '.avro', '-', log)
+        actual_date, os.path.join(arsync_job, "downtimes_"), '.avro', '_', log)
 
     local_aps = os.path.join(arcomp_conf, fn_aps)
     local_ops = os.path.join(arcomp_conf, fn_ops)
