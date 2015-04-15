@@ -131,7 +131,7 @@ def main(args=None):
                       local_ggroups, hdfs_dest + 'group_groups.avro']
     # Transfer weight factors from local to hdfs
     cmd_putWeights = ['hadoop', 'fs', '-put', '-f',
-                      local_weights, hdfs_dest + 'weights_sync.avro']
+                      local_weights, hdfs_dest + 'weights.avro']
     # Transfer metric profile from local to hdfs
     cmd_putMps = ['hadoop', 'fs', '-put', '-f',
                   local_mps, hdfs_dest + 'poem_sync.avro']
