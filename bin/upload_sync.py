@@ -86,7 +86,7 @@ def main(args=None):
 
     # Compose the local ar-sync files job folder
     # arsync job = /path/to/synced_stuff/tenant/job/...
-    arsync_job = arsync_lib + args.tenant + '/' + args.job + '/'
+    arsync_job = arsync_lib + '/' + args.tenant + '/' + args.job + '/'
 
     # Call downtimes latest info
     cmd_call_downtimes = [
