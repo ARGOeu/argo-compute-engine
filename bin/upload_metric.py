@@ -60,12 +60,6 @@ def main(args=None):
         # compose local temporary destination
         hdfs_path = "/tmp/" + args.tenant + "/mdata/"
 
-    fn_prefilter = "prefilter_" + date_under + ".avro"
-    local_prefilter = os.path.join(arsync_lib, fn_prefilter)
-
-    log.info("Check if produced %s exists: %s",
-             local_prefilter, os.path.exists(local_prefilter))
-
     # Command to establish tentant's metric data hdfs folder
     cmd_hdfs_mkdir = ['hadoop', 'fs', '-mkdir', '-p', hdfs_path]
 
