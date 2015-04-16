@@ -38,8 +38,8 @@ def main(args=None):
     log = init_log(log_mode, log_file, log_level, 'argo.upload_metric')
 
     # call prefilter if necessary for specified tenant
-    if ArConfig.has_option('jobs', 'prefilter'):
-        prefilter_exec = ArConfig.get('jobs', 'prefilter')
+    if ArConfig.has_option('jobs', tenant + '_prefilter'):
+        prefilter_exec = ArConfig.get('jobs', tenant + '_prefilter')
         cmd_pref = [os.path.join(arsync_exec, prefilter_exec), '-d', args.date]
         
         log.info("Calling %s for date: %s", os.path.join(arsync_exec, prefilter_exec), args.date)
