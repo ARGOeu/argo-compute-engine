@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
 Version: 1.6.1
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -65,6 +65,8 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
+* Wed Apr 15 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.1-4%{?dist}
+- Multitenancy support in configuration files (derived from ARGO-67)
 * Tue Apr 14 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.1-3%{?dist}
 - ARGO-61 Updates in python wrappers to make sync path configurable in CE
 * Thu Apr 9 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.1-2%{?dist}
