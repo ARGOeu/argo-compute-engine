@@ -13,14 +13,13 @@ def main(args=None):
 
     # default config
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
+    arsync_exec = "/usr/libexec/ar-sync/"
+    arsync_lib = "/var/lib/ar-sync/"
+
     date_under = args.date.replace("-", "_")
 
     ArConfig = SafeConfigParser()
     ArConfig.read(fn_ar_cfg)
-
-    # Get sync exec and path
-    arsync_exec = ArConfig.get('connectors', 'sync_exec')
-    arsync_lib = ArConfig.get('connectors', 'sync_path')
 
     # Get mode from config file
     ar_mode = ArConfig.get('default', 'mode')
@@ -37,20 +36,12 @@ def main(args=None):
     log_level = ArConfig.get('logging', 'log_level')
     log = init_log(log_mode, log_file, log_level, 'argo.upload_metric')
 
-    # call prefilter if necessary for specified tenant
-    if ArConfig.has_option('jobs', 'prefilter'):
-        prefilter_exec = ArConfig.get('jobs', 'prefilter')
-        cmd_pref = [os.path.join(arsync_exec, prefilter_exec), '-d', args.date]
-        
-        log.info("Calling %s for date: %s", os.path.join(arsync_exec, prefilter_exec), args.date)
-        
-        run_cmd(cmd_pref, log)
-        
-        fn_prefilter = "prefilter_" + date_under + ".avro"
-        local_prefilter = os.path.join(arsync_lib, arg_parser.parse_args().tenant, fn_prefilter)
-        
-        log.info("Check if produced %s exists: %s",
-                 local_prefilter, os.path.exists(local_prefilter))
+    # call prefilter
+    cmd_pref = [os.path.join(arsync_exec, 'prefilter-avro'), '-d', args.date]
+
+    log.info("Calling prefilter-avro for date:%s", args.date)
+
+    run_cmd(cmd_pref, log)
 
     if ar_mode == 'cluster':
         # compose hdfs destination
@@ -59,6 +50,12 @@ def main(args=None):
     else:
         # compose local temporary destination
         hdfs_path = "/tmp/" + args.tenant + "/mdata/"
+
+    fn_prefilter = "prefilter_" + date_under + ".avro"
+    local_prefilter = os.path.join(arsync_lib, fn_prefilter)
+
+    log.info("Check if produced %s exists: %s",
+             local_prefilter, os.path.exists(local_prefilter))
 
     # Command to establish tentant's metric data hdfs folder
     cmd_hdfs_mkdir = ['hadoop', 'fs', '-mkdir', '-p', hdfs_path]

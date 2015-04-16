@@ -16,15 +16,14 @@ def main(args=None):
 
     # default config
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
+    arsync_exec = "/usr/libexec/ar-sync/"
+    arsync_lib = "/var/lib/ar-sync/"
     arcomp_conf = "/etc/ar-compute/"
     arcomp_exec = "/usr/libexec/ar-compute/"
     stdl_exec = "/usr/libexec/ar-compute/bin"
 
     ArConfig = SafeConfigParser()
     ArConfig.read(fn_ar_cfg)
-
-    # Get sync path
-    arsync_lib = ArConfig.get('connectors', 'sync_path')
 
     # Initialize logging
     log_mode = ArConfig.get('logging', 'log_mode')
