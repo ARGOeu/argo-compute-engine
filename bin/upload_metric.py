@@ -38,6 +38,10 @@ def main(args=None):
     log = init_log(log_mode, log_file, log_level, 'argo.upload_metric')
 
     # call prefilter if necessary for specified tenant
+    # FIXME: This conditional won't work if a prefilter wrapper is missing. 
+    # DETAILS: If a prefilter wrapper is not provided then the 
+    # local_prefilter variable will not be initialized. Note, however, that
+    # this variable is used below and outside of this conditional. 
     if ArConfig.has_option('jobs', arg_parser.parse_args().tenant + '_prefilter'):
         prefilter_exec = ArConfig.get('jobs', arg_parser.parse_args().tenant + '_prefilter')
         cmd_pref = [os.path.join(arsync_exec, prefilter_exec), '-d', args.date]
