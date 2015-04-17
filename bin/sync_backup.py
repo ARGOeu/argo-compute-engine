@@ -16,14 +16,15 @@ def main(args=None):
 
     # default config
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
-    arsync_exec = "/usr/libexec/ar-sync/"
-    arsync_lib = "/var/lib/ar-sync/"
     arcomp_conf = "/etc/ar-compute/"
     arcomp_exec = "/usr/libexec/ar-compute/"
     stdl_exec = "/usr/libexec/ar-compute/bin"
 
     ArConfig = SafeConfigParser()
     ArConfig.read(fn_ar_cfg)
+
+    # Get sync path
+    arsync_lib = ArConfig.get('connectors', 'sync_path')
 
     # Initialize logging
     log_mode = ArConfig.get('logging', 'log_mode')
@@ -55,7 +56,7 @@ def main(args=None):
     sync_tar = tarfile.open(local_tar, mode='w')
 
     # Grab all available jobs in the system
-    job_set = ArConfig.get("jobs", "job_set")
+    job_set = ArConfig.get("jobs", args.tenant+"_jobs")
     job_set = job_set.split(',')
 
     # Create query strings to list appropriate files

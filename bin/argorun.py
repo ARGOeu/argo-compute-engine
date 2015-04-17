@@ -13,8 +13,8 @@ def run_cmd(cmd_args, log):
     try:
         check_call(cmd_args)
     except CalledProcessError:
-        log.error("Error while executing [%s]", exec_name)
+        log.error("Error while executing %s", exec_name)
         exit(1)
     except OSError:
-        log.error("Could not locate [%s] at path: %s", exec_name, exec_path)
+        log.error("Could not locate %s at path: %s", exec_name, exec_path)
         exit(1)

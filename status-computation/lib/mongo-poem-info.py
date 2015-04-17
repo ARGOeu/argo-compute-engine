@@ -15,8 +15,13 @@ from pymongo import MongoClient
 from ConfigParser import SafeConfigParser, Error
 
 #enviroment: ar-sync path and ar-compute config
-ar_sync_path = '/var/lib/ar-sync/'
 cfg_fn = '/etc/ar-compute-engine.conf'
+
+ArConfig = SafeConfigParser()
+ArConfig.read(cfg_fn)
+
+# Get sync path from configuration file
+ar_sync_path = ArConfig.get('connectors', 'sync_path')
 
 #Determine the date
 try:

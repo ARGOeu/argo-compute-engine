@@ -1,13 +1,12 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
 Version: 1.6.1
-Release: 1%{?dist}
+Release: 4%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
 BuildArch: x86_64
 Source0:   %{name}-%{version}.tar.gz
-Requires: ar-sync
 Requires: python-argparse
 Requires: python-pymongo
 Requires: hive
@@ -66,6 +65,12 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
+* Wed Apr 15 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.1-4%{?dist}
+- Multitenancy support in configuration files (derived from ARGO-67)
+* Tue Apr 14 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.1-3%{?dist}
+- ARGO-61 Updates in python wrappers to make sync path configurable in CE
+* Thu Apr 9 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.1-2%{?dist}
+- Removed runtime dependancy on ar-sync package
 * Thu Mar 26 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.1-1%{?dist}
 - Renameing of standalone folder to bin
 * Mon Mar 02 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-6%{?dist}

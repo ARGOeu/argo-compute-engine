@@ -36,8 +36,6 @@ def main(args=None):
 
     # Default core paths
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
-    arsync_exec = "/usr/libexec/ar-sync/"
-    arsync_lib = "/var/lib/ar-sync/"
     arcomp_conf = "/etc/ar-compute/"
 
     actual_date = datetime.strptime(args.date, '%Y-%m-%d')
@@ -48,6 +46,10 @@ def main(args=None):
     # Initiate config file parser to read global ar-compute-engine.conf
     ArConfig = SafeConfigParser()
     ArConfig.read(fn_ar_cfg)
+
+    # Get sync exec and path
+    arsync_exec = ArConfig.get('connectors', 'sync_exec')
+    arsync_lib = ArConfig.get('connectors', 'sync_path')
 
     # Initialize logging
     log_mode = ArConfig.get('logging', 'log_mode')
@@ -83,13 +85,13 @@ def main(args=None):
             '/' + args.job + '/' + date_under + '/'
 
     # Compose the local ar-sync files job folder
-    # arsync job = /var/lib/ar-sync/tenant/job/...
-    arsync_job = arsync_lib + args.tenant + '/' + args.job + '/'
+    # arsync job = /path/to/synced_stuff/tenant/job/...
+    arsync_job = arsync_lib + '/' + args.tenant + '/' + args.job + '/'
 
     # Call downtimes latest info
     cmd_call_downtimes = [
-        os.path.join(arsync_exec, 'downtime-sync'), '-d', args.date]
-    log.info("Calling downtime sync to give us latest downtime info")
+        os.path.join(arsync_exec, 'downtimes-gocdb-connector.py'), '-d', args.date]
+    log.info("Calling downtime sync connector to give us latest downtime info")
 
     run_cmd(cmd_call_downtimes, log)
 
@@ -99,11 +101,11 @@ def main(args=None):
     local_ggroups = getSyncFile(
         actual_date, os.path.join(arsync_job, "group_groups_"), '.avro', '_', log)
     local_weights = getSyncFile(
-        actual_date, os.path.join(arsync_job, "weights_sync_"), '.avro', '_', log)
+        actual_date, os.path.join(arsync_job, "weights_"), '.avro', '_', log)
     local_mps = getSyncFile(
         actual_date, os.path.join(arsync_job, "poem_sync_"), '.avro', '_', log)
     local_downtimes = getSyncFile(
-        actual_date, os.path.join(arsync_lib, "downtimes_"), '.avro', '-', log)
+        actual_date, os.path.join(arsync_job, "downtimes_"), '.avro', '_', log)
 
     local_aps = os.path.join(arcomp_conf, fn_aps)
     local_ops = os.path.join(arcomp_conf, fn_ops)
@@ -129,7 +131,7 @@ def main(args=None):
                       local_ggroups, hdfs_dest + 'group_groups.avro']
     # Transfer weight factors from local to hdfs
     cmd_putWeights = ['hadoop', 'fs', '-put', '-f',
-                      local_weights, hdfs_dest + 'weights_sync.avro']
+                      local_weights, hdfs_dest + 'weights.avro']
     # Transfer metric profile from local to hdfs
     cmd_putMps = ['hadoop', 'fs', '-put', '-f',
                   local_mps, hdfs_dest + 'poem_sync.avro']
