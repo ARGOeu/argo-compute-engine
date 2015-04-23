@@ -52,10 +52,10 @@ def main(args=None):
 
     # Inform the user in wether argo runs locally or distributed
     if ar_mode == 'local':
-        log.info("argo engine runs in LOCAL mode")
+        log.info("ARGO compute engine runs in LOCAL mode")
         log.info("computation job will be run locally")
     else:
-        log.info("argo engine runs in CLUSTER mode")
+        log.info("ARGO compute engine runs in CLUSTER mode")
         log.info("computation job will be submitted to the hadoop cluster")
 
     # check if sync_data must be cleaned in hdfs

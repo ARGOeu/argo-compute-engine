@@ -66,10 +66,10 @@ def main(args=None):
 
     # Inform the user in wether argo runs locally or distributed
     if ar_mode == 'local':
-        log.info("argo engine runs in LOCAL mode")
+        log.info("ARGO compute engine runs in LOCAL mode")
         log.info("sync data will be staged for computations locally")
     else:
-        log.info("argo engine runs in CLUSTER mode")
+        log.info("ARGO compute engine runs in CLUSTER mode")
         log.info("sync data will be  uploaded to HDFS")
 
     # Compose needed sync filenames using the correct prefixes, dates and file
