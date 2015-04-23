@@ -25,6 +25,8 @@ def main(args=None):
     # Get mode from config file
     ar_mode = ArConfig.get('default', 'mode')
 
+
+
     prefilter_clean = ArConfig.get('default', 'prefilter_clean')
 
     # Initialize logging
@@ -36,6 +38,14 @@ def main(args=None):
 
     log_level = ArConfig.get('logging', 'log_level')
     log = init_log(log_mode, log_file, log_level, 'argo.upload_metric')
+
+    # Inform the user in wether argo runs locally or distributed
+    if ar_mode == 'local':
+        log.info("argo engine runs in LOCAL mode")
+        log.info("metric data will be staged for computations locally")
+    else:
+        log.info("argo engine runs in CLUSTER mode")
+        log.info("metric data will be uploaded to HDFS")
 
     # call prefilter if necessary for specified tenant
     # FIXME: This conditional won't work if a prefilter wrapper is missing. 
