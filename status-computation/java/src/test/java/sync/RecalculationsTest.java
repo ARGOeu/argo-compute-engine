@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
@@ -22,7 +23,7 @@ public class RecalculationsTest {
 	}
 	
 	@Test
-	public void test() throws URISyntaxException, FileNotFoundException, ParseException {
+	public void test() throws URISyntaxException, ParseException, IOException {
 		//Prepare Resource File
 		URL resJsonFile = RecalculationsTest.class.getResource("/ops/recalc.json");
 		File jsonFile = new File(resJsonFile.toURI());

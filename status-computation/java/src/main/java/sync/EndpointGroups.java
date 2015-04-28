@@ -151,11 +151,11 @@ public class EndpointGroups {
 		}
 	}
 
-	public int loadAvro(File avroFile) {
+	public int loadAvro(File avroFile) throws IOException {
 
 		// Prepare Avro File Readers
 		DatumReader<GenericRecord> datumReader = new GenericDatumReader<GenericRecord>();
-		DataFileReader<GenericRecord> dataFileReader;
+		DataFileReader<GenericRecord> dataFileReader = null;
 		try {
 			dataFileReader = new DataFileReader<GenericRecord>(avroFile,
 					datumReader);
@@ -204,10 +204,20 @@ public class EndpointGroups {
 
 			this.unfilter();
 
-			dataFileReader.close();
+			
 
-		} catch (IOException e) {
+		} catch (IOException ex) {
 			log.error("Could not open avro file:" + avroFile.getName());
+			throw ex;
+		} finally {
+			if (dataFileReader != null) {
+				try {
+					dataFileReader.close();
+				} catch (IOException ex) {
+					log.error("Cannot close file:" + avroFile.getName());
+					throw ex;
+				}
+			}
 		}
 
 		return 0; // allgood

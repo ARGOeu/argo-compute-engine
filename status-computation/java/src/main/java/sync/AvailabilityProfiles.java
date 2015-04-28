@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -223,9 +224,9 @@ public class AvailabilityProfiles {
 
 	}
 
-	public void loadJson(File jsonFile) {
+	public void loadJson(File jsonFile) throws RuntimeException, IOException {
 
-		BufferedReader br;
+		BufferedReader br = null;
 		try {
 
 			br = new BufferedReader(new FileReader(jsonFile));
@@ -266,11 +267,22 @@ public class AvailabilityProfiles {
 			// Add profile to the list
 			this.list.put(tmpAvp.name, tmpAvp);
 
-		} catch (FileNotFoundException e) {
+		} catch (FileNotFoundException ex) {
 			log.error("Could not open file:" + jsonFile.getName());
+			throw ex;
 
-		} catch (JsonParseException e) {
+		} catch (JsonParseException ex) {
 			log.error("File is not valid json:" + jsonFile.getName());
+			throw ex;
+		} finally {
+			if (br != null) {
+				try {
+					br.close();
+				} catch (IOException ex) {
+					log.error("Cannot close file:" + jsonFile.getName());
+					throw ex;
+				}
+			}
 		}
 
 	}
