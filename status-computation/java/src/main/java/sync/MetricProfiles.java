@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 
 public class MetricProfiles {
 
-	static Logger log = Logger.getLogger(AvailabilityProfiles.class.getName());
+	static Logger log = Logger.getLogger(MetricProfiles.class.getName());
 
 	private ArrayList<ProfileItem> list;
 	private Map<String, HashMap<String, ArrayList<String>>> index;

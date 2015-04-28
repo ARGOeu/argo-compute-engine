@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 
 public class GroupsOfGroups {
 
-	static Logger log = Logger.getLogger(AvailabilityProfiles.class.getName());
+	static Logger log = Logger.getLogger(GroupsOfGroups.class.getName());
 
 	private ArrayList<GroupItem> list;
 	private ArrayList<GroupItem> fList;

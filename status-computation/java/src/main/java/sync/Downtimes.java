@@ -19,7 +19,7 @@ import org.apache.avro.io.DatumReader;
 public class Downtimes {
 
 	private ArrayList<DowntimeItem> list;
-	static Logger log = Logger.getLogger(AvailabilityProfiles.class.getName());
+	static Logger log = Logger.getLogger(Downtimes.class.getName());
 
 	private class DowntimeItem {
 		String hostname; // name of host

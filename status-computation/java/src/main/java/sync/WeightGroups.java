@@ -20,7 +20,7 @@ public class WeightGroups {
 
 	private HashMap<String, ArrayList<WeightItem>> list;
 
-	static Logger log = Logger.getLogger(AvailabilityProfiles.class.getName());
+	static Logger log = Logger.getLogger(WeightGroups.class.getName());
 
 	private class WeightItem {
 		String group; // name of the group

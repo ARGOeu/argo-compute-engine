@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 
 public class EndpointGroups {
 
-	static Logger log = Logger.getLogger(AvailabilityProfiles.class.getName());
+	static Logger log = Logger.getLogger(EndpointGroups.class.getName());
 
 	private ArrayList<EndpointItem> list;
 	private ArrayList<EndpointItem> fList;

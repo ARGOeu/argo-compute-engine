@@ -21,7 +21,7 @@ import com.google.gson.JsonParser;
 
 public class Recalculations {
 
-	static Logger log = Logger.getLogger(AvailabilityProfiles.class.getName());
+	static Logger log = Logger.getLogger(Recalculations.class.getName());
 
 	public ArrayList<RecalcItem> list;
 
