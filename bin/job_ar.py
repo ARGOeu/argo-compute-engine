@@ -50,6 +50,14 @@ def main(args=None):
     mongo_dest_egroup = ArConfig.get('datastore_mapping', 'egroup_dest')
     ar_mode = ArConfig.get('default', 'mode')
 
+    # Inform the user in wether argo runs locally or distributed
+    if ar_mode == 'local':
+        log.info("ARGO compute engine runs in LOCAL mode")
+        log.info("computation job will be run locally")
+    else:
+        log.info("ARGO compute engine runs in CLUSTER mode")
+        log.info("computation job will be submitted to the hadoop cluster")
+
     # check if sync_data must be cleaned in hdfs
     sync_clean = ArConfig.get('default', 'sync_clean')
 
