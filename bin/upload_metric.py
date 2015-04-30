@@ -42,8 +42,8 @@ def main(args=None):
     # DETAILS: If a prefilter wrapper is not provided then the 
     # local_prefilter variable will not be initialized. Note, however, that
     # this variable is used below and outside of this conditional. 
-    if ArConfig.has_option('jobs', arg_parser.parse_args().tenant + '_prefilter'):
-        prefilter_exec = ArConfig.get('jobs', arg_parser.parse_args().tenant + '_prefilter')
+    if ArConfig.has_option('jobs', args.tenant + '_prefilter'):
+        prefilter_exec = ArConfig.get('jobs', args.tenant + '_prefilter')
         cmd_pref = [os.path.join(arsync_exec, prefilter_exec), '-d', args.date]
 
         log.info("Calling %s for date: %s", os.path.join(arsync_exec, prefilter_exec), args.date)
@@ -51,7 +51,7 @@ def main(args=None):
         run_cmd(cmd_pref, log)
 
         fn_prefilter = "prefilter_" + date_under + ".avro"
-        local_prefilter = os.path.join(arsync_lib, arg_parser.parse_args().tenant, fn_prefilter)
+        local_prefilter = os.path.join(arsync_lib, args.tenant, fn_prefilter)
 
         log.info("Check if produced %s exists: %s",
                  local_prefilter, os.path.exists(local_prefilter))
