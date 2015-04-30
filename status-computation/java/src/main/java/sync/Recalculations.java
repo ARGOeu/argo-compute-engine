@@ -21,7 +21,7 @@ import com.google.gson.JsonParser;
 
 public class Recalculations {
 
-	static Logger log = Logger.getLogger(Recalculations.class.getName());
+	private static final Logger LOG = Logger.getLogger(Recalculations.class.getName());
 
 	public ArrayList<RecalcItem> list;
 
@@ -160,7 +160,7 @@ public class Recalculations {
 			}
 
 		} catch (FileNotFoundException ex) {
-			log.error("Could not open file:" + jsonFile.getName());
+			LOG.error("Could not open file:" + jsonFile.getName());
 			throw ex;
 
 		} finally {
@@ -168,7 +168,7 @@ public class Recalculations {
 				try {
 					br.close();
 				} catch (IOException ex) {
-					log.error("Cannot close file:" + jsonFile.getName());
+					LOG.error("Cannot close file:" + jsonFile.getName());
 					throw ex;
 				}
 			}

@@ -19,7 +19,7 @@ import org.apache.avro.io.DatumReader;
 public class Downtimes {
 
 	private ArrayList<DowntimeItem> list;
-	static Logger log = Logger.getLogger(Downtimes.class.getName());
+	private static final Logger LOG = Logger.getLogger(Downtimes.class.getName());
 
 	private class DowntimeItem {
 		String hostname; // name of host
@@ -131,14 +131,14 @@ public class Downtimes {
 			
 
 		} catch (IOException ex) {
-			log.error("Could not open avro file:" + avroFile.getName());
+			LOG.error("Could not open avro file:" + avroFile.getName());
 			throw ex;
 		} finally {
 			if (dataFileReader != null) {
 				try {
 					dataFileReader.close();
 				} catch (IOException ex) {
-					log.error("Cannot close file:" + avroFile.getName());
+					LOG.error("Cannot close file:" + avroFile.getName());
 					throw ex;
 				}
 			}

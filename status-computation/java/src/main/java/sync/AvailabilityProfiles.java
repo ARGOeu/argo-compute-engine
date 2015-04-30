@@ -20,7 +20,7 @@ import com.google.gson.JsonParser;
 public class AvailabilityProfiles {
 
 	private HashMap<String, AvProfileItem> list;
-	static Logger log = Logger.getLogger(AvailabilityProfiles.class.getName());
+	private static final Logger LOG = Logger.getLogger(AvailabilityProfiles.class.getName());
 
 	public AvailabilityProfiles() {
 
@@ -268,18 +268,18 @@ public class AvailabilityProfiles {
 			this.list.put(tmpAvp.name, tmpAvp);
 
 		} catch (FileNotFoundException ex) {
-			log.error("Could not open file:" + jsonFile.getName());
+			LOG.error("Could not open file:" + jsonFile.getName());
 			throw ex;
 
 		} catch (JsonParseException ex) {
-			log.error("File is not valid json:" + jsonFile.getName());
+			LOG.error("File is not valid json:" + jsonFile.getName());
 			throw ex;
 		} finally {
 			if (br != null) {
 				try {
 					br.close();
 				} catch (IOException ex) {
-					log.error("Cannot close file:" + jsonFile.getName());
+					LOG.error("Cannot close file:" + jsonFile.getName());
 					throw ex;
 				}
 			}

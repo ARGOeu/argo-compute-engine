@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 
 public class MetricProfiles {
 
-	static Logger log = Logger.getLogger(MetricProfiles.class.getName());
+	private static final Logger LOG = Logger.getLogger(MetricProfiles.class.getName());
 
 	private ArrayList<ProfileItem> list;
 	private Map<String, HashMap<String, ArrayList<String>>> index;
@@ -212,14 +212,14 @@ public class MetricProfiles {
 			dataFileReader.close();
 
 		} catch (IOException ex) {
-			log.error("Could not open avro file:" + avroFile.getName());
+			LOG.error("Could not open avro file:" + avroFile.getName());
 			throw ex;
 		} finally {
 			if (dataFileReader != null) {
 				try {
 					dataFileReader.close();
 				} catch (IOException ex) {
-					log.error("Cannot close file:" + avroFile.getName());
+					LOG.error("Cannot close file:" + avroFile.getName());
 					throw ex;
 				}
 			}

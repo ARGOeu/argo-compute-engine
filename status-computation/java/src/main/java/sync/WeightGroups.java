@@ -20,7 +20,7 @@ public class WeightGroups {
 
 	private HashMap<String, ArrayList<WeightItem>> list;
 
-	static Logger log = Logger.getLogger(WeightGroups.class.getName());
+	private static final Logger LOG = Logger.getLogger(WeightGroups.class.getName());
 
 	private class WeightItem {
 		String group; // name of the group
@@ -121,14 +121,14 @@ public class WeightGroups {
 			dataFileReader.close();
 
 		} catch (IOException ex) {
-			log.error("Could not open avro file:" + avroFile.getName());
+			LOG.error("Could not open avro file:" + avroFile.getName());
 			throw ex;
 		} finally {
 			if (dataFileReader != null) {
 				try {
 					dataFileReader.close();
 				} catch (IOException ex) {
-					log.error("Cannot close file:" + avroFile.getName());
+					LOG.error("Cannot close file:" + avroFile.getName());
 					throw ex;
 				}
 			}
