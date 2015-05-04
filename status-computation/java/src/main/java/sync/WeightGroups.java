@@ -15,6 +15,7 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
+import org.apache.commons.io.IOUtils;
 
 public class WeightGroups {
 
@@ -124,14 +125,8 @@ public class WeightGroups {
 			LOG.error("Could not open avro file:" + avroFile.getName());
 			throw ex;
 		} finally {
-			if (dataFileReader != null) {
-				try {
-					dataFileReader.close();
-				} catch (IOException ex) {
-					LOG.error("Cannot close file:" + avroFile.getName());
-					throw ex;
-				}
-			}
+			// Close quietly without exceptions the buffered reader
+			IOUtils.closeQuietly(dataFileReader);
 		}
 
 		return 0; // allgood

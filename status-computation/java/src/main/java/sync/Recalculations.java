@@ -1,5 +1,6 @@
 package sync;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -164,14 +165,8 @@ public class Recalculations {
 			throw ex;
 
 		} finally {
-			if (br != null) {
-				try {
-					br.close();
-				} catch (IOException ex) {
-					LOG.error("Cannot close file:" + jsonFile.getName());
-					throw ex;
-				}
-			}
+			// Close quietly without exceptions the buffered reader
+			IOUtils.closeQuietly(br);
 		}
 
 	}

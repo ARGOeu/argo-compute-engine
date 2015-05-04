@@ -1,5 +1,6 @@
 package sync;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -224,7 +225,7 @@ public class AvailabilityProfiles {
 
 	}
 
-	public void loadJson(File jsonFile) throws RuntimeException, IOException {
+	public void loadJson(File jsonFile) throws  IOException {
 
 		BufferedReader br = null;
 		try {
@@ -275,14 +276,8 @@ public class AvailabilityProfiles {
 			LOG.error("File is not valid json:" + jsonFile.getName());
 			throw ex;
 		} finally {
-			if (br != null) {
-				try {
-					br.close();
-				} catch (IOException ex) {
-					LOG.error("Cannot close file:" + jsonFile.getName());
-					throw ex;
-				}
-			}
+			// Close quietly without exceptions the buffered reader
+			IOUtils.closeQuietly(br);
 		}
 
 	}
