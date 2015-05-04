@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import sync.AvailabilityProfiles;
@@ -130,14 +131,8 @@ public class ConfigManager {
 			LOG.error("File is not valid json:" + jsonFile.getName());
 			throw ex;
 		} finally {
-			if (br != null) {
-				try {
-					br.close();
-				} catch (IOException ex) {
-					LOG.error("Cannot close file:" + jsonFile.getName());
-					throw ex;
-				}
-			}
+			// Close quietly without exceptions the buffered reader
+			IOUtils.closeQuietly(br);
 		}
 		
 		
