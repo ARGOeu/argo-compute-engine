@@ -7,7 +7,9 @@ import java.util.List;
 
 import ops.ConfigManager;
 
+import org.apache.log4j.Logger;
 import org.apache.pig.FilterFunc;
+import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.Tuple;
 
 import sync.AvailabilityProfiles;
@@ -16,6 +18,8 @@ import sync.GroupsOfGroups;
 import sync.MetricProfiles;
 
 public class PickEndpoints extends FilterFunc {
+	
+	private static final Logger LOG = Logger.getLogger(PickEndpoints.class.getName());
     
 	public EndpointGroups egMgr;
 	public GroupsOfGroups ggMgr;
@@ -95,18 +99,35 @@ public class PickEndpoints extends FilterFunc {
 	} 
 	
 	@Override
-	public Boolean exec(Tuple input) throws IOException {
+	public Boolean exec(Tuple input) {
 		if (this.initialized==false)
 		{
-			this.init();
+			try {
+				this.init();
+			} catch (IOException e) {
+				LOG.error("Could not initialize sync structures");
+				throw new RuntimeException("pig Eval Init Error");
+			} 
 		}
 		
 		if (input == null || input.size() == 0) return false;
 		
-		//Get Arguments
-		String hostname = (String)input.get(0);
-		String service = (String)input.get(1);
-		String metric = (String)input.get(2);
+		
+		// Check and get tuple input
+		String hostname;
+		String service;
+		String metric;
+		
+		try {
+			//Get Arguments
+			hostname = (String)input.get(0);
+			service = (String)input.get(1);
+			metric = (String)input.get(2);
+		} catch (ExecException e) {
+			LOG.error("Could not parse eval input data");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		}
 		
 		//Only 1 profile per job
 		String prof = mpsMgr.getProfiles().get(0);

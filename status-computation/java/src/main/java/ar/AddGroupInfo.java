@@ -74,7 +74,7 @@ public class AddGroupInfo extends EvalFunc<Tuple>{
 	public Tuple exec(Tuple input)   {
 		
 		// Check if cache files have been opened 
-		if (this.initialized==false)
+		if (this.initialized == false)
         {
         	try {
 				this.init();
