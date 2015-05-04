@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
@@ -24,7 +25,7 @@ public class DTimelineTest {
 	
 	
 	@Test
-	public void test() throws URISyntaxException, FileNotFoundException, ParseException {
+	public void test() throws URISyntaxException, ParseException, IOException {
 		
 		// Use Operations Manager 
 		//Prepare Resource File

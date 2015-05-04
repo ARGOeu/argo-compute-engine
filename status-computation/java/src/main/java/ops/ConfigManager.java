@@ -4,16 +4,27 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import org.apache.log4j.Logger;
+
+import sync.AvailabilityProfiles;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+
+
 
 public class ConfigManager {
 
+	
+	private static final Logger LOG = Logger.getLogger(ConfigManager.class.getName());
+	
 	public String tenant;
 	public String job;
 	public String egroup; // endpoint group
@@ -59,11 +70,14 @@ public class ConfigManager {
 		return null;
 	}
 
-	public void loadJson(File json_file) throws FileNotFoundException {
+	public void loadJson(File jsonFile) throws IOException  {
 		// Clear data
 		this.clear();
 
-		BufferedReader br = new BufferedReader(new FileReader(json_file));
+		BufferedReader br=null;
+		try {
+			br = new BufferedReader(new FileReader(jsonFile));
+		
 		JsonParser jsonParser = new JsonParser();
 		JsonElement jElement = jsonParser.parse(br);
 		JsonObject jObj = jElement.getAsJsonObject();
@@ -105,6 +119,24 @@ public class ConfigManager {
 			for (Entry<String,JsonElement> subitem : jSubObj.entrySet())
 			{
 				this.datastore_map.get(itemKey).put(subitem.getKey(), subitem.getValue().getAsString());
+			}
+		}
+		
+		} catch (FileNotFoundException ex) {
+			LOG.error("Could not open file:" + jsonFile.getName());
+			throw ex;
+
+		} catch (JsonParseException ex) {
+			LOG.error("File is not valid json:" + jsonFile.getName());
+			throw ex;
+		} finally {
+			if (br != null) {
+				try {
+					br.close();
+				} catch (IOException ex) {
+					LOG.error("Cannot close file:" + jsonFile.getName());
+					throw ex;
+				}
 			}
 		}
 		
