@@ -87,8 +87,8 @@ public class AddGroupInfo extends EvalFunc<Tuple>{
 		String service;
 		String hostname; 
 		try {
-			service = (String) input.get(0);
-			hostname = (String) input.get(1);
+			service = (String)input.get(0);
+			hostname = (String)input.get(1);
 		} catch (ExecException e) {
 			LOG.error("Could not parse eval input data");
 			LOG.error("Bad tuple input:" + input.toString());
