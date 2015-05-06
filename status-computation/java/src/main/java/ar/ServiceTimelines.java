@@ -108,26 +108,21 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 
 		this.serviceAggr.clear();
 
-		// /Grab endpoint info
 		String groupname;
 		String service;
+		DefaultDataBag bag;
 		try {
+			// /Grab endpoint info
 			groupname = (String)input.get(0);
 			service = (String)input.get(1);
+			// Get timeline info
+			bag = (DefaultDataBag) input.get(2);
 		} catch (ExecException e) {
 			LOG.error("Could not parse eval input data");
 			LOG.error("Bad tuple input:" + input.toString());
 			throw new RuntimeException("pig Eval bad input");
 		}
-		// Get timeline info
-		DefaultDataBag bag;
-		try {
-			bag = (DefaultDataBag) input.get(2);
-		} catch (ExecException e) {
-			LOG.error("Could not parse tuple bag");
-			LOG.error("Bad tuple input:" + input.toString());
-			throw new RuntimeException("pig Eval bad input");
-		}
+
 		// Iterate the whole timeline
 		Iterator<Tuple> it_bag = bag.iterator();
 
