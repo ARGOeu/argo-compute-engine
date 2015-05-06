@@ -136,11 +136,11 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 
 		while (itBag.hasNext()) {
 			Tuple curItem = itBag.next();
-			// Get timeline item info
 
 			String ts;
 			String status;
 			try {
+				// Get timeline item info
 				ts = (String)curItem.get(0);
 				status = (String)curItem.get(1);
 			} catch (ExecException e) {

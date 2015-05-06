@@ -13,7 +13,9 @@ import ops.DAggregator;
 import ops.DTimeline;
 import ops.OpsManager;
 
+import org.apache.log4j.Logger;
 import org.apache.pig.EvalFunc;
+import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.BagFactory;
 import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
@@ -29,6 +31,7 @@ import sync.Recalculations;
 
 public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 
+	private static final Logger LOG = Logger.getLogger(GroupEndpointTimelines.class.getName());
 	public HashMap<String, DAggregator> groupEndpointAggr;
 
 	public OpsManager opsMgr;
@@ -122,11 +125,16 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 	}
 
 	@Override
-	public Tuple exec(Tuple input) throws IOException {
+	public Tuple exec(Tuple input) {
 
 		// Check if cache files have been opened
 		if (this.initialized == false) {
-			this.init(); // If not open them
+			try {
+				this.init(); // If not open them				
+			} catch (IOException e) {
+				LOG.error("Could not initialize sync structures");
+				throw new RuntimeException("pig Eval Init Error");
+			}
 		}
 
 		if (input == null || input.size() == 0)
@@ -134,21 +142,38 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 
 		this.groupEndpointAggr.clear();
 
-		String aprofile = this.apMgr.getAvProfiles().get(0); // One Availability
-																// Profile
+		String aprofile = this.apMgr.getAvProfiles().get(0); // One Availability Profile
 
-		String groupname = (String) input.get(0);
-		DefaultDataBag bag = (DefaultDataBag) input.get(1);
+		String groupname;
+		DefaultDataBag bag;
+		
+		try {
+			groupname = (String)input.get(0);
+			bag = (DefaultDataBag) input.get(1);
+		} catch (ExecException e) {
+			LOG.error("Could not parse tuple info");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		}
 
 		// Iterate the whole timeline
 		Iterator<Tuple> it_bag = bag.iterator();
 
 		while (it_bag.hasNext()) {
 			Tuple cur_item = it_bag.next();
-			// Get timeline item info
-			String service = (String) cur_item.get(0);
-			DefaultDataBag bag2 = (DefaultDataBag) cur_item.get(1);
 
+			String service;
+			DefaultDataBag bag2;
+
+			try {
+				// Get timeline item info
+				service = (String)cur_item.get(0);
+				bag2 = (DefaultDataBag) cur_item.get(1);				
+			} catch (ExecException e) {
+	    		LOG.error ("Could not parse tuple item info");
+	    		LOG.error ("Bad item:" + cur_item.toString());
+	    		throw new RuntimeException("bad bag item input");
+			}
 			// Get the availability group
 			String group = apMgr.getGroupByService(aprofile, service);
 
@@ -163,8 +188,15 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 			while (it_bag2.hasNext()) {
 
 				Tuple cur_subitem = it_bag2.next();
-				this.groupEndpointAggr.get(group).insertSlot(service, j,
-						Integer.parseInt(cur_subitem.get(0).toString()));
+				try {
+					this.groupEndpointAggr.get(group).insertSlot(service, j,
+							Integer.parseInt(cur_subitem.get(0).toString()));
+				} catch (ExecException e) {
+		    		LOG.error ("Could not parse tuple subitem info");
+		    		LOG.error ("Bad subitem:" + cur_subitem.toString());
+		    		throw new RuntimeException("bad bag item input");
+				}
+
 				j++;
 
 			}

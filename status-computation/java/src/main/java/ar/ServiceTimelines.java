@@ -9,7 +9,9 @@ import java.util.List;
 import ops.DAggregator;
 import ops.OpsManager;
 
+import org.apache.log4j.Logger;
 import org.apache.pig.EvalFunc;
+import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.BagFactory;
 import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
@@ -23,6 +25,7 @@ import sync.AvailabilityProfiles;
 
 public class ServiceTimelines extends EvalFunc<Tuple> {
 
+	private static final Logger LOG = Logger.getLogger(ServiceTimelines.class.getName());
 	public DAggregator serviceAggr;
 	public OpsManager opsMgr;
 	public AvailabilityProfiles apsMgr;
@@ -88,11 +91,16 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 	}
 
 	@Override
-	public Tuple exec(Tuple input) throws IOException {
+	public Tuple exec(Tuple input) {
 
 		// Check if cache files have been opened
 		if (this.initialized == false) {
-			this.init(); // If not open them
+			try {
+				this.init(); // If not open them				
+			} catch (IOException e) {
+				LOG.error("Could not initialize sync structures");
+				throw new RuntimeException("pig Eval Init Error");
+			}
 		}
 
 		if (input == null || input.size() == 0)
@@ -101,18 +109,42 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 		this.serviceAggr.clear();
 
 		// /Grab endpoint info
-		String groupname = (String) input.get(0);
-		String service = (String) input.get(1);
+		String groupname;
+		String service;
+		try {
+			groupname = (String)input.get(0);
+			service = (String)input.get(1);
+		} catch (ExecException e) {
+			LOG.error("Could not parse eval input data");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		}
 		// Get timeline info
-		DefaultDataBag bag = (DefaultDataBag) input.get(2);
+		DefaultDataBag bag;
+		try {
+			bag = (DefaultDataBag) input.get(2);
+		} catch (ExecException e) {
+			LOG.error("Could not parse tuple bag");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		}
 		// Iterate the whole timeline
 		Iterator<Tuple> it_bag = bag.iterator();
 
 		while (it_bag.hasNext()) {
 			Tuple cur_item = it_bag.next();
-			// Get timeline item info
-			String hostname = (String) cur_item.get(0);
-			DefaultDataBag bag2 = (DefaultDataBag) cur_item.get(1);
+
+			String hostname;
+			DefaultDataBag bag2;
+			try {
+				// Get timeline item info
+				hostname = (String)cur_item.get(0);
+				bag2 = (DefaultDataBag)cur_item.get(1);
+			} catch (ExecException e) {
+	    		LOG.error ("Could not parse tuple item info");
+	    		LOG.error ("Bad item:" + cur_item.toString());
+	    		throw new RuntimeException("bad bag item input");
+			}
 
 			Iterator<Tuple> it_bag2 = bag2.iterator();
 
@@ -121,10 +153,15 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 			while (it_bag2.hasNext()) {
 
 				Tuple cur_subitem = it_bag2.next();
-
-				this.serviceAggr.insertSlot(hostname, j,
-						Integer.parseInt(cur_subitem.get(0).toString()));
-
+				try {
+					this.serviceAggr.insertSlot(hostname, j,
+							Integer.parseInt(cur_subitem.get(0).toString()));	
+				} catch (ExecException e) {
+		    		LOG.error ("Could not parse tuple subitem info");
+		    		LOG.error ("Bad subitem:" + cur_subitem.toString());
+		    		throw new RuntimeException("bad bag item input");
+				}
+				
 				j++;
 
 			}
