@@ -24,7 +24,6 @@ public class AddGroupInfo extends EvalFunc<Tuple>{
 	
 	public String type;
 	
-	
 	public EndpointGroups endpointMgr;
 	//public GroupsOfGroups groupMgr;
 	
@@ -42,10 +41,7 @@ public class AddGroupInfo extends EvalFunc<Tuple>{
 		this.type = type; //type of group
 		
 		this.endpointMgr = new EndpointGroups();
-		//this.groupMgr = new GroupsOfGroups();
-		
-		
-		
+		//this.groupMgr = new GroupsOfGroups();			
 	}
 	
 	
