@@ -85,9 +85,16 @@ public class AddGroupInfo extends EvalFunc<Tuple>{
 		try {
 			service = (String)input.get(0);
 			hostname = (String)input.get(1);
-		} catch (ExecException e) {
-			LOG.error("Could not parse eval input data");
+		} catch (ClassCastException e) {
+			LOG.error("Failed to cast input to approriate type");
 			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (IndexOutOfBoundsException e) {
+			LOG.error("Malformed tuple schema");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (ExecException e) {
+			LOG.error("Execution error");
 			throw new RuntimeException("pig Eval bad input");
 		}
 		

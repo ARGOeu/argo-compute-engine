@@ -100,9 +100,16 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 			groupname = (String)input.get(0);
 			service = (String)input.get(1);
 			bag = (DefaultDataBag) input.get(2);
-		} catch (ExecException e) {
-			LOG.error("Could not parse tuple info");
+		} catch (ClassCastException e) {
+			LOG.error("Failed to cast input to approriate type");
 			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (IndexOutOfBoundsException e) {
+			LOG.error("Malformed tuple schema");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (ExecException e) {
+			LOG.error("Execution error");
 			throw new RuntimeException("pig Eval bad input");
 		}
 		// Get the Timeline
@@ -114,9 +121,12 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 			Tuple curItem = itBag.next();
 			try {
 				serviceTl.samples[j] = Integer.parseInt(curItem.get(0).toString());				
-			} catch (ExecException e) {
-	    		LOG.error ("Could not parse tuple item info");
+			} catch (NumberFormatException e) {
+	    		LOG.error ("Failed to cast input to approriate type");
 	    		LOG.error ("Bad subitem:" + curItem.toString());
+	    		throw new RuntimeException("bad bag item input");
+			} catch (ExecException e) {
+	    		LOG.error ("Execution error");
 	    		throw new RuntimeException("bad bag item input");
 			}
 			j++;

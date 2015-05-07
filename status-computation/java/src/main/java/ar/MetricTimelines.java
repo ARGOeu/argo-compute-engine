@@ -111,26 +111,27 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 		String service;
 		String hostname;
 		String metric;
+		DefaultDataBag bag;
 		try {
 			// /Grab endpoint info
 			service = (String)input.get(0);
 			hostname = (String)input.get(1);
 			metric = (String)input.get(2);
-		} catch (ExecException e){
-			LOG.error("Could not parse eval input data");
+			// Get timeline info
+			bag = (DefaultDataBag) input.get(3);
+		} catch (ClassCastException e) {
+			LOG.error("Failed to cast input to approriate type");
 			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (IndexOutOfBoundsException e) {
+			LOG.error("Malformed tuple schema");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (ExecException e) {
+			LOG.error("Execution error");
 			throw new RuntimeException("pig Eval bad input");
 		}
 		
-		DefaultDataBag bag;
-		// Get timeline info
-		try {
-			bag = (DefaultDataBag) input.get(3);
-		} catch (ExecException e) {
-			LOG.error("Could not parse tuple bag");
-			LOG.error("Bad tuple input:" + input.toString());
-			throw new RuntimeException("pig Eval bad input");
-		}
 		// Iterate the whole timeline
 		Iterator<Tuple> itBag = bag.iterator();
 
@@ -143,9 +144,16 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 				// Get timeline item info
 				ts = (String)curItem.get(0);
 				status = (String)curItem.get(1);
+			} catch (ClassCastException e) {
+				LOG.error("Failed to cast input to approriate type");
+				LOG.error("Bad tuple input:" + curItem.toString());
+				throw new RuntimeException("pig Eval bad input");
+			} catch (IndexOutOfBoundsException e) {
+				LOG.error("Malformed tuple schema");
+				LOG.error("Bad tuple input:" + curItem.toString());
+				throw new RuntimeException("pig Eval bad input");
 			} catch (ExecException e) {
-	    		LOG.error ("Could not parse tuple item info");
-	    		LOG.error ("Bad item:" + curItem.toString());
+	    		LOG.error ("Execution error");
 	    		throw new RuntimeException("bad bag item input");
 			}
 			if (!(ts.substring(0, ts.indexOf("T")).equals(this.targetDate))) {

@@ -117,9 +117,16 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 			service = (String)input.get(1);
 			// Get timeline info
 			bag = (DefaultDataBag) input.get(2);
-		} catch (ExecException e) {
-			LOG.error("Could not parse eval input data");
+		} catch (ClassCastException e) {
+			LOG.error("Failed to cast input to approriate type");
 			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (IndexOutOfBoundsException e) {
+			LOG.error("Malformed tuple schema");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (ExecException e) {
+			LOG.error("Execution error");
 			throw new RuntimeException("pig Eval bad input");
 		}
 
@@ -135,10 +142,17 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 				// Get timeline item info
 				hostname = (String)cur_item.get(0);
 				bag2 = (DefaultDataBag)cur_item.get(1);
+			} catch (ClassCastException e) {
+				LOG.error("Failed to cast input to approriate type");
+				LOG.error("Bad tuple input:" + cur_item.toString());
+				throw new RuntimeException("pig Eval bad input");
+			} catch (IndexOutOfBoundsException e) {
+				LOG.error("Malformed tuple schema");
+				LOG.error("Bad tuple input:" + cur_item.toString());
+				throw new RuntimeException("pig Eval bad input");
 			} catch (ExecException e) {
-	    		LOG.error ("Could not parse tuple item info");
-	    		LOG.error ("Bad item:" + cur_item.toString());
-	    		throw new RuntimeException("bad bag item input");
+				LOG.error("Execution error");
+				throw new RuntimeException("pig Eval bad input");
 			}
 
 			Iterator<Tuple> it_bag2 = bag2.iterator();
@@ -151,9 +165,12 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 				try {
 					this.serviceAggr.insertSlot(hostname, j,
 							Integer.parseInt(cur_subitem.get(0).toString()));	
-				} catch (ExecException e) {
-		    		LOG.error ("Could not parse tuple subitem info");
+				} catch (NumberFormatException e) {
+		    		LOG.error ("Failed to cast input to approriate type");
 		    		LOG.error ("Bad subitem:" + cur_subitem.toString());
+		    		throw new RuntimeException("bad bag item input");
+				} catch (ExecException e) {
+		    		LOG.error ("Execution error");
 		    		throw new RuntimeException("bad bag item input");
 				}
 				

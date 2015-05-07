@@ -135,26 +135,27 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 		///Grab endpoint info
 		String service;
 		String hostname;
+		DefaultDataBag bag;
 		
 		try {
 			//Get Arguments
 			service = (String)input.get(0);
 			hostname = (String)input.get(1);
-		} catch (ExecException e) {
-			LOG.error("Could not parse eval input data");
+			// Get timeline info
+			bag =  (DefaultDataBag)input.get(2);
+		} catch (ClassCastException e) {
+			LOG.error("Failed to cast input to approriate type");
 			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (IndexOutOfBoundsException e) {
+			LOG.error("Malformed tuple schema");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (ExecException e) {
+			LOG.error("Execution error");
 			throw new RuntimeException("pig Eval bad input");
 		}
 		
-		DefaultDataBag bag;
-		try {
-			// Get timeline info
-			bag =  (DefaultDataBag)input.get(2);
-		} catch (ExecException e) {
-			LOG.error ("Could not parse tuple bag");
-			LOG.error("Bad tuple input:" + input.toString());
-			throw new RuntimeException("pig Eval bad input");
-		}
 		// Iterate the whole timeline
 		Iterator<Tuple> it_bag = bag.iterator();
 		
@@ -177,10 +178,17 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	    	try {
 		    	metric = (String)cur_item.get(0);
 		    	ts = (String)cur_item.get(1);
-		    	status = (String)cur_item.get(2);	    		
+		    	status = (String)cur_item.get(2);
+			} catch (ClassCastException e) {
+				LOG.error("Failed to cast input to approriate type");
+				LOG.error("Bad tuple input:" + cur_item.toString());
+				throw new RuntimeException("pig Eval bad input");
+			} catch (IndexOutOfBoundsException e) {
+				LOG.error("Malformed tuple schema");
+				LOG.error("Bad tuple input:" + cur_item.toString());
+				throw new RuntimeException("pig Eval bad input");
 	    	} catch (ExecException e) {
-	    		LOG.error ("Could not parse tuple item info");
-	    		LOG.error ("Bad item:" + cur_item.toString());
+	    		LOG.error ("Execution error");
 	    		throw new RuntimeException("bad bag item input");
 	    	}
 	    	if (! ( ts.substring(0, ts.indexOf("T")).equals(this.targetDate)) ) {

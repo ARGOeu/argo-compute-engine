@@ -149,9 +149,16 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 			upFraction = (Double)input.get(3);
 			unknownFraction = (Double)input.get(4);
 			downFraction = (Double)input.get(5);
-		} catch (ExecException e) {
-			LOG.error("Could not parse tuple info");
+		} catch (ClassCastException e) {
+			LOG.error("Failed to cast input to approriate type");
 			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (IndexOutOfBoundsException e) {
+			LOG.error("Malformed tuple schema");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (ExecException e) {
+			LOG.error("Execution error");
 			throw new RuntimeException("pig Eval bad input");
 		}
 
