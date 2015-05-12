@@ -18,13 +18,13 @@ public class MetricProfilesTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Assert that files are present
-		assertNotNull("Test file missing", MetricProfilesTest.class.getResource("/avro/poem_sync_test.avro"));
+		assertNotNull("Test file missing", MetricProfilesTest.class.getResource("/avro/poem_sync_v2.avro"));
 	}
 	
 	@Test
 	public void test() throws URISyntaxException, IOException {
 		//Prepare Resource File
-		URL resAvroFile = MetricProfilesTest.class.getResource("/avro/poem_sync_test.avro");
+		URL resAvroFile = MetricProfilesTest.class.getResource("/avro/poem_sync_v2.avro");
 		File avroFile = new File(resAvroFile.toURI());
 		// Instatiate class
 		MetricProfiles mp = new MetricProfiles();
@@ -34,8 +34,8 @@ public class MetricProfilesTest {
 		
 		// Test Loaded Metric Profile
 		assertEquals("Only one metric profile must be loaded",mp.getProfiles().size(),1);
-		assertEquals("Profile ch.cern.sam.roc_critical must be loaded",mp.getProfiles().get(0).toString(),"CH.CERN.SAM.ROC_CRITICAL");
-		
+		assertEquals("Profile ch.cern.sam.roc_critical must be loaded",mp.getProfiles().get(0).toString(),"ch.cern.SAM.ROC_CRITICAL");
+		System.out.println(mp.getProfiles().get(0).toString());
 		// Test Loaded Metric Profile Services
 		ArrayList<String> serviceList = new ArrayList<String>();
 		serviceList.add("GRAM5");
