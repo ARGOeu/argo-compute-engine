@@ -78,7 +78,6 @@ public class ConfigManager {
 			JsonParser jsonParser = new JsonParser();
 			JsonElement jElement = jsonParser.parse(br);
 			JsonObject jObj = jElement.getAsJsonObject();
-
 			// Get the simple fields
 			this.tenant = jObj.getAsJsonPrimitive("tenant").getAsString();
 			this.job = jObj.getAsJsonPrimitive("job").getAsString();
@@ -91,8 +90,7 @@ public class ConfigManager {
 			JsonObject jGgroupTags = jObj.getAsJsonObject("ggroup_tags");
 			JsonObject jMdataTags = jObj.getAsJsonObject("mdata_tags");
 			JsonObject jDataMap = jObj.getAsJsonObject("datastore_maps");
-
-			// Get compound fields
+			// Iterate fields
 			for (Entry<String, JsonElement> item : jEgroupTags.entrySet()) {
 
 				this.egroupTags.put(item.getKey(), item.getValue()

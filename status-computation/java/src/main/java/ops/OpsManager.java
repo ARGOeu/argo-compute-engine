@@ -46,7 +46,7 @@ public class OpsManager {
 		this.truthTable = null;
 
 		this.order = false;
-		;
+		
 	}
 
 	public OpsManager(boolean _order) {
