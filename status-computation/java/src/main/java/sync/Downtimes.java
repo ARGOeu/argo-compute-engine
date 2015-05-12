@@ -15,6 +15,7 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
+import org.apache.avro.util.Utf8;
 import org.apache.commons.io.IOUtils;
 
 public class Downtimes {
@@ -77,6 +78,7 @@ public class Downtimes {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	public int loadAvro(File avroFile) throws IOException  {
 
 		// Prepare Avro File Readers
@@ -100,24 +102,15 @@ public class Downtimes {
 				HashMap<String, String> tagMap = new HashMap<String, String>();
 
 				// Generate 2nd level generic record reader (tags)
-				GenericRecord tags = (GenericRecord) avroRow.get("tags");
-				// Grab all available tag fields
-				if (tags != null) {
-					List<Field> tagList = tags.getSchema().getFields();
-					// Prepare Hashmap
-
-					// Iterate over tag fields & values
-					for (Field item : tagList) {
-						String fieldName = item.name(); // grab field name
-						String fieldValue = null;
-						// if field value not null store it as string value
-						if (tags.get(fieldName) != null) {
-							fieldValue = tags.get(fieldName).toString();
-						}
-						tagMap.put(fieldName, fieldValue); // update the tag
-															// hashmap
-					}
-				}
+	             
+				HashMap<Utf8,String> tags =   (HashMap<Utf8,String>)(avroRow.get("tags"));
+                
+                if (tags != null){
+                	for (Utf8 item: tags.keySet()){
+                		tagMap.put(item.toString(),String.valueOf(tags.get(item)));
+                	}
+                }
+                
 				// Grab 1st level mandatory fields
 				String hostname = avroRow.get("hostname").toString();
 				String service = avroRow.get("service").toString();
