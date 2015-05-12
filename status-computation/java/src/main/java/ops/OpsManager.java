@@ -21,218 +21,211 @@ import com.google.gson.JsonParser;
 
 public class OpsManager {
 
-	private static final Logger LOG = Logger.getLogger(OpsManager.class
-			.getName());
+    private static final Logger LOG = Logger.getLogger(OpsManager.class.getName());
 
-	private HashMap<String, Integer> states;
-	private HashMap<String, Integer> ops;
-	private ArrayList<String> revStates;
-	private ArrayList<String> revOps;
+    private HashMap<String, Integer> states;
+    private HashMap<String, Integer> ops;
+    private ArrayList<String> revStates;
+    private ArrayList<String> revOps;
 
-	private int[][][] truthTable;
+    private int[][][] truthTable;
 
-	private String defaultDownState;
-	private String defaultMissingState;
-	private String defaultUnknownState;
+    private String defaultDownState;
+    private String defaultMissingState;
+    private String defaultUnknownState;
 
-	private boolean order;
+    private boolean order;
 
-	public OpsManager() {
-		this.states = new HashMap<String, Integer>();
-		this.ops = new HashMap<String, Integer>();
-		this.revStates = new ArrayList<String>();
-		this.revOps = new ArrayList<String>();
+    public OpsManager() {
+        this.states = new HashMap<String, Integer>();
+        this.ops = new HashMap<String, Integer>();
+        this.revStates = new ArrayList<String>();
+        this.revOps = new ArrayList<String>();
 
-		this.truthTable = null;
+        this.truthTable = null;
 
-		this.order = false;
-		
-	}
+        this.order = false;
 
-	public OpsManager(boolean _order) {
-		this.states = new HashMap<String, Integer>();
-		this.ops = new HashMap<String, Integer>();
-		this.revStates = new ArrayList<String>();
-		this.revOps = new ArrayList<String>();
-		this.order = _order;
+    }
 
-		this.truthTable = null;
-	}
+    public OpsManager(boolean _order) {
+        this.states = new HashMap<String, Integer>();
+        this.ops = new HashMap<String, Integer>();
+        this.revStates = new ArrayList<String>();
+        this.revOps = new ArrayList<String>();
+        this.order = _order;
 
-	public String getDefaultDown() {
-		return this.defaultDownState;
-	}
+        this.truthTable = null;
+    }
 
-	public String getDefaultUnknown() {
-		return this.defaultUnknownState;
-	}
+    public String getDefaultDown() {
+        return this.defaultDownState;
+    }
 
-	public int getDefaultUnknownInt() {
-		return this.getIntStatus(this.defaultUnknownState);
-	}
+    public String getDefaultUnknown() {
+        return this.defaultUnknownState;
+    }
 
-	public int getDefaultDownInt() {
-		return this.getIntStatus(this.defaultDownState);
-	}
+    public int getDefaultUnknownInt() {
+        return this.getIntStatus(this.defaultUnknownState);
+    }
 
-	public String getDefaultMissing() {
-		return this.defaultMissingState;
-	}
+    public int getDefaultDownInt() {
+        return this.getIntStatus(this.defaultDownState);
+    }
 
-	public int getDefaultMissingInt() {
-		return this.getIntStatus(this.defaultMissingState);
-	}
+    public String getDefaultMissing() {
+        return this.defaultMissingState;
+    }
 
-	public void clear() {
-		this.states = new HashMap<String, Integer>();
-		this.ops = new HashMap<String, Integer>();
-		this.revStates = new ArrayList<String>();
-		this.revOps = new ArrayList<String>();
+    public int getDefaultMissingInt() {
+        return this.getIntStatus(this.defaultMissingState);
+    }
 
-		this.truthTable = null;
-	}
+    public void clear() {
+        this.states = new HashMap<String, Integer>();
+        this.ops = new HashMap<String, Integer>();
+        this.revStates = new ArrayList<String>();
+        this.revOps = new ArrayList<String>();
 
-	public int opInt(int op, int a, int b) {
-		int result = -1;
-		try {
-			result = this.truthTable[op][a][b];
-		} catch (IndexOutOfBoundsException ex) {
-			result = -1;
-		}
+        this.truthTable = null;
+    }
 
-		return result;
-	}
+    public int opInt(int op, int a, int b) {
+        int result = -1;
+        try {
+            result = this.truthTable[op][a][b];
+        } catch (IndexOutOfBoundsException ex) {
+            result = -1;
+        }
 
-	public int opInt(String op, String a, String b) {
+        return result;
+    }
 
-		int opInt = this.ops.get(op);
-		int aInt = this.states.get(a);
-		int bInt = this.states.get(b);
+    public int opInt(String op, String a, String b) {
 
-		return this.truthTable[opInt][aInt][bInt];
-	}
+        int opInt = this.ops.get(op);
+        int aInt = this.states.get(a);
+        int bInt = this.states.get(b);
 
-	public String op(int op, int a, int b) {
-		return this.revStates.get(this.truthTable[op][a][b]);
-	}
+        return this.truthTable[opInt][aInt][bInt];
+    }
 
-	public String op(String op, String a, String b) {
-		int opInt = this.ops.get(op);
-		int aInt = this.states.get(a);
-		int bInt = this.states.get(b);
+    public String op(int op, int a, int b) {
+        return this.revStates.get(this.truthTable[op][a][b]);
+    }
 
-		return this.revStates.get(this.truthTable[opInt][aInt][bInt]);
-	}
+    public String op(String op, String a, String b) {
+        int opInt = this.ops.get(op);
+        int aInt = this.states.get(a);
+        int bInt = this.states.get(b);
 
-	public String getStrStatus(int status) {
-		return this.revStates.get(status);
-	}
+        return this.revStates.get(this.truthTable[opInt][aInt][bInt]);
+    }
 
-	public int getIntStatus(String status) {
-		return this.states.get(status);
-	}
+    public String getStrStatus(int status) {
+        return this.revStates.get(status);
+    }
 
-	public String getStrOperation(int op) {
-		return this.revOps.get(op);
-	}
+    public int getIntStatus(String status) {
+        return this.states.get(status);
+    }
 
-	public int getIntOperation(String op) {
-		return this.ops.get(op);
-	}
+    public String getStrOperation(int op) {
+        return this.revOps.get(op);
+    }
 
-	public ArrayList<String> availableStates() {
+    public int getIntOperation(String op) {
+        return this.ops.get(op);
+    }
 
-		return this.revStates;
-	}
+    public ArrayList<String> availableStates() {
 
-	public ArrayList<String> availableOps() {
-		return this.revOps;
-	}
+        return this.revStates;
+    }
 
-	public void loadJson(File jsonFile) throws IOException {
-		// Clear data
-		this.clear();
+    public ArrayList<String> availableOps() {
+        return this.revOps;
+    }
 
-		BufferedReader br = null;
-		try {
-			br = new BufferedReader(new FileReader(jsonFile));
+    public void loadJson(File jsonFile) throws IOException {
+        // Clear data
+        this.clear();
 
-			JsonParser json_parser = new JsonParser();
-			JsonElement j_element = json_parser.parse(br);
-			JsonObject j_obj = j_element.getAsJsonObject();
-			JsonArray j_states = j_obj.getAsJsonArray("states");
-			JsonObject j_ops = j_obj.getAsJsonObject("operations");
-			this.defaultMissingState = j_obj.getAsJsonPrimitive(
-					"default_missing").getAsString();
-			this.defaultDownState = j_obj.getAsJsonPrimitive("default_down")
-					.getAsString();
-			this.defaultUnknownState = j_obj.getAsJsonPrimitive(
-					"default_unknown").getAsString();
-			// Collect the available states
-			for (int i = 0; i < j_states.size(); i++) {
-				this.states.put(j_states.get(i).getAsString(), i);
-				this.revStates.add(j_states.get(i).getAsString());
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(jsonFile));
 
-			}
+            JsonParser json_parser = new JsonParser();
+            JsonElement j_element = json_parser.parse(br);
+            JsonObject j_obj = j_element.getAsJsonObject();
+            JsonArray j_states = j_obj.getAsJsonArray("states");
+            JsonObject j_ops = j_obj.getAsJsonObject("operations");
+            this.defaultMissingState = j_obj.getAsJsonPrimitive("default_missing").getAsString();
+            this.defaultDownState = j_obj.getAsJsonPrimitive("default_down").getAsString();
+            this.defaultUnknownState = j_obj.getAsJsonPrimitive("default_unknown").getAsString();
+            // Collect the available states
+            for (int i = 0; i < j_states.size(); i++) {
+                this.states.put(j_states.get(i).getAsString(), i);
+                this.revStates.add(j_states.get(i).getAsString());
 
-			// Collect the available operations
-			int i = 0;
-			for (Entry<String, JsonElement> item : j_ops.entrySet()) {
-				this.ops.put(item.getKey(), i);
-				this.revOps.add(item.getKey());
-				i++;
-			}
-			// Initialize the truthtable
-			int num_ops = this.revOps.size();
-			int num_states = this.revStates.size();
-			this.truthTable = new int[num_ops][num_states][num_states];
+            }
 
-			for (int[][] surface : this.truthTable) {
-				for (int[] line : surface) {
-					Arrays.fill(line, -1);
-				}
-			}
+            // Collect the available operations
+            int i = 0;
+            for (Entry<String, JsonElement> item : j_ops.entrySet()) {
+                this.ops.put(item.getKey(), i);
+                this.revOps.add(item.getKey());
+                i++;
+            }
+            // Initialize the truthtable
+            int num_ops = this.revOps.size();
+            int num_states = this.revStates.size();
+            this.truthTable = new int[num_ops][num_states][num_states];
 
-			// Fill the truth table
-			for (Entry<String, JsonElement> item : j_ops.entrySet()) {
-				String opname = item.getKey();
-				JsonArray tops = item.getValue().getAsJsonArray();
-				// System.out.println(tops);
+            for (int[][] surface : this.truthTable) {
+                for (int[] line : surface) {
+                    Arrays.fill(line, -1);
+                }
+            }
 
-				for (int j = 0; j < tops.size(); j++) {
-					// System.out.println(opname);
-					JsonObject row = tops.get(j).getAsJsonObject();
+            // Fill the truth table
+            for (Entry<String, JsonElement> item : j_ops.entrySet()) {
+                String opname = item.getKey();
+                JsonArray tops = item.getValue().getAsJsonArray();
+                // System.out.println(tops);
 
-					int a_val = this.states.get(row.getAsJsonPrimitive("A")
-							.getAsString());
-					int b_val = this.states.get(row.getAsJsonPrimitive("B")
-							.getAsString());
-					int x_val = this.states.get(row.getAsJsonPrimitive("X")
-							.getAsString());
-					int op_val = this.ops.get(opname);
+                for (int j = 0; j < tops.size(); j++) {
+                    // System.out.println(opname);
+                    JsonObject row = tops.get(j).getAsJsonObject();
 
-					// Fill in truth table
-					// Check if order sensitivity is off so to insert two truth
-					// values
-					// ...[a][b] and [b][a]
-					this.truthTable[op_val][a_val][b_val] = x_val;
-					if (!this.order) {
-						this.truthTable[op_val][b_val][a_val] = x_val;
-					}
-				}
-			}
-		} catch (FileNotFoundException ex) {
-			LOG.error("Could not open file:" + jsonFile.getName());
-			throw ex;
+                    int a_val = this.states.get(row.getAsJsonPrimitive("A").getAsString());
+                    int b_val = this.states.get(row.getAsJsonPrimitive("B").getAsString());
+                    int x_val = this.states.get(row.getAsJsonPrimitive("X").getAsString());
+                    int op_val = this.ops.get(opname);
 
-		} catch (JsonParseException ex) {
-			LOG.error("File is not valid json:" + jsonFile.getName());
-			throw ex;
-		} finally {
-			// Close quietly without exceptions the buffered reader
-			IOUtils.closeQuietly(br);
-		}
+                    // Fill in truth table
+                    // Check if order sensitivity is off so to insert two truth
+                    // values
+                    // ...[a][b] and [b][a]
+                    this.truthTable[op_val][a_val][b_val] = x_val;
+                    if (!this.order) {
+                        this.truthTable[op_val][b_val][a_val] = x_val;
+                    }
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            LOG.error("Could not open file:" + jsonFile.getName());
+            throw ex;
 
-	}
+        } catch (JsonParseException ex) {
+            LOG.error("File is not valid json:" + jsonFile.getName());
+            throw ex;
+        } finally {
+            // Close quietly without exceptions the buffered reader
+            IOUtils.closeQuietly(br);
+        }
+
+    }
 
 }
