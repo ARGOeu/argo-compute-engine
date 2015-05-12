@@ -24,10 +24,10 @@ public class PickEndpointsTest {
 	@Test
 	public void test() throws URISyntaxException, IOException {
 		//Prepare Resource File
-		URL metricRes = EndpointGroupsTest.class.getResource("/avro/poem_sync_test.avro");
+		URL metricRes = EndpointGroupsTest.class.getResource("/avro/poem_sync_v2.avro");
 		File metricAvro = new File(metricRes.toURI());
 		
-		URL groupEndpointRes = GroupsOfGroupsTest.class.getResource("/avro/group_endpoints_test.avro");
+		URL groupEndpointRes = GroupsOfGroupsTest.class.getResource("/avro/group_endpoints_v2.avro");
 		File groupEndpointAvro = new File(groupEndpointRes.toURI());
 		
 		URL apsRes = GroupsOfGroupsTest.class.getResource("/ops/ap1.json");
