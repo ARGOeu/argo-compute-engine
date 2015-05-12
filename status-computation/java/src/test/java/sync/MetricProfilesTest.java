@@ -34,8 +34,8 @@ public class MetricProfilesTest {
 		
 		// Test Loaded Metric Profile
 		assertEquals("Only one metric profile must be loaded",mp.getProfiles().size(),1);
-		assertEquals("Profile ch.cern.sam.roc_critical must be loaded",mp.getProfiles().get(0).toString(),"ch.cern.SAM.ROC_CRITICAL");
-		System.out.println(mp.getProfiles().get(0).toString());
+		assertEquals("Profile ch.cern.sam.roc_critical must be loaded",mp.getProfiles().get(0).toString(),"ch.cern.sam.ROC_CRITICAL");
+		
 		// Test Loaded Metric Profile Services
 		ArrayList<String> serviceList = new ArrayList<String>();
 		serviceList.add("GRAM5");
@@ -46,7 +46,7 @@ public class MetricProfilesTest {
 		serviceList.add("CREAM-CE");
 		serviceList.add("SRMv2");
 		
-		assertEquals("Test Presence of Loaded Profile Services",mp.getProfileServices("CH.CERN.SAM.ROC_CRITICAL"),serviceList);
+		assertEquals("Test Presence of Loaded Profile Services",mp.getProfileServices("ch.cern.sam.ROC_CRITICAL"),serviceList);
 		
 		// Test Loaded Metric Profile service metrics;
 		
@@ -56,7 +56,7 @@ public class MetricProfilesTest {
 		gram5Metrics.add("hr.srce.GRAM-CertLifetime");
 		gram5Metrics.add("hr.srce.GRAM-Command");
 		
-		assertEquals("Test GRAM5 metrics",mp.getProfileServiceMetrics("CH.CERN.SAM.ROC_CRITICAL","GRAM5"),gram5Metrics);
+		assertEquals("Test GRAM5 metrics",mp.getProfileServiceMetrics("ch.cern.sam.ROC_CRITICAL","GRAM5"),gram5Metrics);
 		// Test Loaded Metric Profile service metrics;
 		
 		// QCG service
@@ -64,13 +64,13 @@ public class MetricProfilesTest {
 		qcgMetrics.add("hr.srce.QCG-Computing-CertLifetime");
 		qcgMetrics.add("pl.plgrid.QCG-Computing");
 		
-		assertEquals("Test QCG metrics",mp.getProfileServiceMetrics("CH.CERN.SAM.ROC_CRITICAL","QCG.Computing"),qcgMetrics);
+		assertEquals("Test QCG metrics",mp.getProfileServiceMetrics("ch.cern.sam.ROC_CRITICAL","QCG.Computing"),qcgMetrics);
 		
 		// Site-BDII
 		ArrayList<String> siteBdiiMetrics = new ArrayList<String>();
 		siteBdiiMetrics.add("org.bdii.Entries");
 		siteBdiiMetrics.add("org.bdii.Freshness");
-		assertEquals("Test Site-BDII metrics",mp.getProfileServiceMetrics("CH.CERN.SAM.ROC_CRITICAL","Site-BDII"),siteBdiiMetrics);
+		assertEquals("Test Site-BDII metrics",mp.getProfileServiceMetrics("ch.cern.sam.ROC_CRITICAL","Site-BDII"),siteBdiiMetrics);
 		
 		// SRMv2
 		ArrayList<String> srmv2metrics = new ArrayList<String>();
@@ -82,19 +82,19 @@ public class MetricProfilesTest {
 		srmv2metrics.add("org.sam.SRM-Ls");
 		srmv2metrics.add("org.sam.SRM-LsDir");
 		srmv2metrics.add("org.sam.SRM-Put");
-		assertEquals("SRMv2 ",(mp.getProfileServiceMetrics("CH.CERN.SAM.ROC_CRITICAL", "SRMv2")),srmv2metrics);
+		assertEquals("SRMv2 ",(mp.getProfileServiceMetrics("ch.cern.sam.ROC_CRITICAL", "SRMv2")),srmv2metrics);
 		
 		// Check Existense of Profile Service Metric
 		
-		assertTrue("Existence of CREAM-CE Metric",mp.checkProfileServiceMetric("CH.CERN.SAM.ROC_CRITICAL", "CREAM-CE", "emi.cream.CREAMCE-JobSubmit"));
-		assertTrue("Existence of CREAM-CE Metric",mp.checkProfileServiceMetric("CH.CERN.SAM.ROC_CRITICAL", "CREAM-CE", "emi.cream.CREAMCE-JobSubmit"));
-		assertTrue("Existence of CREAM-CE Metric",mp.checkProfileServiceMetric("CH.CERN.SAM.ROC_CRITICAL", "CREAM-CE", "emi.wn.WN-Bi"));
-		assertTrue("Existence of CREAM-CE Metric",mp.checkProfileServiceMetric("CH.CERN.SAM.ROC_CRITICAL", "CREAM-CE", "emi.wn.WN-Csh"));
-		assertTrue("Existence of CREAM-CE Metric",mp.checkProfileServiceMetric("CH.CERN.SAM.ROC_CRITICAL", "CREAM-CE", "emi.wn.WN-SoftVer"));
-		assertTrue("Existence of CREAM-CE Metric",mp.checkProfileServiceMetric("CH.CERN.SAM.ROC_CRITICAL", "CREAM-CE", "hr.srce.CADist-Check"));
-		assertTrue("Existence of CREAM-CE Metric",mp.checkProfileServiceMetric("CH.CERN.SAM.ROC_CRITICAL", "CREAM-CE", "hr.srce.CREAMCE-CertLifetime"));
+		assertTrue("Existence of CREAM-CE Metric",mp.checkProfileServiceMetric("ch.cern.sam.ROC_CRITICAL", "CREAM-CE", "emi.cream.CREAMCE-JobSubmit"));
+		assertTrue("Existence of CREAM-CE Metric",mp.checkProfileServiceMetric("ch.cern.sam.ROC_CRITICAL", "CREAM-CE", "emi.cream.CREAMCE-JobSubmit"));
+		assertTrue("Existence of CREAM-CE Metric",mp.checkProfileServiceMetric("ch.cern.sam.ROC_CRITICAL", "CREAM-CE", "emi.wn.WN-Bi"));
+		assertTrue("Existence of CREAM-CE Metric",mp.checkProfileServiceMetric("ch.cern.sam.ROC_CRITICAL", "CREAM-CE", "emi.wn.WN-Csh"));
+		assertTrue("Existence of CREAM-CE Metric",mp.checkProfileServiceMetric("ch.cern.sam.ROC_CRITICAL", "CREAM-CE", "emi.wn.WN-SoftVer"));
+		assertTrue("Existence of CREAM-CE Metric",mp.checkProfileServiceMetric("ch.cern.sam.ROC_CRITICAL", "CREAM-CE", "hr.srce.CADist-Check"));
+		assertTrue("Existence of CREAM-CE Metric",mp.checkProfileServiceMetric("ch.cern.sam.ROC_CRITICAL", "CREAM-CE", "hr.srce.CREAMCE-CertLifetime"));
 		// False results
-		assertTrue("ARC-CE doesn't have certLifetime", !(mp.checkProfileServiceMetric("CH.CERN.SAM.ROC_CRITICAL", "ARC-CE", "hr.srce.CREAMCE-CertLifetime")));
+		assertTrue("ARC-CE doesn't have certLifetime", !(mp.checkProfileServiceMetric("ch.cern.sam.ROC_CRITICAL", "ARC-CE", "hr.srce.CREAMCE-CertLifetime")));
 	}
 
 }
