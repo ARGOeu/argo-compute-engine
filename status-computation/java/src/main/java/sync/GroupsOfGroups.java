@@ -15,6 +15,7 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 public class GroupsOfGroups {
@@ -38,8 +39,7 @@ public class GroupsOfGroups {
             this.tags = new HashMap<String, String>();
         }
 
-        public GroupItem(String type, String group, String subgroup,
-                HashMap<String, String> tags) {
+        public GroupItem(String type, String group, String subgroup, HashMap<String, String> tags) {
             this.type = type;
             this.group = group;
             this.subgroup = subgroup;
@@ -54,8 +54,7 @@ public class GroupsOfGroups {
         this.fList = new ArrayList<GroupItem>();
     }
 
-    public int insert(String type, String group, String subgroup,
-            HashMap<String, String> tags) {
+    public int insert(String type, String group, String subgroup, HashMap<String, String> tags) {
         GroupItem new_item = new GroupItem(type, group, subgroup, tags);
         this.list.add(new_item);
         return 0; // All good
@@ -101,8 +100,7 @@ public class GroupsOfGroups {
             for (Entry<String, String> fTagItem : fTags.entrySet()) {
 
                 if (itemTags.containsKey(fTagItem.getKey())) {
-                    if (itemTags.get(fTagItem.getKey()).equalsIgnoreCase(
-                            fTagItem.getValue()) == false) {
+                    if (itemTags.get(fTagItem.getKey()).equalsIgnoreCase(fTagItem.getValue()) == false) {
                         trim = true;
                     }
 
@@ -125,14 +123,33 @@ public class GroupsOfGroups {
         return false;
     }
 
-    public int loadAvro(File avroFile) throws IOException {
+    /**
+     * Loads groups of groups information from an avro file
+     * <p>
+     * This method loads groups of groups information contained in an .avro file
+     * with specific avro schema.
+     * 
+     * <p>
+     * The following fields are expected to be found in each avro row:
+     * <ol>
+     * <li>type: string (describes the type of grouping)</li>
+     * <li>group: string</li>
+     * <li>subgroup: string</li>
+     * <li>tags: hashmap (contains a map of arbitrary key values)</li>
+     * </ol>
+     * 
+     * @param avroFile
+     *            a File object of the avro file that will be opened
+     * @throws IOException
+     *             if there is an error during opening of the avro file
+     */
+    public void loadAvro(File avroFile) throws IOException {
 
         // Prepare Avro File Readers
         DatumReader<GenericRecord> datumReader = new GenericDatumReader<GenericRecord>();
         DataFileReader<GenericRecord> dataFileReader = null;
         try {
-            dataFileReader = new DataFileReader<GenericRecord>(avroFile,
-                    datumReader);
+            dataFileReader = new DataFileReader<GenericRecord>(avroFile, datumReader);
 
             // Grab avro schema
             Schema avroSchema = dataFileReader.getSchema();
@@ -148,13 +165,12 @@ public class GroupsOfGroups {
 
                 // Generate 2nd level generic record reader (tags)
                 HashMap tags = (HashMap) avroRow.get("tags");
-                if (tags != null){
-                	for (Object item:tags.keySet()){
+                if (tags != null) {
+                    for (Object item : tags.keySet()) {
                         tagMap.put(item.toString(), tags.get(item).toString());
                     }
                 }
-                
-                
+
                 // Grab 1st level mandatory fields
                 String type = avroRow.get("type").toString();
                 String group = avroRow.get("group").toString();
@@ -173,17 +189,11 @@ public class GroupsOfGroups {
             log.error("Could not open avro file:" + avroFile.getName());
             throw ex;
         } finally {
-            if (dataFileReader != null) {
-                try {
-                    dataFileReader.close();
-                } catch (IOException ex) {
-                    log.error("Cannot close file:" + avroFile.getName());
-                    throw ex;
-                }
-            }
+            // Close quietly without exceptions the buffered reader
+            IOUtils.closeQuietly(dataFileReader);
         }
 
-        return 0; // allgood
+       
     }
 
 }
