@@ -101,7 +101,7 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 
 	}
 
-	public void initFrontend() throws FileNotFoundException {
+	public void initFrontend() throws IOException {
 		this.localCfgMgr.loadJson(new File(this.localCfg));
 		this.frontInit = true;
 	}
@@ -212,6 +212,8 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 			try {
 				this.initFrontend();
 			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}

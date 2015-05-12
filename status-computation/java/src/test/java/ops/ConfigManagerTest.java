@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
@@ -19,7 +20,7 @@ public class ConfigManagerTest {
 	}
 	
 	@Test
-	public void test() throws URISyntaxException, FileNotFoundException {
+	public void test() throws URISyntaxException, IOException {
 		// Load the resource file
 		URL resJsonFile = OpsManagerTest.class.getResource("/ops/config.json");
 		File jsonFile = new File(resJsonFile.toURI());

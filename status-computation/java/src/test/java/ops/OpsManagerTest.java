@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class OpsManagerTest {
 	
 
 	@Test
-	public void test() throws URISyntaxException, FileNotFoundException {
+	public void test() throws URISyntaxException, IOException {
 		//Prepare Resource File
 		URL resJsonFile = OpsManagerTest.class.getResource("/ops/EGI-algorithm.json");
 		File JsonFile = new File(resJsonFile.toURI());
