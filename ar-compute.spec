@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
 Version: 1.6.1
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -65,6 +65,12 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
+* Thu May 14 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.1-5%{?dist}
+- ARGO-118 Reading new avro "tags" field type as map
+- ARGO-48 Add logging to the data model classes
+- ARGO-47 Added exception handling in AR UDFs
+- ARGO-46 logging in java sync classes
+- ARGO-88 Log info about argo mode (local/cluster) during operations
 * Wed Apr 15 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.1-4%{?dist}
 - Multitenancy support in configuration files (derived from ARGO-67)
 * Tue Apr 14 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.1-3%{?dist}
