@@ -16,13 +16,13 @@ public class DowntimesTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Assert that files are present
-		assertNotNull("Test file missing", DowntimesTest.class.getResource("/avro/downtimes_test.avro"));
+		assertNotNull("Test file missing", DowntimesTest.class.getResource("/avro/downtimes_v2.avro"));
 	}
 	
 	@Test
 	public void test() throws IOException, URISyntaxException {
 		//Prepare Resource File
-		URL resAvroFile = DowntimesTest.class.getResource("/avro/downtimes_test.avro");
+		URL resAvroFile = DowntimesTest.class.getResource("/avro/downtimes_v2.avro");
 		File avroFile = new File(resAvroFile.toURI());
 		// Instatiate class
 		Downtimes dt = new Downtimes();
@@ -31,22 +31,40 @@ public class DowntimesTest {
 		assertNotNull("File Loaded",dt);
 		
 		// Test time period retrieval by service endpoint
-		// test for lcg-se3.scinet.utoronto.ca, Site-BDII
+		
+		// test for cream-ce01.gridpp.rl.ac.uk CREAM-CE
 		ArrayList<String> timePeriod = new ArrayList<String>();
-		timePeriod.add("2015-01-14T11:00:00Z");
-		timePeriod.add("2015-01-14T23:59:00Z");
-		assertEquals("Test timeperiod #1",dt.getPeriod("lcg-se3.scinet.utoronto.ca", "Site-BDII"),timePeriod);
-		// test for arc.imbg.org.ua, APEL
+		timePeriod.add("2015-05-07T00:00:00Z");
+		timePeriod.add("2015-05-07T23:59:00Z");
+		assertEquals("Test timeperiod #1",dt.getPeriod("cream-ce01.gridpp.rl.ac.uk", "CREAM-CE"),timePeriod);
+		// test for px.ire.kharkov.ua, MyProxy
 		timePeriod.clear();
-		timePeriod.add("2015-01-14T00:00:00Z");
-		timePeriod.add("2015-01-14T23:59:00Z");
-		assertEquals("Test timeperiod #2",dt.getPeriod("arc.imbg.org.ua", "APEL"),timePeriod);
-		// test for atlas-ui-03.roma1.infn.it, UI
+		timePeriod.add("2015-05-07T00:00:00Z");
+		timePeriod.add("2015-05-07T23:59:00Z");
+		assertEquals("Test timeperiod #2",dt.getPeriod("px.ire.kharkov.ua", "MyProxy"),timePeriod);
+		// test for gb-ui-nki.els.sara.nl, UI
 		timePeriod.clear();
-		timePeriod.add("2015-01-14T07:00:00Z");
-		timePeriod.add("2015-01-14T21:00:00Z");
-		assertEquals("Test timeperiod #2",dt.getPeriod("atlas-ui-03.roma1.infn.it", "UI"),timePeriod);
-				
+		timePeriod.add("2015-05-07T00:00:00Z");
+		timePeriod.add("2015-05-07T23:59:00Z");
+		assertEquals("Test timeperiod #3",dt.getPeriod("gb-ui-nki.els.sara.nl", "UI"),timePeriod);
+		// test for cream-ce01.gridpp.rl.ac.uk, gLExec
+		timePeriod.clear();
+		timePeriod.add("2015-05-07T00:00:00Z");
+		timePeriod.add("2015-05-07T23:59:00Z");
+		assertEquals("Test timeperiod #4",dt.getPeriod("cream-ce01.gridpp.rl.ac.uk", "gLExec"),timePeriod);
+		// test for gcvmfs.cat.cbpf.br, org.squid-cache.Squid
+		timePeriod.clear();
+		timePeriod.add("2015-05-07T00:00:00Z");
+		timePeriod.add("2015-05-07T20:00:00Z");
+		assertEquals("Test timeperiod #5",dt.getPeriod("cvmfs.cat.cbpf.br", "org.squid-cache.Squid"),timePeriod);
+		// test for apel.ire.kharkov.ua, APEL
+		timePeriod.clear();
+		timePeriod.add("2015-05-07T00:00:00Z");
+		timePeriod.add("2015-05-07T23:59:00Z");
+		assertEquals("Test timeperiod #6",dt.getPeriod("apel.ire.kharkov.ua", "APEL"),timePeriod);
+		
+		
+		
 		   
 	}
 

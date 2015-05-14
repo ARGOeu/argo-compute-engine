@@ -44,13 +44,13 @@ public class EndpointTimelinesTest {
 		Tuple inpTuple = JsonToPig.jsonToTuple(jsonStr);
 		EndpointTimelines et = new EndpointTimelines("","","","","2015-02-06","test","1440","5");
 	   
-		URL downRes = EndpointTimelinesTest.class.getResource("/avro/downtimes_test.avro");
+		URL downRes = EndpointTimelinesTest.class.getResource("/avro/downtimes_v2.avro");
 		File downAvro = new File(downRes.toURI());
 		
 		URL avpJsonFile = EndpointTimelines.class.getResource("/ops/ap1.json");
 		File avpFile = new File(avpJsonFile.toURI());
 		
-		URL metricRes = EndpointTimelines.class.getResource("/avro/poem_sync_test.avro");
+		URL metricRes = EndpointTimelines.class.getResource("/avro/poem_sync_v2.avro");
 		File metricFile = new File(metricRes.toURI());
 		
 		
