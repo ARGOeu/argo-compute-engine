@@ -36,7 +36,7 @@ def main(args=None):
 
     # Initialize logging
     log_mode = ArConfig.get('logging', 'log_mode')
-    log_file = 'none'
+    log_file = None
 
     if log_mode == 'file':
         log_file = ArConfig.get('logging', 'log_file')

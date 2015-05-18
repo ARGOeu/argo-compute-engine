@@ -25,7 +25,7 @@ def init_log(log_mode, log_file, log_level, log_name):
 
     # If log_mode = file then setup a file handler
     if log_mode == 'file':
-
+        assert log_file is not None
         file_log = logging.FileHandler(log_file)
         file_format = logging.Formatter(
             '%(asctime)s %(name)s[%(process)d]: %(levelname)s %(message)s')
