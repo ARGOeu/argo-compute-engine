@@ -10,62 +10,101 @@ from ConfigParser import SafeConfigParser
 from pymongo import MongoClient
 
 
-def main(args=None):
+class ArgoConfiguration:
 
-    # default config
-    fn_ar_cfg = "/etc/ar-compute-engine.conf"
-    arsync_lib = "/var/lib/ar-sync/"
+    db_name = None
+    rec_col = None
+    mongo_host = None
+    mongo_port = None
+    log_mode = None
+    log_file = None
+    tenant = None
+    date = None
+    date_under = None
 
-    db_name = "AR"
-    col_name = "recalculations"
-    
-    ArConfig = SafeConfigParser()
-    ArConfig.read(fn_ar_cfg)
+    def __init__(self,args,filename):
+        self.load_args(args)
+        self.load_config(filename)
 
-    # Initialize logging
-    log_mode = ArConfig.get('logging', 'log_mode')
-    log_file = 'none'
+    def load_args(self,args):
+        # Read the arguments from argparser
+        self.tenant = args.tenant
+        self.date = args.date 
+        # Create also date_under parameter
+        self.date_under = args.date.replace("-", "_")
 
-    date_under = args.date.replace("-", "_")
+    def load_config(self,filename):
+        # Init Config parser
+        ArConfig = SafeConfigParser()
+        # Read conf file
+        ArConfig.read(filename)
+        # Grab the conf parameters
+        self.mongo_host = ArConfig.get('default', 'mongo_host')
+        self.mongo_port = ArConfig.get('default', 'mongo_port')
+        self.log_mode = ArConfig.get('logging', 'log_mode')
+        if self.log_mode == 'file':
+            self.log_file = ArConfig.get('logging', 'log_file')
+        self.log_level = ArConfig.get('logging','log_level')
 
-    if log_mode == 'file':
-        log_file = ArConfig.get('logging', 'log_file')
 
-    log_level = ArConfig.get('logging', 'log_level')
-    log = init_log(log_mode, log_file, log_level, 'argo.mongo_clean_status')
-
-    mongo_host = ArConfig.get('default', 'mongo_host')
-    mongo_port = ArConfig.get('default', 'mongo_port')
-
-    # Creating a date integer for use in the database queries
-    date_int = int(args.date.replace("-", ""))
-
-    log.info("Connecting to mongo server: %s:%s", mongo_host, mongo_port)
-    client = MongoClient(str(mongo_host), int(mongo_port))
-
-    log.info("Opening database: %s", db_name)
-    db = client[db_name]
-
-    log.info("Opening collection: %s", col_name)
-    col = db[col_name]
-
-    # prepare the query to find requests that include the target date
-    query = "'%s' >= this.st.split('T')[0] && '%s' <= this.et.split('T')[0]" % (args.date,args.date)
-
-    results = []
-    # run the query 
-    for item in col.find({"$where":query},{"_id":0}):
-        results.append(item)
-
-    log.info("Date: %s, relevant recomputations found: %s",args.date,len(results))
-
+def write_output(results,tenant,date_under,arsync_lib):
     # create a temporary recalculation file in the ar-sync folder
-    rec_name = "recomputations_" + args.tenant + "_" + date_under + ".json"
+    rec_name = "recomputations_" + tenant + "_" + date_under + ".json"
     rec_filepath = os.path.join(arsync_lib,rec_name)
 
     # write output file to the correct job path
     with open(rec_filepath,'w') as output_file:
-        json.dump(results,output_file) 
+        json.dump(results,output_file)
+
+def get_mongo_collection(mongo_host,mongo_port,db,collection,log):
+    # Connect to the mongo server (host,port)
+    log.info("Connecting to mongo server: %s:%s", mongo_host, mongo_port)
+    client = MongoClient(str(mongo_host), int(mongo_port))
+    # Connect to the database
+    log.info("Opening database: %s", db)
+    db = client[db]
+
+    log.info("Opening collection: %s", collection)
+    col = db[collection]
+    return col
+
+def get_mongo_results(collection,date):
+
+    #Init results list
+    results =[]
+
+    # prepare the query to find requests that include the target date
+    query = "'%s' >= this.st.split('T')[0] && '%s' <= this.et.split('T')[0]" % (date,date)
+
+    # run the query 
+    for item in collection.find({"$where":query},{"_id":0}):
+        results.append(item)
+
+    return results
+
+
+def main(args=None):
+
+    # default paths
+    fn_ar_cfg = "/etc/ar-compute-engine.conf"
+    arsync_lib = "/var/lib/ar-sync/"
+    
+    # Init configuration
+    cfg = ArgoConfiguration(args,fn_ar_cfg)
+    cfg.db_name="AR"
+    cfg.rec_col = "recalculations"
+    
+    # Init logging
+    log = init_log(cfg.log_mode, cfg.log_file, cfg.log_level, 'argo.mongo_clean_status')
+
+    # Get mongo collection
+    col = get_mongo_collection(cfg.mongo_host,cfg.mongo_port,cfg.db_name,cfg.rec_col,log)
+    results = get_mongo_results(col,cfg.date)
+    log.info("Date: %s, relevant recomputations found: %s",args.date,len(results))
+
+    # Write results to file
+    write_output(results,cfg.tenant,cfg.date_under,arsync_lib)
+   
 
 
 if __name__ == "__main__":
