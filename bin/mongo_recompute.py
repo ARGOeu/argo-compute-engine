@@ -7,7 +7,6 @@ import json
 from argolog import init_log
 from argparse import ArgumentParser
 from utils import ArgoConfiguration
-from ConfigParser import SafeConfigParser
 from pymongo import MongoClient
 
 def write_output(results,tenant,date_under,arsync_lib):
