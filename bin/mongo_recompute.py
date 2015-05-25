@@ -57,7 +57,7 @@ def main(args=None):
     cfg.rec_col = "recalculations"
     
     # Init logging
-    log = init_log(cfg.log_mode, cfg.log_file, cfg.log_level, 'argo.mongo_clean_status')
+    log = init_log(cfg.log_mode, cfg.log_file, cfg.log_level, 'argo.mongo_recompute')
 
     # Get mongo collection
     col = get_mongo_collection(cfg.mongo_host,cfg.mongo_port,cfg.db_name,cfg.rec_col,log)
