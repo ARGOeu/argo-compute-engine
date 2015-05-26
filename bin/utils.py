@@ -1,29 +1,20 @@
 #!/usr/bin/env python
 
 from ConfigParser import SafeConfigParser
+from datetime import datetime, timedelta
 
 class ArgoConfiguration(object):
 
-    db_name = None
-    rec_col = None
+    # Configuration parameters
     mongo_host = None
     mongo_port = None
     log_mode = None
     log_file = None
-    tenant = None
-    date = None
-    date_under = None
+    log_level = None
 
-    def __init__(self,args,filename):
-        self.load_args(args)
+    def __init__(self,filename):
+
         self.load_config(filename)
-
-    def load_args(self,args):
-        # Read the arguments from argparser
-        self.tenant = args.tenant
-        self.date = args.date 
-        # Create also date_under parameter
-        self.date_under = args.date.replace("-", "_")
 
     def load_config(self,filename):
         # Init Config parser
@@ -37,3 +28,25 @@ class ArgoConfiguration(object):
         if self.log_mode == 'file':
             self.log_file = ArConfig.get('logging', 'log_file')
         self.log_level = ArConfig.get('logging','log_level')
+
+def get_date_under(date):
+    return date.replace("-", "_")
+
+def get_actual_date(date):
+    return  datetime.strptime(date, '%Y-%m-%d')
+
+def get_date_str(date):
+    return date.strftime('%Y-%m-%d')
+
+def get_date_range(start_date,end_date):
+    ta = get_actual_date(start_date)
+    tb = get_actual_date(end_date)
+    delta = tb - ta
+    dates = []
+    dates.append(ta)
+    for i in range (1,delta.days):
+        tc = ta + timedelta(days=i)
+        dates.append(tc)
+    dates.append(tb)
+
+    return dates
