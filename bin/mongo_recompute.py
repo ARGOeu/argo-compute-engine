@@ -7,6 +7,7 @@ import json
 from argolog import init_log
 from argparse import ArgumentParser
 from utils import ArgoConfiguration
+from utils import get_date_under
 from pymongo import MongoClient
 
 def write_output(results,tenant,date_under,arsync_lib):
@@ -52,20 +53,20 @@ def main(args=None):
     arsync_lib = "/var/lib/ar-sync/"
     
     # Init configuration
-    cfg = ArgoConfiguration(args,fn_ar_cfg)
-    cfg.db_name="AR"
-    cfg.rec_col = "recalculations"
+    cfg = ArgoConfiguration(fn_ar_cfg)
+    db_name="AR"
+    col_recomputations = "recalculations"
     
     # Init logging
     log = init_log(cfg.log_mode, cfg.log_file, cfg.log_level, 'argo.mongo_recompute')
 
     # Get mongo collection
-    col = get_mongo_collection(cfg.mongo_host,cfg.mongo_port,cfg.db_name,cfg.rec_col,log)
-    results = get_mongo_results(col,cfg.date)
+    col = get_mongo_collection(cfg.mongo_host,cfg.mongo_port,db_name,col_recomputations,log)
+    results = get_mongo_results(col,args.date)
     log.info("Date: %s, relevant recomputations found: %s",args.date,len(results))
 
     # Write results to file
-    write_output(results,cfg.tenant,cfg.date_under,arsync_lib)
+    write_output(results,args.tenant,get_date_under(args.date),arsync_lib)
    
 
 
