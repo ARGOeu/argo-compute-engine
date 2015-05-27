@@ -9,11 +9,15 @@ from utils import get_date_range
 from utils import get_date_str
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+from datetime import datetime
+
 
 def do_recompute(argo_exec, date, tenant, job, log):
-    log.info("Recomputing: for tenant: %s and job: %s and date: %s", tenant, job, date)
-    cmd_job_ar = [os.path.join(argo_exec, "job_ar.py"), '-d', date, '-t', tenant, '-j', job]
-    # run_cmd(cmd_job_ar, log)
+    log.info(
+        "Recomputing: for tenant: %s and job: %s and date: %s", tenant, job, date)
+    cmd_job_ar = [
+        os.path.join(argo_exec, "job_ar.py"), '-d', date, '-t', tenant, '-j', job]
+    run_cmd(cmd_job_ar, log)
 
 
 def loop_recompute(argo_exec, date_range, tenant, job_set, log):
@@ -22,7 +26,8 @@ def loop_recompute(argo_exec, date_range, tenant, job_set, log):
         for job in job_set:
             do_recompute(argo_exec, date_arg, tenant, job, log)
 
-def get_mongo_collection(mongo_host,mongo_port,db,collection,log):
+
+def get_mongo_collection(mongo_host, mongo_port, db, collection, log):
     # Connect to the mongo server (host,port)
     log.info("Connecting to mongo server: %s:%s", mongo_host, mongo_port)
     client = MongoClient(str(mongo_host), int(mongo_port))
@@ -34,35 +39,39 @@ def get_mongo_collection(mongo_host,mongo_port,db,collection,log):
     col = db[collection]
     return col
 
-def get_recomputation(collection,id,log):
+
+def get_recomputation(collection, id, log):
 
     # Check the id
     if ObjectId.is_valid(id) == False:
         log.error("Invalid Object Id")
         raise ValueError("Invalid Object Id used")
 
-    # run the query 
-    result = collection.find_one({'_id': ObjectId(id) })
+    # run the query
+    result = collection.find_one({'_id': ObjectId(id)})
 
-    if result==None:
+    if result == None:
         log.error("Could not find specified Recomputation")
         raise ValueError("Recomputation not found in db")
 
     return result
 
+
 def get_time_period(recomputation):
     start_date_str = recomputation["st"].split('T')[0]
     end_date_str = recomputation["et"].split('T')[0]
-    return get_date_range(start_date_str,end_date_str)
+    return get_date_range(start_date_str, end_date_str)
 
-def update_status(collection,id,status,log):
+
+def update_status(collection, id, status, log):
      # Check the id
     if ObjectId.is_valid(id) == False:
         log.error("Invalid Object Id")
         raise ValueError("Invalid Object Id used")
 
-    # run the query 
-    collection.update({'_id': ObjectId(id) },{'$set':{"s":status}})
+    # Update status and history
+    collection.update({'_id': ObjectId(id)}, {'$set': {"s": status}, '$push': {
+                      "history": {"status": status, "ts": datetime.now()}}})
 
 
 def main(args=None):
@@ -77,18 +86,23 @@ def main(args=None):
     # Init logging
     log = init_log(cfg.log_mode, cfg.log_file, cfg.log_level, 'argo.recompute')
 
-     # Check recomputation
-    col = get_mongo_collection(cfg.mongo_host,cfg.mongo_port,"AR","recalculations",log)
-    recomputation = get_recomputation(col,args.id,log)
+    # Check recomputation
+    col = get_mongo_collection(
+        cfg.mongo_host, cfg.mongo_port, "AR", "recalculations", log)
+    recomputation = get_recomputation(col, args.id, log)
     dates = get_time_period(recomputation)
 
+    update_status(col, args.id, "FOO", log)
     loop_recompute(argo_exec, dates, args.tenant, cfg.jobs[args.tenant], log)
-    update_status(col,args.id,"done",log)
+    update_status(col, args.id, "BAR", log)
+
+    print datetime.now()
 
 if __name__ == "__main__":
     # Feed Argument parser with the description of the 3 arguments we need
     # (input_file,output_file,schema_file)
-    arg_parser = ArgumentParser(description="Execute Recomputations for a period of time (start,end)")
+    arg_parser = ArgumentParser(
+        description="Execute a specific Recomputation")
     arg_parser.add_argument(
         "-i", "--id", help="recomputation id", dest="id", metavar="STRING", required="TRUE")
     arg_parser.add_argument(
