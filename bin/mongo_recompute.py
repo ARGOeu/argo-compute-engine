@@ -12,6 +12,14 @@ from pymongo import MongoClient
 
 
 def write_output(results, tenant, date_under, arsync_lib):
+    """
+    Write the json array containing recomputation information to a disk file
+
+    :param results: recomputation results in json format
+    :param tenant: the name of the tenant (used in filename)
+    :param date_under: target date formatted with underscores (used in filename)
+    :param arsync_lib: path to the arsync root directory  
+    """
     # create a temporary recalculation file in the ar-sync folder
     rec_name = "recomputations_" + tenant + "_" + date_under + ".json"
     rec_filepath = os.path.join(arsync_lib, rec_name)
@@ -22,6 +30,17 @@ def write_output(results, tenant, date_under, arsync_lib):
 
 
 def get_mongo_collection(mongo_host, mongo_port, db, collection, log):
+    """
+    Returns pymongo object containing reference to the recalculation collection
+    in the datastore (MongoDB)
+
+    :param mongo_host: hostname of MongoDB server
+    :param mongo_port: port number of MongoDB server
+    :param db: database name to use
+    :param collection: collection name to open
+    :param log: logger object
+    :returns: pymongo collection object
+    """
     # Connect to the mongo server (host,port)
     log.info("Connecting to mongo server: %s:%s", mongo_host, mongo_port)
     client = MongoClient(str(mongo_host), int(mongo_port))
@@ -35,6 +54,13 @@ def get_mongo_collection(mongo_host, mongo_port, db, collection, log):
 
 
 def get_mongo_results(collection, date):
+    """
+    Returns recomputation results for a specific date by querying MongoDB Datastore
+
+    :param collection: target datastore collection containing recomputations
+    :param date: specific date to query
+    :returns: json object containing results
+    """
     # Init results list
     results = []
     # prepare the query to find requests that include the target date
@@ -47,6 +73,11 @@ def get_mongo_results(collection, date):
 
 
 def main(args=None):
+    """
+    Script to retrieve relevant recomputations requests for a specific date
+    
+    :param args: Command line arguments
+    """
 
     # default paths
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
