@@ -13,10 +13,8 @@ from datetime import datetime
 
 
 def do_recompute(argo_exec, date, tenant, job, log):
-    log.info(
-        "Recomputing: for tenant: %s and job: %s and date: %s", tenant, job, date)
-    cmd_job_ar = [
-        os.path.join(argo_exec, "job_ar.py"), '-d', date, '-t', tenant, '-j', job]
+    log.info("Recomputing: for tenant: %s and job: %s and date: %s", tenant, job, date)
+    cmd_job_ar = [os.path.join(argo_exec, "job_ar.py"), '-d', date, '-t', tenant, '-j', job]
     run_cmd(cmd_job_ar, log)
 
 
@@ -70,8 +68,8 @@ def update_status(collection, id, status, log):
         raise ValueError("Invalid Object Id used")
 
     # Update status and history
-    collection.update({'_id': ObjectId(id)}, {'$set': {"s": status}, '$push': {
-                      "history": {"status": status, "ts": datetime.now()}}})
+    collection.update({'_id': ObjectId(id)}, {
+                      '$set': {"s": status}, '$push': {"history": {"status": status, "ts": datetime.now()}}})
 
 
 def main(args=None):
@@ -92,11 +90,9 @@ def main(args=None):
     recomputation = get_recomputation(col, args.id, log)
     dates = get_time_period(recomputation)
 
-    update_status(col, args.id, "FOO", log)
+    update_status(col, args.id, "running", log)
     loop_recompute(argo_exec, dates, args.tenant, cfg.jobs[args.tenant], log)
-    update_status(col, args.id, "BAR", log)
-
-    print datetime.now()
+    update_status(col, args.id, "done", log)
 
 if __name__ == "__main__":
     # Feed Argument parser with the description of the 3 arguments we need
