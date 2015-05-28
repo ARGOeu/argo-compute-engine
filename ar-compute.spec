@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.6.1
-Release: 5%{?dist}
+Version: 1.6.2
+Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -65,6 +65,10 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
+* Thu May 28 2015 Avraam Tsantekidis <avraamt@grid.auth.gr> - 1.6.2-1%{?dist}
+- ARGO-125 Added test for raising TypeError
+- ARGO-125 changed assertion to exception
+- ARGO-125 Changed 'none' to None for log_file name
 * Thu May 14 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.1-5%{?dist}
 - ARGO-118 Reading new avro "tags" field type as map
 - ARGO-48 Add logging to the data model classes
