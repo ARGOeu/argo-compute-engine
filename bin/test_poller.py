@@ -1,9 +1,11 @@
+import pytest
+import mock
 from mock import MagicMock, patch
 
 from poller_ar import run_recomputation, main, ObjectId
 
-
-def test_run_recomputation():
+@mock.patch('poller_ar.subprocess.Popen')
+def test_run_recomputation(mock_Popen):
     """
     Check that the recomputation function looks for a single pending
     request and submits it to be recomputed
@@ -11,27 +13,44 @@ def test_run_recomputation():
     pen_recalc, col = MagicMock(), MagicMock()
     pen_recalc.__getitem__.return_value = ObjectId('5559ed3306f6233c190bc851')
     col.find_one.return_value = pen_recalc
-    run_recomputation(col)
+    run_recomputation(col,"FOO_tenant",1,3)
     col.find_one.assert_called_with({'s': 'pending'})
-    col.update.assert_called_with({'_id': ObjectId('5559ed3306f6233c190bc851')}, {'$set': {'s': 'running'}})
-    #TODO: when the actual recomputation call is implemented, add some kind of test
+    
+    
+    # Assert that the actual sys call is called with the correct arguments
+    mock_Popen.assert_called_with(['./recompute.py', '-i', '5559ed3306f6233c190bc851', '-t', 'FOO_tenant'])
 
-
-def test_main():
+@mock.patch('poller_ar.subprocess.Popen')
+def test_zero_pending(mock_Popen):
     """
-    Check that the recomputation is called if the threshold of
-    running recomputations is not exceeded
+    In the case that are zero pending recomputations
+    check that appropriate exception is raised 
     """
-    with patch('poller_ar.get_poller_config', return_value=[MagicMock()]*4) as get_poller_config,\
-         patch('poller_ar.get_mongo_collection') as get_mongo_collection, \
-         patch('poller_ar.get_pending_and_running', return_value=[MagicMock()]*2) as get_pending_and_running,\
-         patch('poller_ar.run_recomputation') as run_recomputation:
-        get_pending_and_running.return_value[1] = 2
-        get_poller_config.return_value[3] = 3
-        main()
-        run_recomputation.assert_called_once_with(get_mongo_collection.return_value)
+    pen_recalc, col = MagicMock(), MagicMock()
+    pen_recalc.__getitem__.return_value = ObjectId('5559ed3306f6233c190bc851')
+    col.find_one.return_value = pen_recalc
+    with pytest.raises(ValueError) as excinfo:
+        run_recomputation(col,"FOO_tenant",0,3)
+        col.find_one.assert_called_with({'s': 'pending'})
+    assert 'Zero pending recomputations' in str(excinfo.value)
+    
+    # Assert that sys call was not date
+    assert not mock_Popen.called
 
+@mock.patch('poller_ar.subprocess.Popen')
+def test_over_threshold(mock_Popen):
+    """
+    In the case that number of running > threshold
+    check that appropriate exception is raised 
+    """
+    pen_recalc, col = MagicMock(), MagicMock()
+    pen_recalc.__getitem__.return_value = ObjectId('5559ed3306f6233c190bc851')
+    col.find_one.return_value = pen_recalc
+    with pytest.raises(ValueError) as excinfo:
+        run_recomputation(col,"FOO_tenant",5,3)
+        col.find_one.assert_called_with({'s': 'pending'})
+    assert 'Over threshold; no recomputation will be executed.' in str(excinfo.value)
+    
+    # Assert that sys call was not date
+    assert not mock_Popen.called
 
-if __name__ == '__main__':
-    test_run_recomputation()
-    test_main()
