@@ -104,13 +104,14 @@ def get_time_period(recomputation):
     return get_date_range(start_date_str, end_date_str)
 
 
-def update_status(collection, id, status, log):
+def update_status(collection, id, status,timestamp, log):
     """
     Update recomputation request status (In datastore)
 
     :param collection: target datastore collection containing recomputations
     :param id: target recomputation's ObjectId
     :param status: new status value to be updated to
+    :param timestamp: date and time to stamp the event
     :param log: logger object reference
     """
      # Check the id
@@ -120,7 +121,9 @@ def update_status(collection, id, status, log):
 
     # Update status and history
     collection.update({'_id': ObjectId(id)}, {
-                      '$set': {"s": status}, '$push': {"history": {"status": status, "ts": datetime.now()}}})
+                      '$set': {"s": status}, '$push': {"history": {"status": status, "ts": timestamp}}})
+
+
 
 
 def main(args=None):
@@ -146,9 +149,9 @@ def main(args=None):
     recomputation = get_recomputation(col, args.id, log)
     dates = get_time_period(recomputation)
 
-    update_status(col, args.id, "running", log)
+    update_status(col, args.id, "running", datetime.now(), log)
     loop_recompute(argo_exec, dates, args.tenant, cfg.jobs[args.tenant], log)
-    update_status(col, args.id, "done", log)
+    update_status(col, args.id, "done", datetime.now(), log)
 
 if __name__ == "__main__":
     # Feed Argument parser with the description of the 3 arguments we need
