@@ -6,7 +6,7 @@ from ConfigParser import SafeConfigParser
 from argparse import ArgumentParser
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-
+import subprocess
 from argolog import init_log
 
 
@@ -57,16 +57,29 @@ def get_pending_and_running(col):
     return num_pen, num_run
 
 
-def run_recomputation(col):
+def run_recomputation(col,tenant,num_running,threshold):
     """
     Retrives the first pending recalculation in the db request and queues it for recalculation
     :param col: pymongo collection object
+    :param tenant: tenant name
+    :param num_running: number of running processes
+    :param threshold: threshold number
     """
-    #TODO: add the recomputation executor
-    raise NotImplementedError("recomputation executor not added")
+
+    # Threshold checks
+    if num_running == 0:
+        raise ValueError("Zero pending recomputations")
+    elif num_running >= threshold:
+        raise ValueError("Over threshold; no recomputation will be executed.")  
+
     pen_recalc = col.find_one({"s": "pending"})
     pen_recalc_id = str(pen_recalc["_id"])
-    col.update({"_id": ObjectId(pen_recalc_id)}, {"$set": {"s": "running"}})
+
+    # Status update allready implemented in recompute
+    # Call recompute execution script
+    cmd_exec=["./recompute.py","-i",pen_recalc_id,"-t",tenant]
+    # Kickstart executor and continue own execution
+    subprocess.Popen(cmd_exec)
 
 
 def main(args=None):
@@ -80,14 +93,12 @@ def main(args=None):
     col = get_mongo_collection(mongo_host=mongo_host, mongo_port=mongo_port)
     num_pen, num_run = get_pending_and_running(col)
     log.info("Running recalculations: %s (threshold: %s)", num_run, threshold)
-
-    if num_pen == 0:
-        log.info("No pending recomputations present")
-    elif num_run < threshold:
-        log.info("Below threshold; recomputation is about to be executed...")
-        run_recomputation(col)
-    else:
-        log.info("Over threshold; no recomputation will be executed.")
+    try:
+        run_recomputation(col,args.tenant,num_run,threshold)
+        log.info("Below threshold recomputation sent for execution")
+    except ValueError as ex:
+        log.info(ex)
+    
 
 
 if __name__ == "__main__":
@@ -95,7 +106,8 @@ if __name__ == "__main__":
     # No arguments needed
     arg_parser = ArgumentParser(
         description="Polling for pending recomputations requests")
-
+    arg_parser.add_argument(
+        "-t", "--tenant", help="tenant owner", dest="tenant", metavar="STRING", required="TRUE")
     # Parse the command line arguments accordingly and introduce them to
     # main...
     sys.exit(main(arg_parser.parse_args()))
