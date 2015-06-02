@@ -1,7 +1,4 @@
 
-import pytest
-from datetime import datetime
-from collections import defaultdict
 from utils import *
 
 
@@ -73,3 +70,4 @@ def test_load_configuration(tmpdir):
     assert cfg.log_level == "debug"
 
     assert cfg.tenants == expected_tenants
+    assert cfg.jobs == expected_jobs

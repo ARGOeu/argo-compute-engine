@@ -1,5 +1,4 @@
 
-import pytest
 import mock
 import logging
 import mongo_recompute

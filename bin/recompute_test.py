@@ -86,7 +86,7 @@ def test_get_recomputation():
 
     # Assert with invalid ObjectId and raised exception
     with pytest.raises(ValueError) as excinfo:
-        results = recompute.get_recomputation(mock_collection, "33", log)
+        recompute.get_recomputation(mock_collection, "33", log)
     assert 'Invalid Object Id used' in str(excinfo.value)
 
 
