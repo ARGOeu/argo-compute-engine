@@ -37,6 +37,7 @@ def main(args=None):
     # Default core paths
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
     arcomp_conf = "/etc/ar-compute/"
+    argo_exec = "/usr/libexec/ar-compute/bin/"
 
     actual_date = datetime.strptime(args.date, '%Y-%m-%d')
 
@@ -50,6 +51,7 @@ def main(args=None):
     # Get sync exec and path
     arsync_exec = ArConfig.get('connectors', 'sync_exec')
     arsync_lib = ArConfig.get('connectors', 'sync_path')
+
 
     # Initialize logging
     log_mode = ArConfig.get('logging', 'log_mode')
@@ -78,7 +80,7 @@ def main(args=None):
     fn_ops = args.tenant + '_ops.json'
     fn_aps = args.tenant + '_' + args.job + '_ap.json'
     fn_cfg = args.tenant + '_' + args.job + '_cfg.json'
-    fn_rec = args.tenant + '_recalc.json'
+    fn_rec = "recomputations_" + args.tenant + "_" + date_under + ".json"
 
     if ar_mode == 'cluster':
         # compose hdfs temporary destination
@@ -102,6 +104,11 @@ def main(args=None):
     log.info("Calling downtime sync connector to give us latest downtime info")
 
     run_cmd(cmd_call_downtimes, log)
+
+    # Call script to retrieve a json file of recomputations for the specific date/tenant from mongodb
+    cmd_mongo_recomputations = [os.path.join(argo_exec,'mongo_recompute.py'),'-d',args.date,'-t',args.tenant]
+    log.info("Retrieving relevant recomputation requests...")
+    run_cmd(cmd_mongo_recomputations, log)
 
     # Compose the local paths for files (paths+filenames)
     local_egroups = getSyncFile(
@@ -180,8 +187,13 @@ def main(args=None):
     log.info("Transfer recalculation requests")
     run_cmd(cmd_putRec, log)
 
+    # Clear local temporary recomputation file
+    os.remove(local_rec)
+
     log.info("Sync Data of tenant %s for job %s for date %s uploaded successfully to hdfs",
              args.tenant, args.job, args.date)
+
+
 
 if __name__ == "__main__":
 
