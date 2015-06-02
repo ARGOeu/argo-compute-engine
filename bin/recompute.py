@@ -67,25 +67,25 @@ def get_mongo_collection(mongo_host, mongo_port, db, collection, log):
     return col
 
 
-def get_recomputation(collection, id, log):
+def get_recomputation(collection, rec_id, log):
     """
     Retrieves a recomputation request by id (query on datastore)
 
     :param collection: target datastore collection containing recomputations
-    :param id: specific ObjectId to retrieve
+    :param rec_id: specific ObjectId to retrieve
     :param log: logger object reference
     :returns: result in json format
     """
 
     # Check the id
-    if ObjectId.is_valid(id) == False:
+    if ObjectId.is_valid(rec_id) is False:
         log.error("Invalid Object Id")
         raise ValueError("Invalid Object Id used")
 
     # run the query
-    result = collection.find_one({'_id': ObjectId(id)})
+    result = collection.find_one({'_id': ObjectId(rec_id)})
 
-    if result == None:
+    if result is None:
         log.error("Could not find specified Recomputation")
         raise ValueError("Recomputation not found in db")
 
@@ -104,26 +104,24 @@ def get_time_period(recomputation):
     return get_date_range(start_date_str, end_date_str)
 
 
-def update_status(collection, id, status,timestamp, log):
+def update_status(collection, rec_id, status, timestamp, log):
     """
     Update recomputation request status (In datastore)
 
     :param collection: target datastore collection containing recomputations
-    :param id: target recomputation's ObjectId
+    :param rec_id: target recomputation's ObjectId
     :param status: new status value to be updated to
     :param timestamp: date and time to stamp the event
     :param log: logger object reference
     """
-     # Check the id
-    if ObjectId.is_valid(id) == False:
+    # Check the id
+    if ObjectId.is_valid(rec_id) is False:
         log.error("Invalid Object Id")
         raise ValueError("Invalid Object Id used")
 
     # Update status and history
-    collection.update({'_id': ObjectId(id)}, {
-                      '$set': {"s": status}, '$push': {"history": {"status": status, "ts": timestamp}}})
-
-
+    collection.update({'_id': ObjectId(rec_id)}, {
+        '$set': {"s": status}, '$push': {"history": {"status": status, "ts": timestamp}}})
 
 
 def main(args=None):
@@ -134,7 +132,6 @@ def main(args=None):
     """
     # default paths
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
-    arsync_lib = "/var/lib/ar-sync/"
     argo_exec = "/usr/libexec/ar-compute/bin"
 
     # Init configuration
@@ -152,6 +149,7 @@ def main(args=None):
     update_status(col, args.id, "running", datetime.now(), log)
     loop_recompute(argo_exec, dates, args.tenant, cfg.jobs[args.tenant], log)
     update_status(col, args.id, "done", datetime.now(), log)
+
 
 if __name__ == "__main__":
     # Feed Argument parser with the description of the 3 arguments we need

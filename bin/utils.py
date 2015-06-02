@@ -95,14 +95,14 @@ def get_date_range(start_date, end_date):
     """
     ta = get_actual_date(start_date)
     tb = get_actual_date(end_date)
-    if tb<ta:
+    if tb < ta:
         raise ValueError('Time period is negative (end date comes before start date)')
     delta = tb - ta
     dates = [ta]
     for i in range(1, delta.days):
         tc = ta + timedelta(days=i)
         dates.append(tc)
-    if tb>ta:
+    if tb > ta:
         dates.append(tb)
 
     return dates
