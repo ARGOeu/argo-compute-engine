@@ -2,37 +2,37 @@
 
 import sys
 from ConfigParser import SafeConfigParser
-
 from argparse import ArgumentParser
 from pymongo import MongoClient
-from bson.objectid import ObjectId
 import subprocess
 from argolog import init_log
 
 
-def get_poller_config(fn_ar_cfg="/etc/ar-compute-engine.conf", logging_config='logging', default_config='default'):
+def get_poller_config(fn_ar_cfg="/etc/ar-compute-engine.conf", logging_config='logging',
+                      default_config='default'):
     """
     Initialize the logger and retrieve the settings for the poller
     :param fn_ar_cfg: file from which to retrieve configuration
     :param logging_config: logging section of the configuration
     :param default_config: default section of the configuration
-    :return: logger instance, mongo hostname, mongo port and threshold of running recomputations in a tuple
+    :return: logger instance, mongo hostname, mongo port and threshold of running
+             recomputations in a tuple
     """
     # Read Configuration file
-    ArConfig = SafeConfigParser()
-    ArConfig.read(fn_ar_cfg)
+    ar_config = SafeConfigParser()
+    ar_config.read(fn_ar_cfg)
 
     # Initialize logging
-    log_mode = ArConfig.get(logging_config, 'log_mode')
-    log_file = ArConfig.get(logging_config, 'log_file') if log_mode == 'file' else None
-    log_level = ArConfig.get(logging_config, 'log_level')
+    log_mode = ar_config.get(logging_config, 'log_mode')
+    log_file = ar_config.get(logging_config, 'log_file') if log_mode == 'file' else None
+    log_level = ar_config.get(logging_config, 'log_level')
     log = init_log(log_mode, log_file, log_level, 'argo.poller')
 
     # Get mongo configurations
-    mongo_host = ArConfig.get(default_config, 'mongo_host')
-    mongo_port = ArConfig.get(default_config, 'mongo_port')
+    mongo_host = ar_config.get(default_config, 'mongo_host')
+    mongo_port = ar_config.get(default_config, 'mongo_port')
 
-    threshold = int(ArConfig.get(default_config, 'recomp_threshold'))
+    threshold = int(ar_config.get(default_config, 'recomp_threshold'))
     log.info("Threshold: %s", threshold)
     return log, mongo_host, mongo_port, threshold
 
@@ -57,7 +57,7 @@ def get_pending_and_running(col):
     return num_pen, num_run
 
 
-def run_recomputation(col,tenant,num_running,threshold):
+def run_recomputation(col, tenant, num_running, threshold):
     """
     Retrives the first pending recalculation in the db request and queues it for recalculation
     :param col: pymongo collection object
@@ -70,14 +70,14 @@ def run_recomputation(col,tenant,num_running,threshold):
     if num_running == 0:
         raise ValueError("Zero pending recomputations")
     elif num_running >= threshold:
-        raise ValueError("Over threshold; no recomputation will be executed.")  
+        raise ValueError("Over threshold; no recomputation will be executed.")
 
     pen_recalc = col.find_one({"s": "pending"})
     pen_recalc_id = str(pen_recalc["_id"])
 
     # Status update allready implemented in recompute
     # Call recompute execution script
-    cmd_exec=["./recompute.py","-i",pen_recalc_id,"-t",tenant]
+    cmd_exec = ["./recompute.py", "-i", pen_recalc_id, "-t", tenant]
     # Kickstart executor and continue own execution
     subprocess.Popen(cmd_exec)
 
@@ -94,11 +94,10 @@ def main(args=None):
     num_pen, num_run = get_pending_and_running(col)
     log.info("Running recalculations: %s (threshold: %s)", num_run, threshold)
     try:
-        run_recomputation(col,args.tenant,num_run,threshold)
+        run_recomputation(col, args.tenant, num_run, threshold)
         log.info("Below threshold recomputation sent for execution")
     except ValueError as ex:
         log.info(ex)
-    
 
 
 if __name__ == "__main__":
