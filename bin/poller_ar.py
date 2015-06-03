@@ -33,7 +33,7 @@ def get_poller_config(fn_ar_cfg="/etc/ar-compute-engine.conf", logging_config='l
     mongo_port = ar_config.get(default_config, 'mongo_port')
 
     threshold = int(ar_config.get(default_config, 'recomp_threshold'))
-    log.info("Threshold: %s", threshold)
+    log.info("Recomputation threshold: %s", threshold)
     return log, mongo_host, mongo_port, threshold
 
 
@@ -59,7 +59,7 @@ def get_pending_and_running(col):
 
 def run_recomputation(col, tenant, num_running, threshold):
     """
-    Retrives the first pending recalculation in the db request and queues it for recalculation
+    Retrieves the first pending recalculation in the db request and queues it for recalculation
     :param col: pymongo collection object
     :param tenant: tenant name
     :param num_running: number of running processes
