@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
 Version: 1.6.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -65,6 +65,10 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
+* Wed Jun 3 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-2%{?dist}
+- ARGO-74 Implement recomputation execution
+- ARGO-75 Implement changes in recomputation state
+- Further changes in poller implementation
 * Thu May 28 2015 Avraam Tsantekidis <avraamt@grid.auth.gr> - 1.6.2-1%{?dist}
 - ARGO-125 Added test for raising TypeError
 - ARGO-125 changed assertion to exception
