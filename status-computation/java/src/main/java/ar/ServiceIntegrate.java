@@ -10,7 +10,9 @@ import ops.DIntegrator;
 import ops.DTimeline;
 import ops.OpsManager;
 
+import org.apache.log4j.Logger;
 import org.apache.pig.EvalFunc;
+import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.DefaultDataBag;
 import org.apache.pig.data.Tuple;
@@ -22,6 +24,7 @@ import sync.GroupsOfGroups;
 
 public class ServiceIntegrate extends EvalFunc<Tuple> {
 
+	private static final Logger LOG = Logger.getLogger(ServiceIntegrate.class.getName());
 	public AvailabilityProfiles apMgr;
 	public GroupsOfGroups ggMgr;
 	public OpsManager opsMgr;
@@ -78,23 +81,54 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 
 		// Check if cache files have been opened
 		if (this.initialized == false) {
-			this.init(); // If not open them
+			try {
+				this.init(); // If not open them				
+			} catch (IOException e) {
+				LOG.error("Could not initialize sync structures");
+				throw new RuntimeException("pig Eval Init Error");
+			}
 		}
 
 		if (input == null || input.size() == 0)
 			return null;
 
-		String groupname = (String) input.get(0);
-		String service = (String) input.get(1);
+		String groupname;
+		String service;
+		DefaultDataBag bag;
+		
+		try {
+			groupname = (String)input.get(0);
+			service = (String)input.get(1);
+			bag = (DefaultDataBag) input.get(2);
+		} catch (ClassCastException e) {
+			LOG.error("Failed to cast input to approriate type");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (IndexOutOfBoundsException e) {
+			LOG.error("Malformed tuple schema");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (ExecException e) {
+			LOG.error("Execution error");
+			throw new RuntimeException("pig Eval bad input");
+		}
 		// Get the Timeline
 		DTimeline serviceTl = new DTimeline();
 
-		DefaultDataBag bag = (DefaultDataBag) input.get(2);
 		Iterator<Tuple> itBag = bag.iterator();
 		int j = 0;
 		while (itBag.hasNext()) {
 			Tuple curItem = itBag.next();
-			serviceTl.samples[j] = Integer.parseInt(curItem.get(0).toString());
+			try {
+				serviceTl.samples[j] = Integer.parseInt(curItem.get(0).toString());				
+			} catch (NumberFormatException e) {
+	    		LOG.error ("Failed to cast input to approriate type");
+	    		LOG.error ("Bad subitem:" + curItem.toString());
+	    		throw new RuntimeException("bad bag item input");
+			} catch (ExecException e) {
+	    		LOG.error ("Execution error");
+	    		throw new RuntimeException("bad bag item input");
+			}
 			j++;
 		}
 

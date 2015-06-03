@@ -15,8 +15,6 @@ def main(args=None):
 
     # default config
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
-    arsync_exec = "/usr/libexec/ar-sync/"
-    arsync_lib = "/var/lib/ar-sync/"
     arcomp_conf = "/etc/ar-compute/"
     arcomp_exec = "/usr/libexec/ar-compute/"
     stdl_exec = "/usr/libexec/ar-compute/bin"
@@ -32,9 +30,13 @@ def main(args=None):
     ArConfig = SafeConfigParser()
     ArConfig.read(fn_ar_cfg)
 
+    # Get sync exec and path
+    arsync_exec = ArConfig.get('connectors', 'sync_exec')
+    arsync_lib = ArConfig.get('connectors', 'sync_path')
+
     # Initialize logging
     log_mode = ArConfig.get('logging', 'log_mode')
-    log_file = 'none'
+    log_file = None
 
     if log_mode == 'file':
         log_file = ArConfig.get('logging', 'log_file')
@@ -47,6 +49,14 @@ def main(args=None):
     mongo_dest_service = ArConfig.get('datastore_mapping', 'service_dest')
     mongo_dest_egroup = ArConfig.get('datastore_mapping', 'egroup_dest')
     ar_mode = ArConfig.get('default', 'mode')
+
+    # Inform the user in wether argo runs locally or distributed
+    if ar_mode == 'local':
+        log.info("ARGO compute engine runs in LOCAL mode")
+        log.info("computation job will be run locally")
+    else:
+        log.info("ARGO compute engine runs in CLUSTER mode")
+        log.info("computation job will be submitted to the hadoop cluster")
 
     # check if sync_data must be cleaned in hdfs
     sync_clean = ArConfig.get('default', 'sync_clean')
@@ -91,7 +101,7 @@ def main(args=None):
     pig_params['ggs'] = sync_path + 'group_groups.avro'
     pig_params['mps'] = sync_path + 'poem_sync.avro'
     pig_params['dts'] = root_sync_path + 'downtimes.avro'
-    pig_params['weight'] = sync_path + 'weights_sync.avro'
+    pig_params['weight'] = sync_path + 'weights.avro'
     pig_params['aps'] = cfg_path + args.tenant + '_' + args.job + '_ap.json'
     pig_params['ops'] = cfg_path + args.tenant + '_ops.json'
     pig_params['cfg'] = cfg_path + args.tenant + '_' + args.job + '_cfg.json'

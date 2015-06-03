@@ -10,7 +10,9 @@ import java.util.List;
 import ops.DTimeline;
 import ops.OpsManager;
 
+import org.apache.log4j.Logger;
 import org.apache.pig.EvalFunc;
+import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.BagFactory;
 import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
@@ -22,6 +24,7 @@ import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 public class MetricTimelines extends EvalFunc<Tuple> {
 
+	private static final Logger LOG = Logger.getLogger(MetricTimelines.class.getName());
 	private String fnOps;
 	private String targetDate;
 
@@ -83,14 +86,21 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 		list.add(this.fnOps.concat("#ops"));
 		return list;
 	}
-
-	public Tuple exec(Tuple input) throws IOException {
+	
+	@Override
+	public Tuple exec(Tuple input) {
 
 		// Check if cache files have been opened
-		if (this.initialized == false) {
+		if (this.initialized == false)
+		{
+			try {
+				this.init(); // If not open them
+			} catch (IOException e) {
+				LOG.error("Could not initialize sync structures");
+				throw new RuntimeException("pig Eval Init Error");
+			}
 
-			this.init(); // If not open them
-			this.initialized = true;
+
 		}
 		// Clear timeline
 		this.dtl.clear();
@@ -98,21 +108,54 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 		if (input == null || input.size() == 0)
 			return null;
 
-		// /Grab endpoint info
-		String service = (String) input.get(0);
-		String hostname = (String) input.get(1);
-		String metric = (String) input.get(2);
-		// Get timeline info
-		DefaultDataBag bag = (DefaultDataBag) input.get(3);
+		String service;
+		String hostname;
+		String metric;
+		DefaultDataBag bag;
+		try {
+			// /Grab endpoint info
+			service = (String)input.get(0);
+			hostname = (String)input.get(1);
+			metric = (String)input.get(2);
+			// Get timeline info
+			bag = (DefaultDataBag) input.get(3);
+		} catch (ClassCastException e) {
+			LOG.error("Failed to cast input to approriate type");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (IndexOutOfBoundsException e) {
+			LOG.error("Malformed tuple schema");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (ExecException e) {
+			LOG.error("Execution error");
+			throw new RuntimeException("pig Eval bad input");
+		}
+		
 		// Iterate the whole timeline
 		Iterator<Tuple> itBag = bag.iterator();
 
 		while (itBag.hasNext()) {
 			Tuple curItem = itBag.next();
-			// Get timeline item info
 
-			String ts = (String) curItem.get(0);
-			String status = (String) curItem.get(1);
+			String ts;
+			String status;
+			try {
+				// Get timeline item info
+				ts = (String)curItem.get(0);
+				status = (String)curItem.get(1);
+			} catch (ClassCastException e) {
+				LOG.error("Failed to cast input to approriate type");
+				LOG.error("Bad tuple input:" + curItem.toString());
+				throw new RuntimeException("pig Eval bad input");
+			} catch (IndexOutOfBoundsException e) {
+				LOG.error("Malformed tuple schema");
+				LOG.error("Bad tuple input:" + curItem.toString());
+				throw new RuntimeException("pig Eval bad input");
+			} catch (ExecException e) {
+	    		LOG.error ("Execution error");
+	    		throw new RuntimeException("bad bag item input");
+			}
 			if (!(ts.substring(0, ts.indexOf("T")).equals(this.targetDate))) {
 				this.dtl.setStartState(this.opsMgr.getIntStatus(status));
 				continue;

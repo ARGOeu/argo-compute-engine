@@ -1,13 +1,12 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.6.1
+Version: 1.6.2
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
 BuildArch: x86_64
 Source0:   %{name}-%{version}.tar.gz
-Requires: ar-sync
 Requires: python-argparse
 Requires: python-pymongo
 Requires: hive
@@ -66,6 +65,22 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
+* Thu May 28 2015 Avraam Tsantekidis <avraamt@grid.auth.gr> - 1.6.2-1%{?dist}
+- ARGO-125 Added test for raising TypeError
+- ARGO-125 changed assertion to exception
+- ARGO-125 Changed 'none' to None for log_file name
+* Thu May 14 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.1-5%{?dist}
+- ARGO-118 Reading new avro "tags" field type as map
+- ARGO-48 Add logging to the data model classes
+- ARGO-47 Added exception handling in AR UDFs
+- ARGO-46 logging in java sync classes
+- ARGO-88 Log info about argo mode (local/cluster) during operations
+* Wed Apr 15 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.1-4%{?dist}
+- Multitenancy support in configuration files (derived from ARGO-67)
+* Tue Apr 14 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.1-3%{?dist}
+- ARGO-61 Updates in python wrappers to make sync path configurable in CE
+* Thu Apr 9 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.1-2%{?dist}
+- Removed runtime dependancy on ar-sync package
 * Thu Mar 26 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.1-1%{?dist}
 - Renameing of standalone folder to bin
 * Mon Mar 02 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-6%{?dist}

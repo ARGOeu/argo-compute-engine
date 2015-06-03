@@ -36,9 +36,8 @@ def main(args=None):
 
     # Default core paths
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
-    arsync_exec = "/usr/libexec/ar-sync/"
-    arsync_lib = "/var/lib/ar-sync/"
     arcomp_conf = "/etc/ar-compute/"
+    argo_exec = "/usr/libexec/ar-compute/bin/"
 
     actual_date = datetime.strptime(args.date, '%Y-%m-%d')
 
@@ -49,9 +48,14 @@ def main(args=None):
     ArConfig = SafeConfigParser()
     ArConfig.read(fn_ar_cfg)
 
+    # Get sync exec and path
+    arsync_exec = ArConfig.get('connectors', 'sync_exec')
+    arsync_lib = ArConfig.get('connectors', 'sync_path')
+
+
     # Initialize logging
     log_mode = ArConfig.get('logging', 'log_mode')
-    log_file = 'none'
+    log_file = None
 
     if log_mode == 'file':
         log_file = ArConfig.get('logging', 'log_file')
@@ -62,13 +66,21 @@ def main(args=None):
     # Get mode from config file
     ar_mode = ArConfig.get('default', 'mode')
 
+    # Inform the user in wether argo runs locally or distributed
+    if ar_mode == 'local':
+        log.info("ARGO compute engine runs in LOCAL mode")
+        log.info("sync data will be staged for computations locally")
+    else:
+        log.info("ARGO compute engine runs in CLUSTER mode")
+        log.info("sync data will be  uploaded to HDFS")
+
     # Compose needed sync filenames using the correct prefixes, dates and file
     # extensions (avro/json)
 
     fn_ops = args.tenant + '_ops.json'
     fn_aps = args.tenant + '_' + args.job + '_ap.json'
     fn_cfg = args.tenant + '_' + args.job + '_cfg.json'
-    fn_rec = args.tenant + '_recalc.json'
+    fn_rec = "recomputations_" + args.tenant + "_" + date_under + ".json"
 
     if ar_mode == 'cluster':
         # compose hdfs temporary destination
@@ -83,15 +95,20 @@ def main(args=None):
             '/' + args.job + '/' + date_under + '/'
 
     # Compose the local ar-sync files job folder
-    # arsync job = /var/lib/ar-sync/tenant/job/...
-    arsync_job = arsync_lib + args.tenant + '/' + args.job + '/'
+    # arsync job = /path/to/synced_stuff/tenant/job/...
+    arsync_job = arsync_lib + '/' + args.tenant + '/' + args.job + '/'
 
     # Call downtimes latest info
     cmd_call_downtimes = [
-        os.path.join(arsync_exec, 'downtime-sync'), '-d', args.date]
-    log.info("Calling downtime sync to give us latest downtime info")
+        os.path.join(arsync_exec, 'downtimes-gocdb-connector.py'), '-d', args.date]
+    log.info("Calling downtime sync connector to give us latest downtime info")
 
     run_cmd(cmd_call_downtimes, log)
+
+    # Call script to retrieve a json file of recomputations for the specific date/tenant from mongodb
+    cmd_mongo_recomputations = [os.path.join(argo_exec,'mongo_recompute.py'),'-d',args.date,'-t',args.tenant]
+    log.info("Retrieving relevant recomputation requests...")
+    run_cmd(cmd_mongo_recomputations, log)
 
     # Compose the local paths for files (paths+filenames)
     local_egroups = getSyncFile(
@@ -99,11 +116,11 @@ def main(args=None):
     local_ggroups = getSyncFile(
         actual_date, os.path.join(arsync_job, "group_groups_"), '.avro', '_', log)
     local_weights = getSyncFile(
-        actual_date, os.path.join(arsync_job, "weights_sync_"), '.avro', '_', log)
+        actual_date, os.path.join(arsync_job, "weights_"), '.avro', '_', log)
     local_mps = getSyncFile(
         actual_date, os.path.join(arsync_job, "poem_sync_"), '.avro', '_', log)
     local_downtimes = getSyncFile(
-        actual_date, os.path.join(arsync_lib, "downtimes_"), '.avro', '-', log)
+        actual_date, os.path.join(arsync_job, "downtimes_"), '.avro', '_', log)
 
     local_aps = os.path.join(arcomp_conf, fn_aps)
     local_ops = os.path.join(arcomp_conf, fn_ops)
@@ -129,7 +146,7 @@ def main(args=None):
                       local_ggroups, hdfs_dest + 'group_groups.avro']
     # Transfer weight factors from local to hdfs
     cmd_putWeights = ['hadoop', 'fs', '-put', '-f',
-                      local_weights, hdfs_dest + 'weights_sync.avro']
+                      local_weights, hdfs_dest + 'weights.avro']
     # Transfer metric profile from local to hdfs
     cmd_putMps = ['hadoop', 'fs', '-put', '-f',
                   local_mps, hdfs_dest + 'poem_sync.avro']
@@ -170,8 +187,13 @@ def main(args=None):
     log.info("Transfer recalculation requests")
     run_cmd(cmd_putRec, log)
 
+    # Clear local temporary recomputation file
+    os.remove(local_rec)
+
     log.info("Sync Data of tenant %s for job %s for date %s uploaded successfully to hdfs",
              args.tenant, args.job, args.date)
+
+
 
 if __name__ == "__main__":
 

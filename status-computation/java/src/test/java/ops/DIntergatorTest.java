@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -17,7 +18,7 @@ import org.junit.Test;
 public class DIntergatorTest {
 
 	@Test
-	public void test() throws URISyntaxException, FileNotFoundException, ParseException {
+	public void test() throws URISyntaxException, ParseException, IOException {
 		
 		URL resJsonFile = DIntergatorTest.class.getResource("/ops/EGI-algorithm.json");
 		File JsonFile = new File(resJsonFile.toURI());

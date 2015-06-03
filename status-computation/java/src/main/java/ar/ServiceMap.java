@@ -10,7 +10,9 @@ import java.util.Map.Entry;
 
 import ops.ConfigManager;
 
+import org.apache.log4j.Logger;
 import org.apache.pig.EvalFunc;
+import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
@@ -25,6 +27,7 @@ import sync.WeightGroups;
 
 public class ServiceMap extends EvalFunc<Tuple> {
 	
+	private static final Logger LOG = Logger.getLogger(ServiceMap.class.getName());
 	private String fnConfig;
 	private String fnAps;
 	private String fnGgroups;
@@ -96,7 +99,7 @@ public class ServiceMap extends EvalFunc<Tuple> {
 
 	}
 	
-	public void initFrontend() throws FileNotFoundException{
+	public void initFrontend() throws IOException{
 		this.localCfgMgr.loadJson(new File(this.localCfg));
 		this.frontInit = true;
 	}
@@ -111,11 +114,16 @@ public class ServiceMap extends EvalFunc<Tuple> {
 	}
 	
 	@Override
-	public Tuple exec(Tuple input) throws IOException {
+	public Tuple exec(Tuple input) {
 		
 		// Check if cache files have been opened
 		if (this.initialized == false) {
-			this.init(); // If not open them
+			try {
+				this.init(); // If not open them				
+			} catch (IOException e) {
+				LOG.error("Could not initialize sync structures");
+				throw new RuntimeException("pig Eval Init Error");
+			}
 		}
 
 		if (input == null || input.size() == 0)
@@ -123,14 +131,35 @@ public class ServiceMap extends EvalFunc<Tuple> {
 		
 		Tuple output = tupFactory.newTuple();
 		
-		// Get input fields
-		String service = (String)input.get(0);
-		String egroupName = (String)input.get(1);
-		double av = (Double) input.get(2);
-		double rel = (Double) input.get(3);
-		double upFraction = (Double)input.get(4);
-		double unknownFraction = (Double) input.get(5);
-		double downFraction = (Double) input.get(6);
+		String service;
+		String egroupName;
+		double av;
+		double rel;
+		double upFraction;
+		double unknownFraction;
+		double downFraction;
+		
+		try {
+			// Get input fields
+			service = (String)input.get(0);
+			egroupName = (String)input.get(1);
+			av = (Double)input.get(2);
+			rel = (Double)input.get(3);
+			upFraction = (Double)input.get(4);
+			unknownFraction = (Double)input.get(5);
+			downFraction = (Double)input.get(6);
+		} catch (ClassCastException e) {
+			LOG.error("Failed to cast input to approriate type");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (IndexOutOfBoundsException e) {
+			LOG.error("Malformed tuple schema");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (ExecException e) {
+			LOG.error("Execution error");
+			throw new RuntimeException("pig Eval bad input");
+		}
 		
 		// Supplement info for datastore
 		int dateInt = Integer.parseInt(this.targetDate.replace("-", ""));
@@ -182,6 +211,8 @@ public class ServiceMap extends EvalFunc<Tuple> {
 			try {
 				this.initFrontend();
 			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}

@@ -14,8 +14,6 @@ def main(args=None):
 
     # default config
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
-    arsync_exec = "/usr/libexec/ar-sync/"
-    arsync_lib = "/var/lib/ar-sync/"
     arcomp_conf = "/etc/ar-compute/"
     arcomp_exec = "/usr/libexec/ar-compute/"
     stdl_exec = "/usr/libexec/ar-compute/bin"
@@ -31,9 +29,13 @@ def main(args=None):
     ArConfig = SafeConfigParser()
     ArConfig.read(fn_ar_cfg)
 
+    # Get sync exec and path
+    arsync_exec = ArConfig.get('connectors', 'sync_exec')
+    arsync_lib = ArConfig.get('connectors', 'sync_path')
+
     # Initialize logging
     log_mode = ArConfig.get('logging', 'log_mode')
-    log_file = 'none'
+    log_file = None
 
     if log_mode == 'file':
         log_file = ArConfig.get('logging', 'log_file')
@@ -45,8 +47,16 @@ def main(args=None):
     mongo_port = ArConfig.get('default', 'mongo_port')
     mongo_dest = ArConfig.get('datastore_mapping', 'sdetail_dest')
     ar_mode = ArConfig.get('default', 'mode')
-    job_set = ArConfig.get("jobs", "job_set")
+    job_set = ArConfig.get("jobs", args.tenant + "_jobs")
     job_set = job_set.split(',')
+
+    # Inform the user in wether argo runs locally or distributed
+    if ar_mode == 'local':
+        log.info("ARGO compute engine runs in LOCAL mode")
+        log.info("computation job will be run locally")
+    else:
+        log.info("ARGO compute engine runs in CLUSTER mode")
+        log.info("computation job will be submitted to the hadoop cluster")
 
     # check if sync_data must be cleaned in hdfs
     sync_clean = ArConfig.get('default', 'sync_clean')

@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.apache.pig.EvalFunc;
+import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.FrontendException;
@@ -16,11 +18,11 @@ import sync.EndpointGroups;
 
 public class AddGroupInfo extends EvalFunc<Tuple>{
 	
+	private static final Logger LOG = Logger.getLogger(AddGroupInfo.class.getName());
 	public String fnEndpointGroups;
 	public String fnGroupGroups;
 	
 	public String type;
-	
 	
 	public EndpointGroups endpointMgr;
 	//public GroupsOfGroups groupMgr;
@@ -39,10 +41,7 @@ public class AddGroupInfo extends EvalFunc<Tuple>{
 		this.type = type; //type of group
 		
 		this.endpointMgr = new EndpointGroups();
-		//this.groupMgr = new GroupsOfGroups();
-		
-		
-		
+		//this.groupMgr = new GroupsOfGroups();			
 	}
 	
 	
@@ -66,18 +65,38 @@ public class AddGroupInfo extends EvalFunc<Tuple>{
 	}
 	
 	@Override
-	public Tuple exec(Tuple input) throws IOException {
+	public Tuple exec(Tuple input) {
 		
 		// Check if cache files have been opened 
-		if (this.initialized==false)
+		if (this.initialized == false)
         {
-        	this.init(); // If not open them 
+        	try {
+				this.init();
+			} catch (IOException e) {
+				LOG.error("Could not initialize sync structures");
+				throw new RuntimeException("pig Eval Init Error");
+			} 
         }
 		
 		if (input == null || input.size() == 0) return null;
 
-		String service = (String) input.get(0);
-		String hostname = (String) input.get(1);
+		String service;
+		String hostname; 
+		try {
+			service = (String)input.get(0);
+			hostname = (String)input.get(1);
+		} catch (ClassCastException e) {
+			LOG.error("Failed to cast input to approriate type");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (IndexOutOfBoundsException e) {
+			LOG.error("Malformed tuple schema");
+			LOG.error("Bad tuple input:" + input.toString());
+			throw new RuntimeException("pig Eval bad input");
+		} catch (ExecException e) {
+			LOG.error("Execution error");
+			throw new RuntimeException("pig Eval bad input");
+		}
 		
 		input.append(endpointMgr.getGroup(this.type,hostname,service));
 		

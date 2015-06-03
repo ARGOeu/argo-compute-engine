@@ -25,10 +25,11 @@ def init_log(log_mode, log_file, log_level, log_name):
 
     # If log_mode = file then setup a file handler
     if log_mode == 'file':
-
+        if log_file is None:
+            raise TypeError("Log filename is NoneType")
         file_log = logging.FileHandler(log_file)
         file_format = logging.Formatter(
-            '%(asctime)s [%(name)s] %(levelname)s %(message)s')
+            '%(asctime)s %(name)s[%(process)d]: %(levelname)s %(message)s')
         file_log.setFormatter(file_format)
 
         log.addHandler(file_log)
@@ -37,7 +38,7 @@ def init_log(log_mode, log_file, log_level, log_name):
     elif log_mode == 'syslog':
 
         sys_log = logging.handlers.SysLogHandler("/dev/log")
-        sys_format = logging.Formatter('[%(name)s] %(levelname)s %(message)s')
+        sys_format = logging.Formatter('%(name)s[%(process)d]: %(levelname)s %(message)s')
         sys_log.setFormatter(sys_format)
 
         log.addHandler(sys_log)
