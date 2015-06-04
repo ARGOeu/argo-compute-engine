@@ -125,7 +125,7 @@ def main(args=None):
     local_aps = os.path.join(arcomp_conf, fn_aps)
     local_ops = os.path.join(arcomp_conf, fn_ops)
     local_cfg = os.path.join(arcomp_conf, fn_cfg)
-    local_rec = os.path.join(arcomp_conf, fn_rec)
+    local_rec = os.path.join(arsync_lib, fn_rec)
 
     # Check filenames if exist
     log.info("Check if %s exists: %s", local_aps, os.path.exists(local_aps))
