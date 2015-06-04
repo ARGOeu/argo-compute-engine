@@ -17,6 +17,9 @@ class ArgoConfiguration(object):
     # Tenant parameters
     tenants = []
     jobs = defaultdict(list)
+    # connector parameters
+    sync_exec = None
+    sync_path = None
 
     def __init__(self, filename):
 
@@ -53,6 +56,10 @@ class ArgoConfiguration(object):
             job_set = job_set.split(',')
             for job_item in job_set:
                 self.jobs[tenant_item].append(job_item)
+        
+        # Grab connector sync path
+        self.sync_exec = ar_config.get('connectors','sync_exec')
+        self.sync_path = ar_config.get('connectors','sync_path')
 
 
 def get_date_under(date):

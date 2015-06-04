@@ -17,6 +17,10 @@ log_level=debug
 tenants=TenantA,TenantB
 TenantA_jobs=JobA,JobB
 TenantB_jobs=JobC,JobD
+
+[connectors]
+sync_exec=/usr/libexec/argo-egi-connectors
+sync_path=/var/lib/argo-connectors
 """
 
 
@@ -71,3 +75,6 @@ def test_load_configuration(tmpdir):
 
     assert cfg.tenants == expected_tenants
     assert cfg.jobs == expected_jobs
+
+    assert cfg.sync_exec == "/usr/libexec/argo-egi-connectors"
+    assert cfg.sync_path == "/var/lib/argo-connectors"
