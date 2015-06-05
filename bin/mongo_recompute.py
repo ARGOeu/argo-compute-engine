@@ -81,7 +81,7 @@ def main(args=None):
 
     # default paths
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
-    arsync_lib = "/var/lib/ar-sync/"
+    
 
     # Init configuration
     cfg = ArgoConfiguration(fn_ar_cfg)
@@ -97,7 +97,7 @@ def main(args=None):
     log.info("Date: %s, relevant recomputations found: %s", args.date, len(results))
 
     # Write results to file
-    write_output(results, args.tenant, get_date_under(args.date), arsync_lib)
+    write_output(results, args.tenant, get_date_under(args.date), cfg.sync_path)
 
 
 if __name__ == "__main__":
