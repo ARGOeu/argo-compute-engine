@@ -105,7 +105,7 @@ def main(args=None):
     pig_params['aps'] = cfg_path + args.tenant + '_' + args.job + '_ap.json'
     pig_params['ops'] = cfg_path + args.tenant + '_ops.json'
     pig_params['cfg'] = cfg_path + args.tenant + '_' + args.job + '_cfg.json'
-    pig_params['rec'] = cfg_path + args.tenant + '_recalc.json'
+    pig_params['rec'] = cfg_path + 'recomputations_' + args.tenant + '_' + date_under + '.json'
     pig_params['localCfg'] = local_cfg_path + \
         args.tenant + "_" + args.job + '_cfg.json'
     pig_params['dt'] = args.date
