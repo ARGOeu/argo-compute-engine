@@ -9,6 +9,7 @@ from argparse import ArgumentParser
 from utils import ArgoConfiguration
 from utils import get_date_under
 from pymongo import MongoClient
+from bson import json_util
 
 
 def write_output(results, tenant, date_under, arsync_lib):
@@ -26,7 +27,7 @@ def write_output(results, tenant, date_under, arsync_lib):
 
     # write output file to the correct job path
     with open(rec_filepath, 'w') as output_file:
-        json.dump(results, output_file)
+        json.dump(results, output_file, default=json_util.default)
 
 
 def get_mongo_collection(mongo_host, mongo_port, db, collection, log):
