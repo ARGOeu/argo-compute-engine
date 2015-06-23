@@ -67,9 +67,7 @@ def run_recomputation(col, tenant, num_running, threshold):
     """
 
     # Threshold checks
-    if num_running == 0:
-        raise ValueError("Zero pending recomputations")
-    elif num_running >= threshold:
+    if num_running >= threshold:
         raise ValueError("Over threshold; no recomputation will be executed.")
 
     pen_recalc = col.find_one({"s": "pending"})
