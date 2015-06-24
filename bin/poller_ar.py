@@ -66,7 +66,7 @@ def run_recomputation(col, tenant, num_running, threshold):
     :param threshold: threshold number
     """
 
-    # Threshold checks
+    # Threshold check
     if num_running >= threshold:
         raise ValueError("Over threshold; no recomputation will be executed.")
 
@@ -90,6 +90,9 @@ def main(args=None):
     log, mongo_host, mongo_port, threshold = get_poller_config()
     col = get_mongo_collection(mongo_host=mongo_host, mongo_port=mongo_port)
     num_pen, num_run = get_pending_and_running(col)
+    # Number of pending check
+    if num_pen == 0:
+        raise ValueError("Zero pending recalculations")
     log.info("Running recalculations: %s (threshold: %s)", num_run, threshold)
     try:
         run_recomputation(col, args.tenant, num_run, threshold)
