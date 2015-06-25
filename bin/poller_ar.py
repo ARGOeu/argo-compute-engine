@@ -68,7 +68,7 @@ def run_recomputation(col, tenant, num_running, num_pending, threshold):
 
     # Checks
     if num_pending == 0:
-        raise ValueError("Zero pending recalculations")
+        raise ValueError("Zero pending recomputations")
     elif num_running >= threshold:
         raise ValueError("Over threshold; no recomputation will be executed.")
 

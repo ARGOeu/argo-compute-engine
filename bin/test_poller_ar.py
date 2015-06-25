@@ -14,7 +14,7 @@ def test_run_recomputation(mock_popen):
     pen_recalc, col = MagicMock(), MagicMock()
     pen_recalc.__getitem__.return_value = ObjectId('5559ed3306f6233c190bc851')
     col.find_one.return_value = pen_recalc
-    run_recomputation(col, "FOO_tenant", 1, 3)
+    run_recomputation(col, "FOO_tenant", 1, 1, 3)
     col.find_one.assert_called_with({'s': 'pending'})
 
     # Assert that the actual sys call is called with the correct arguments
@@ -32,7 +32,7 @@ def test_zero_pending(mock_popen):
     pen_recalc.__getitem__.return_value = ObjectId('5559ed3306f6233c190bc851')
     col.find_one.return_value = pen_recalc
     with pytest.raises(ValueError) as excinfo:
-        run_recomputation(col, "FOO_tenant", 0, 3)
+        run_recomputation(col, "FOO_tenant", 0, 0, 3)
         col.find_one.assert_called_with({'s': 'pending'})
     assert 'Zero pending recomputations' in str(excinfo.value)
 
@@ -50,7 +50,7 @@ def test_over_threshold(mock_popen):
     pen_recalc.__getitem__.return_value = ObjectId('5559ed3306f6233c190bc851')
     col.find_one.return_value = pen_recalc
     with pytest.raises(ValueError) as excinfo:
-        run_recomputation(col, "FOO_tenant", 5, 3)
+        run_recomputation(col, "FOO_tenant", 5, 1, 3)
         col.find_one.assert_called_with({'s': 'pending'})
     assert 'Over threshold; no recomputation will be executed.' in str(excinfo.value)
 
