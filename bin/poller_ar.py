@@ -57,7 +57,7 @@ def get_pending_and_running(col):
     return num_pen, num_run
 
 
-def run_recomputation(col, tenant, num_running, threshold):
+def run_recomputation(col, tenant, num_running, num_pending, threshold):
     """
     Retrieves the first pending recalculation in the db request and queues it for recalculation
     :param col: pymongo collection object
@@ -66,8 +66,8 @@ def run_recomputation(col, tenant, num_running, threshold):
     :param threshold: threshold number
     """
 
-    # Threshold checks
-    if num_running == 0:
+    # Checks
+    if num_pending == 0:
         raise ValueError("Zero pending recomputations")
     elif num_running >= threshold:
         raise ValueError("Over threshold; no recomputation will be executed.")
@@ -94,7 +94,7 @@ def main(args=None):
     num_pen, num_run = get_pending_and_running(col)
     log.info("Running recalculations: %s (threshold: %s)", num_run, threshold)
     try:
-        run_recomputation(col, args.tenant, num_run, threshold)
+        run_recomputation(col, args.tenant, num_run, num_pen, threshold)
         log.info("Below threshold recomputation sent for execution")
     except ValueError as ex:
         log.info(ex)

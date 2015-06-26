@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
 Version: 1.6.2
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -65,6 +65,9 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
+* Tue Jun 23 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.2-5%{?dist}
+- Removed one threshold check
+- Fix issue with non Json parsable datetime object
 * Wed Jun 16 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.2-4%{?dist}
 - Fix in parameter passed onto pig ar script 
 * Wed Jun 4 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-3%{?dist}
