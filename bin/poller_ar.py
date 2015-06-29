@@ -2,10 +2,15 @@
 
 import sys
 from ConfigParser import SafeConfigParser
-from argparse import ArgumentParser
-from pymongo import MongoClient
 import subprocess
+from multiprocessing import Process
+
+from argparse import ArgumentParser
+
+from pymongo import MongoClient
+
 from argolog import init_log
+from recompute import recompute
 
 
 def get_poller_config(fn_ar_cfg="/etc/ar-compute-engine.conf", logging_config='logging',
@@ -77,12 +82,13 @@ def run_recomputation(col, tenant, num_running, num_pending, threshold):
 
     # Status update allready implemented in recompute
     # Call recompute execution script
-    cmd_exec = ["./recompute.py", "-i", pen_recalc_id, "-t", tenant]
+    kwargs = {"recalculation_id": pen_recalc_id, "tenant": tenant}
+    recomputation = Process(target=recompute, kwargs=kwargs)
     # Kickstart executor and continue own execution
-    subprocess.Popen(cmd_exec)
+    recomputation.start()
+    
 
-
-def main(args=None):
+def main(tenant=None):
     """
     Checks if there are any pending recomputation requests and if the running
     requests do not exceed a threshold and queues another one to be recomputed
