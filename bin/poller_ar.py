@@ -94,7 +94,7 @@ def main(tenant=None):
     """
     Checks if there are any pending recomputation requests and if the running
     requests do not exceed a threshold and queues another one to be recomputed
-    :param args:
+    :param tenant:
     :return:
     """
     log, mongo_host, mongo_port, threshold = get_poller_config()
@@ -102,7 +102,7 @@ def main(tenant=None):
     num_pen, num_run = get_pending_and_running(col)
     log.info("Running recalculations: %s (threshold: %s)", num_run, threshold)
     try:
-        run_recomputation(col, args.tenant, num_run, num_pen, threshold)
+        run_recomputation(col, tenant, num_run, num_pen, threshold)
         log.info("Below threshold recomputation sent for execution")
     except ValueError as ex:
         log.info(ex)
