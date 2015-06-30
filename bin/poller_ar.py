@@ -114,7 +114,9 @@ if __name__ == "__main__":
     arg_parser = ArgumentParser(
         description="Polling for pending recomputations requests")
     arg_parser.add_argument(
-        "-t", "--tenant", help="tenant owner", dest="tenant", metavar="STRING", required="TRUE")
+        "-t", "--tenant", help="tenant owner", type=str, dest="tenant", metavar="STRING",
+        required="TRUE")
     # Parse the command line arguments accordingly and introduce them to
     # main...
-    sys.exit(main(arg_parser.parse_args()))
+    args = arg_parser.parse_args()
+    sys.exit(main(tenant=args.tenant))
