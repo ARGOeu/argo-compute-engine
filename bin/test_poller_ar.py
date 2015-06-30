@@ -4,6 +4,9 @@ from mock import MagicMock
 from poller_ar import run_recomputation
 from bson.objectid import ObjectId
 
+class AnyStringWith(str):
+    def __eq__(self, other):
+        return self in other
 
 @mock.patch('poller_ar.subprocess.Popen')
 def test_run_recomputation(mock_popen):
@@ -19,7 +22,7 @@ def test_run_recomputation(mock_popen):
 
     # Assert that the actual sys call is called with the correct arguments
     mock_popen.assert_called_with(
-        ['./recompute.py', '-i', '5559ed3306f6233c190bc851', '-t', 'FOO_tenant'])
+        [AnyStringWith('recompute.py'), '-i', '5559ed3306f6233c190bc851', '-t', 'FOO_tenant'])
 
 
 @mock.patch('poller_ar.subprocess.Popen')
