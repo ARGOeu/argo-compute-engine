@@ -124,11 +124,12 @@ def update_status(collection, rec_id, status, timestamp, log):
         '$set': {"s": status}, '$push': {"history": {"status": status, "ts": timestamp}}})
 
 
-def main(args=None):
+def recompute(recalculation_id=None, tenant=None):
     """
     Script to execute recomputation
     
-    :param args: Command line arguments
+    :param recalculation_id: The id of the job to be recomputed
+    :param tenant: tenants name
     """
     # default paths
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
@@ -143,12 +144,12 @@ def main(args=None):
     # Check recomputation
     col = get_mongo_collection(
         cfg.mongo_host, cfg.mongo_port, "AR", "recalculations", log)
-    recomputation = get_recomputation(col, args.id, log)
+    recomputation = get_recomputation(col, recalculation_id, log)
     dates = get_time_period(recomputation)
 
-    update_status(col, args.id, "running", datetime.now(), log)
-    loop_recompute(argo_exec, dates, args.tenant, cfg.jobs[args.tenant], log)
-    update_status(col, args.id, "done", datetime.now(), log)
+    update_status(col, recalculation_id, "running", datetime.now(), log)
+    loop_recompute(argo_exec, dates, tenant, cfg.jobs[tenant], log)
+    update_status(col, recalculation_id, "done", datetime.now(), log)
 
 
 if __name__ == "__main__":
@@ -161,5 +162,6 @@ if __name__ == "__main__":
     arg_parser.add_argument(
         "-t", "--tenant", help="tenant owner", dest="tenant", metavar="STRING", required="TRUE")
     # Parse the command line arguments accordingly and introduce them to
-    # main...
-    sys.exit(main(arg_parser.parse_args()))
+    # recompute...
+    args = arg_parser.parse_args()
+    sys.exit(recompute(recalculation_id=args.id, tenant=args.tenant))

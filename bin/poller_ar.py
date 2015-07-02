@@ -2,10 +2,17 @@
 
 import sys
 from ConfigParser import SafeConfigParser
-from argparse import ArgumentParser
-from pymongo import MongoClient
 import subprocess
+import os
+import inspect
+
+from argparse import ArgumentParser
+
+from pymongo import MongoClient
+
 from argolog import init_log
+
+script_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 
 def get_poller_config(fn_ar_cfg="/etc/ar-compute-engine.conf", logging_config='logging',
@@ -77,16 +84,17 @@ def run_recomputation(col, tenant, num_running, num_pending, threshold):
 
     # Status update allready implemented in recompute
     # Call recompute execution script
-    cmd_exec = ["./recompute.py", "-i", pen_recalc_id, "-t", tenant]
+    recompute_script = script_path + "/recompute.py"
+    cmd_exec = [recompute_script, "-i", pen_recalc_id, "-t", tenant]
     # Kickstart executor and continue own execution
     subprocess.Popen(cmd_exec)
 
 
-def main(args=None):
+def main(tenant=None):
     """
     Checks if there are any pending recomputation requests and if the running
     requests do not exceed a threshold and queues another one to be recomputed
-    :param args:
+    :param tenant:
     :return:
     """
     log, mongo_host, mongo_port, threshold = get_poller_config()
@@ -94,7 +102,7 @@ def main(args=None):
     num_pen, num_run = get_pending_and_running(col)
     log.info("Running recalculations: %s (threshold: %s)", num_run, threshold)
     try:
-        run_recomputation(col, args.tenant, num_run, num_pen, threshold)
+        run_recomputation(col, tenant, num_run, num_pen, threshold)
         log.info("Below threshold recomputation sent for execution")
     except ValueError as ex:
         log.info(ex)
@@ -106,7 +114,9 @@ if __name__ == "__main__":
     arg_parser = ArgumentParser(
         description="Polling for pending recomputations requests")
     arg_parser.add_argument(
-        "-t", "--tenant", help="tenant owner", dest="tenant", metavar="STRING", required="TRUE")
+        "-t", "--tenant", help="tenant owner", type=str, dest="tenant", metavar="STRING",
+        required="TRUE")
     # Parse the command line arguments accordingly and introduce them to
     # main...
-    sys.exit(main(arg_parser.parse_args()))
+    args = arg_parser.parse_args()
+    sys.exit(main(tenant=args.tenant))
