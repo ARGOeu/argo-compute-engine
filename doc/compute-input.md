@@ -1,11 +1,6 @@
----
-title: Compute Engine documentation | ARGO
-page_title: Compute Engine Input
-font_title: 'fa fa-cog'
-description: This document describes the compute engine input data (metrics, topology, profiles, factors)
----
+# ARGO Compute Engine input
 
-## Input Data 
+## Input Data
 
 |Input Data |  Description | Shortcut |
 |Metric Data | Metric data come in the form of avro files and contain timestamped status information about the hostname,service and specific checks (metrics) that are being monitored|<a href="#metric">Description</a>|
@@ -57,10 +52,10 @@ The current **raw avro schema file** for the metric data is the following:
 	}
 
 
-## Additional input: topology, profiles, factors 
+## Additional input: topology, profiles, factors
 
 This core metric data set is processed and transformed with additional information provided by the argo-connector components. Additional information includes topology, grouping of services, weight factors, lists relevant metrics to be considered, etc. This information is provided per-tenant/per-job in the following path
-	
+
 	/var/lib/ar-sync/{tenant-name}/{job-name}
 
 for e.g. **for tenant-name=T1 and job-name=JobA** the correct path with the sync files is as follows
@@ -72,13 +67,13 @@ Some sync files that concern the whole enviroment such as the downtime informati
 <a id="topology"></a>
 
 ### Topology files
-Topology information is provided by two files: 
+Topology information is provided by two files:
 
-- groups of endpoints, 
+- groups of endpoints,
 - groups of groups.
 
 A service endpoint is considered by the engine the simplest item of topology.
-Service endpoint combines the information of hostname+service_name. Service endpoints can be grouped together forming upper level entities named endpoint groups. For example an organization's geographical IT site that is being monitored can be considered a group of service endpoints. Information for available endpoint groups is contained in the file group_endpoints. 
+Service endpoint combines the information of hostname+service_name. Service endpoints can be grouped together forming upper level entities named endpoint groups. For example an organization's geographical IT site that is being monitored can be considered a group of service endpoints. Information for available endpoint groups is contained in the file group_endpoints.
 
 
 #### group_endpoints.avro
@@ -110,13 +105,13 @@ Below is the full description of the group_endpoints.avro specification
 		                                        {"name" : "production", "type" : "int"}]}
 		                          ]
 		}
-	 ] 
+	 ]
 	}
 
 
 #### group_groups.avro
 
-Service endpoint groups can be further grouped in higher-level entities such as for example nation-wide groups of sites etc. The topology information regarding higher-level groups is contained to the group_groups.avro file. 
+Service endpoint groups can be further grouped in higher-level entities such as for example nation-wide groups of sites etc. The topology information regarding higher-level groups is contained to the group_groups.avro file.
 
 The file uses avro format and contains the following fields:
 
@@ -137,7 +132,7 @@ Below is the full description of the avro specification:
 |`tags`| user defined tags providing description metadata| NO|
 
 
-The structure of the specific file gives the ability to define recursively group entities that can be contained as subgroups on other group entities 
+The structure of the specific file gives the ability to define recursively group entities that can be contained as subgroups on other group entities
 
 an abstract example using cities,nations,continents
 
@@ -208,7 +203,7 @@ and the full avro specification:
                               ]
     			}
  		]
-	}	
+	}
 
 
 <a id="Weights"></a>
@@ -259,6 +254,3 @@ The full avro specification of the file is provided below
 	    {"name": "end_time", "type": "string"}
 	 ]
 	}
-
-
-

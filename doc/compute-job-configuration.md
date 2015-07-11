@@ -1,9 +1,4 @@
----
-title: Compute Engine documentation | ARGO
-page_title: Compute engine job configurations
-font_title: 'fa fa-cog'
-description: This document describes the job configurations
----
+# ARGO Compute Engine configuration
 
 ## Main Job Configurations  
 
