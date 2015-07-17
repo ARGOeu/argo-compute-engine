@@ -31,7 +31,7 @@ class ArgoConfiguration(object):
     sampling_interval = None
 
     # tenant ar store configuration
-    tenant_db_cfg = {}
+    tenant_db_conf = {}
 
     def __init__(self, filename):
         self.load_config(filename)
@@ -76,13 +76,13 @@ class ArgoConfiguration(object):
         self.mode = ar_config.get('default', 'mode')
 
         # Grab mapping info (will be removed in the near future)
-        self.n_alt = ar_config.get('connectors', 'n_alt')
-        self.e_map = ar_config.get('connectors' 'e_map')
-        self.s_map = ar_config.get('connectors', 's_map')
+        self.n_alt = ar_config.get('datastore_mapping', 'n_alt')
+        self.e_map = ar_config.get('datastore_mapping', 'e_map')
+        self.s_map = ar_config.get('datastore_mapping', 's_map')
 
         # Grab sampling parameters
-        self.sampling_period = ar_config.get('sampling', 'period')
-        self.sampling_interval = ar_config.get('sampling', 'interval')
+        self.sampling_period = ar_config.get('sampling', 's_period')
+        self.sampling_interval = ar_config.get('sampling', 's_interval')
 
     def load_tenant_db_conf(self, filename):
         """
@@ -91,13 +91,16 @@ class ArgoConfiguration(object):
         :param filename: path to json file containing tenant db configuration
         :returns: dictionary with database configuration
         """
+        self.tenant_db_conf = {}
+
         with open(filename) as json_file:
             json_data = json.load(json_file)
 
-        self.tenant_db_cfg = {item["store"]: item for item in json_data["db_conf"]}
+        for item in json_data["db_conf"]:
+            self.tenant_db_conf[item["store"]] = item
 
     def get_mongo_uri(self, store, collection):
-        store_cfg = self.tenant_db_cfg[store]
+        store_cfg = self.tenant_db_conf[store]
         if store_cfg["username"] and store_cfg["password"]:
             mongo_uri = ["mongodb://", store_cfg["username"], ":", store_cfg["password"],
                          "@", store_cfg["server"], ":", str(store_cfg["port"]),

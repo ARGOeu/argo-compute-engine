@@ -4,7 +4,7 @@
 import os
 import sys
 import json
-import util
+import utils
 from argolog import init_log
 from argorun import run_cmd
 from datetime import datetime, timedelta
@@ -27,8 +27,8 @@ def main(args=None):
     date_under = utils.get_date_under(args.date)
 
     # Init configuration
-    cfg = ArgoConfiguration(fn_ar_cfg)
-    cfg.load_tenant_db_conf(self, os.path.join(arcomp_conf, args.tenant + "_db_conf.json"))
+    cfg = utils.ArgoConfiguration(fn_ar_cfg)
+    cfg.load_tenant_db_conf(os.path.join(arcomp_conf, args.tenant + "_db_conf.json"))
     # Init logging
     log = init_log(cfg.log_mode, cfg.log_file, cfg.log_level, 'argo.job_ar')
 
