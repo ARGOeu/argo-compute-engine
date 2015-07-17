@@ -20,6 +20,11 @@ class ArgoConfiguration(object):
     # connector parameters
     sync_exec = None
     sync_path = None
+    # ce run mode
+    mode = None
+
+    # tenant ar store configuration
+    tenant_db_cfg = {}
 
     def __init__(self, filename):
         self.load_config(filename)
@@ -60,20 +65,20 @@ class ArgoConfiguration(object):
         self.sync_exec = ar_config.get('connectors', 'sync_exec')
         self.sync_path = ar_config.get('connectors', 'sync_path')
 
+        # Grab run mode
+        self.mode = ar_config.get('default','mode')
 
-def load_tenant_db_conf(filename):
-    """
-    Load tenant db configuration and return it as a dictionary
+    def load_tenant_db_conf(self, filename):
+        """
+        Load tenant db configuration and return it as a dictionary
 
-    :param filename: path to json file containing tenant db configuration
-    :returns: dictionary with database configuration
-    """
-    with open('filename') as json_file:
-        json_data = json.load(json_file)
+        :param filename: path to json file containing tenant db configuration
+        :returns: dictionary with database configuration
+        """
+        with open('filename') as json_file:
+            json_data = json.load(json_file)
 
-    db_cfg = {item["store"]: item for item in json_data["db_conf"]}
-
-    return db_cfg
+        self.tenant_db_cfg = {item["store"]: item for item in json_data["db_conf"]}
 
 
 def get_date_under(date):
