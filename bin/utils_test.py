@@ -21,6 +21,19 @@ TenantB_jobs=JobC,JobD
 [connectors]
 sync_exec=/usr/libexec/argo-egi-connectors
 sync_path=/var/lib/argo-connectors
+
+[sampling]
+
+s_period=1440
+s_interval=5
+
+
+[datastore_mapping]
+
+e_map=dt,ap,p,s,n,hsp,a,r,up,u,d,m,pr,ss,cs,i,sc
+s_map=dt,ap,p,s,n,sf,a,r,up,u,d,m,pr,ss,cs,i,sc
+sd_map=ts,s,sum,msg,ps,pts,di,ti
+n_alt=vo_f
 """
 
 TEST_TENANT_DB_CONTENTS = r"""
@@ -94,18 +107,19 @@ def test_load_configuration(tmpdir):
     expected_tenants = ["TenantA", "TenantB"]
     expected_jobs = {"TenantA": ["JobA", "JobB"], "TenantB": ["JobC", "JobD"]}
 
-    expected_tenant_db_cfg = {'ar': {'database': 'argo-egi',
-                                     'password': '',
-                                     'port': 27017,
-                                     'server': '192.168.0.99',
-                                     'store': 'ar',
-                                     'username': ''},
-                              'status': {'database': 'argo-egi',
-                                         'password': '',
-                                         'port': 27017,
-                                         'server': '192.168.0.99',
-                                         'store': 'status',
-                                         'username': ''}}
+    expected_tenant_db_conf = {'ar': {'database': 'argo-egi',
+                                      'password': '',
+                                      'port': 27017,
+                                      'server': '192.168.0.99',
+                                      'store': 'ar',
+                                      'username': ''},
+                               'status': {'database': 'argo-egi',
+                                          'password': '',
+                                          'port': 27017,
+                                          'server': '192.168.0.99',
+                                          'store': 'status',
+                                          'username': ''}
+                               }
 
     mongo_uri_a = "mongodb://192.168.0.99:27017/argo-egi.endpoint_groups"
     mongo_uri_b = "mongodb://192.168.0.99:27017/argo-egi.status_metric"
@@ -124,6 +138,8 @@ def test_load_configuration(tmpdir):
 
     assert cfg.mode == "local"
 
-    assert cfg.tenant_db_cfg == expected_tenant_db_cfg
+    print cfg.tenant_db_conf
+
+    assert cfg.tenant_db_conf == expected_tenant_db_conf
     assert cfg.get_mongo_uri("ar", "endpoint_groups") == mongo_uri_a
     assert cfg.get_mongo_uri("status", "status_metric") == mongo_uri_b
