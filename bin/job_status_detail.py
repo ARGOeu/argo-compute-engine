@@ -28,7 +28,7 @@ def main(args=None):
 
     # Init configuration
     cfg = ArgoConfiguration(fn_ar_cfg)
-    cfg.load_tenant_db_conf(self, os.path.join(arcomp_conf, args.tenant))
+    cfg.load_tenant_db_conf(self, os.path.join(arcomp_conf, args.tenant + "_db_conf.json"))
     # Init logging
     log = init_log(cfg.log_mode, cfg.log_file, cfg.log_level, 'argo.job_status_detail')
 
