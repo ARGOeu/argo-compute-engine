@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
 Version: 1.6.2
-Release: 1%{?dist}
+Release: 6%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -65,6 +65,19 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
+* Tue Jun 30 2015 Avraam Tsantekidis <avraamt@grid.auth.gr> - 1.6.2-6%{?dist}
+- ARGO-153 fix in call for recomputation script from poller
+* Tue Jun 23 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.2-5%{?dist}
+- Removed one threshold check
+- Fix issue with non Json parsable datetime object
+* Wed Jun 16 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.2-4%{?dist}
+- Fix in parameter passed onto pig ar script 
+* Wed Jun 4 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-3%{?dist}
+- ARGO-129 Bugfix: Fix reference to connector path
+* Wed Jun 3 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-2%{?dist}
+- ARGO-74 Implement recomputation execution
+- ARGO-75 Implement changes in recomputation state
+- Further changes in poller implementation
 * Thu May 28 2015 Avraam Tsantekidis <avraamt@grid.auth.gr> - 1.6.2-1%{?dist}
 - ARGO-125 Added test for raising TypeError
 - ARGO-125 changed assertion to exception
