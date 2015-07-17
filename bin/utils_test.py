@@ -23,6 +23,29 @@ sync_exec=/usr/libexec/argo-egi-connectors
 sync_path=/var/lib/argo-connectors
 """
 
+TEST_TENANT_DB_CONTENTS = r"""
+{
+  "db_conf": [
+    {
+      "store": "ar",
+      "server": "192.168.0.99",
+      "port": 27017,
+      "database": "argo-egi",
+      "username": "",
+      "password": ""
+    },
+    {
+      "store": "status",
+      "server": "192.168.0.99",
+      "port": 27017,
+      "database": "argo-egi",
+      "username": "",
+      "password": ""
+    }
+  ]
+}
+"""
+
 
 def test_get_date_under():
     date_input = "2015-05-11"
@@ -62,10 +85,30 @@ def test_load_configuration(tmpdir):
 
     res_file.write(TEST_CONF_CONTENTS)
 
+    res_tenant_file = tmpdir.join("tenant-db-test.json")
+    res_tenant_file.write(TEST_TENANT_DB_CONTENTS)
+
     cfg = ArgoConfiguration(res_file.strpath)
+    cfg.load_tenant_db_conf(res_tenant_file.strpath)
 
     expected_tenants = ["TenantA", "TenantB"]
     expected_jobs = {"TenantA": ["JobA", "JobB"], "TenantB": ["JobC", "JobD"]}
+
+    expected_tenant_db_cfg = {'ar': {'database': 'argo-egi',
+                                     'password': '',
+                                     'port': 27017,
+                                     'server': '192.168.0.99',
+                                     'store': 'ar',
+                                     'username': ''},
+                              'status': {'database': 'argo-egi',
+                                         'password': '',
+                                         'port': 27017,
+                                         'server': '192.168.0.99',
+                                         'store': 'status',
+                                         'username': ''}}
+
+    mongo_uri_a = "mongodb://192.168.0.99:27017/argo-egi.endpoint_groups"
+    mongo_uri_b = "mongodb://192.168.0.99:27017/argo-egi.status_metric"
 
     assert cfg.mongo_host == "127.0.0.1"
     assert cfg.mongo_port == "27017"
@@ -78,3 +121,9 @@ def test_load_configuration(tmpdir):
 
     assert cfg.sync_exec == "/usr/libexec/argo-egi-connectors"
     assert cfg.sync_path == "/var/lib/argo-connectors"
+
+    assert cfg.mode == "local"
+
+    assert cfg.tenant_db_cfg == expected_tenant_db_cfg
+    assert cfg.get_mongo_uri("ar", "endpoint_groups") == mongo_uri_a
+    assert cfg.get_mongo_uri("status", "status_metric") == mongo_uri_b
