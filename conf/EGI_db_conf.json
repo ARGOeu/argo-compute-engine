@@ -1,5 +1,5 @@
 {
-  "db:conf": [
+  "db_conf": [
     {
       "store": "ar",
       "server": "192.168.0.99",
