@@ -66,7 +66,7 @@ class ArgoConfiguration(object):
         self.sync_path = ar_config.get('connectors', 'sync_path')
 
         # Grab run mode
-        self.mode = ar_config.get('default','mode')
+        self.mode = ar_config.get('default', 'mode')
 
     def load_tenant_db_conf(self, filename):
         """
@@ -79,6 +79,17 @@ class ArgoConfiguration(object):
             json_data = json.load(json_file)
 
         self.tenant_db_cfg = {item["store"]: item for item in json_data["db_conf"]}
+
+    def get_mongo_uri(self, store="ar", collection):
+        store_cfg = tenant_db_cfg[store]
+        if store_cfg["username"] and store_cfg["password"]:
+            mongo_uri = ["mongodb://", store_cfg["username"], ":", store_cfg["password"],
+                         "@", store_cfg["host"], ":", store_cfg["port"],
+                         "/", store_cfg["database"], ".", collection]
+        else:
+            mongo_uri = ["mongodb://", store_cfg["host"], ":", store_cfg["port"],
+                         "/", store_cfg["database"], ".", collection]
+        return mongo_uri
 
 
 def get_date_under(date):
