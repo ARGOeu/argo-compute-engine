@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import json
 from ConfigParser import SafeConfigParser
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -75,12 +75,12 @@ class ArgoConfiguration(object):
         :param filename: path to json file containing tenant db configuration
         :returns: dictionary with database configuration
         """
-        with open('filename') as json_file:
+        with open(filename) as json_file:
             json_data = json.load(json_file)
 
         self.tenant_db_cfg = {item["store"]: item for item in json_data["db_conf"]}
 
-    def get_mongo_uri(self, store="ar", collection):
+    def get_mongo_uri(self, store, collection):
         store_cfg = tenant_db_cfg[store]
         if store_cfg["username"] and store_cfg["password"]:
             mongo_uri = ["mongodb://", store_cfg["username"], ":", store_cfg["password"],
