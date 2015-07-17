@@ -73,11 +73,11 @@ def test_get_date_range():
 
 
 def test_load_configuration(tmpdir):
-    """ 
+    """
     tmpdir creates a directory unique to this test's invocation
-    and returns a LocalPath object with the ability to write 
+    and returns a LocalPath object with the ability to write
     files with data during tests. tmpdir is used here to create
-    a temporary test configuration resourse file to load in 
+    a temporary test configuration resourse file to load in
     ArgoConfiguration object
     """
 
