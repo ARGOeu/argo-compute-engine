@@ -22,12 +22,11 @@ class ArgoConfiguration(object):
     sync_path = None
 
     def __init__(self, filename):
-
         self.load_config(filename)
 
     def load_config(self, filename):
         """
-        Load configuration from filename. 
+        Load configuration from filename.
         Create tenant list
         Create tenant/jobs dictionary
 
@@ -56,10 +55,25 @@ class ArgoConfiguration(object):
             job_set = job_set.split(',')
             for job_item in job_set:
                 self.jobs[tenant_item].append(job_item)
-        
+
         # Grab connector sync path
-        self.sync_exec = ar_config.get('connectors','sync_exec')
-        self.sync_path = ar_config.get('connectors','sync_path')
+        self.sync_exec = ar_config.get('connectors', 'sync_exec')
+        self.sync_path = ar_config.get('connectors', 'sync_path')
+
+
+def load_tenant_db_conf(filename):
+    """
+    Load tenant db configuration and return it as a dictionary
+
+    :param filename: path to json file containing tenant db configuration
+    :returns: dictionary with database configuration
+    """
+    with open('filename') as json_file:
+        json_data = json.load(json_file)
+
+    db_cfg = {item["store"]: item for item in json_data["db_conf"]}
+
+    return db_cfg
 
 
 def get_date_under(date):
@@ -75,7 +89,7 @@ def get_date_under(date):
 def get_actual_date(date):
     """
     Convert date str to actual python date object
-    
+
     :param date: string using format (YYYY-MM-DD)
     :returns: python date object
     """
@@ -85,7 +99,7 @@ def get_actual_date(date):
 def get_date_str(date):
     """
     Convert date object to date string (YYYY-MM-DD)
-    
+
     :param date: python date object
     :returns: string using format (YYYY-MM-DD)
     """
