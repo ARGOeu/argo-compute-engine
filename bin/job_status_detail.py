@@ -21,23 +21,18 @@ def main(args=None):
     stdl_exec = "/usr/libexec/ar-compute/bin"
     pig_script_path = "/usr/libexec/ar-compute/pig/"
 
-    actual_date = datetime.strptime(args.date, '%Y-%m-%d')
-    one_day_ago = actual_date - timedelta(days=1)
-    prev_date = one_day_ago.strftime('%Y-%m-%d')
-    prev_date_under = prev_date.replace("-", "_")
-
+    one_day_ago = utils.get_actual_date(args.date) - timedelta(days=1)
+    prev_date = utils.get_date_str(one_day_ago)
+    prev_date_under = utils.get_date_under(prev_date)
     date_under = utils.get_date_under(args.date)
 
     # Init configuration
     cfg = ArgoConfiguration(fn_ar_cfg)
     cfg.load_tenant_db_conf(self, os.path.join(arcomp_conf, args.tenant))
     # Init logging
-    log = init_log(cfg.log_mode, cfg.log_file, cfg.log_level, 'argo.mongo_recompute')
+    log = init_log(cfg.log_mode, cfg.log_file, cfg.log_level, 'argo.job_status_detail')
 
-
-
-    job_set = ArConfig.get("jobs", args.tenant + "_jobs")
-    job_set = job_set.split(',')
+    job_set = cfg.jobs[args.tenant]
 
     # Inform the user in wether argo runs locally or distributed
     if cfg.mode == 'local':
