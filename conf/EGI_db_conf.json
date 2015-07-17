@@ -1,0 +1,20 @@
+{
+  "db:conf": [
+    {
+      "store": "ar",
+      "server": "192.168.0.99",
+      "port": 27017,
+      "database": "argo-egi",
+      "username": "",
+      "password": ""
+    },
+    {
+      "store": "status",
+      "server": "192.168.0.99",
+      "port": 27017,
+      "database": "argo-egi",
+      "username": "",
+      "password": ""
+    }
+  ]
+}
