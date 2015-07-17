@@ -81,15 +81,16 @@ class ArgoConfiguration(object):
         self.tenant_db_cfg = {item["store"]: item for item in json_data["db_conf"]}
 
     def get_mongo_uri(self, store, collection):
-        store_cfg = tenant_db_cfg[store]
+        store_cfg = self.tenant_db_cfg[store]
         if store_cfg["username"] and store_cfg["password"]:
             mongo_uri = ["mongodb://", store_cfg["username"], ":", store_cfg["password"],
-                         "@", store_cfg["host"], ":", store_cfg["port"],
+                         "@", store_cfg["server"], ":", str(store_cfg["port"]),
                          "/", store_cfg["database"], ".", collection]
         else:
-            mongo_uri = ["mongodb://", store_cfg["host"], ":", store_cfg["port"],
+            mongo_uri = ["mongodb://", store_cfg["server"], ":", str(store_cfg["port"]),
                          "/", store_cfg["database"], ".", collection]
-        return mongo_uri
+
+        return "".join(mongo_uri)
 
 
 def get_date_under(date):
