@@ -74,7 +74,7 @@ public class AddGroupInfo extends EvalFunc<Tuple>{
 			} catch (IOException e) {
 				LOG.error("Could not initialize sync structures");
 				LOG.error(e);
-				throw new IllegalStateException("pig Eval Init Error");
+				throw new IllegalStateException();
 			} 
         }
 		
@@ -89,16 +89,16 @@ public class AddGroupInfo extends EvalFunc<Tuple>{
 			LOG.error("Failed to cast input to approriate type");
 			LOG.error("Bad tuple input:" + input.toString());
 			LOG.error(e);
-			throw new IllegalArgumentException("pig Eval bad input");
+			throw new IllegalArgumentException();
 		} catch (IndexOutOfBoundsException e) {
 			LOG.error("Malformed tuple schema");
 			LOG.error("Bad tuple input:" + input.toString());
 			LOG.error(e);
-			throw new IllegalArgumentException("pig Eval bad input");
+			throw new IllegalArgumentException();
 		} catch (ExecException e) {
 			LOG.error("Execution error");
 			LOG.error(e);
-			throw new IllegalArgumentException("pig Eval bad input");
+			throw new IllegalArgumentException();
 		}
 		
 		input.append(endpointMgr.getGroup(this.type,hostname,service));
