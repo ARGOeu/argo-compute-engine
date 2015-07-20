@@ -98,7 +98,7 @@ public class DAggregator {
 		this.aggregation.clear();
 	}
 	
-	public void finalizeAll(int missingStart)
+	public void settleAll(int missingStart)
 	{
 		for (Entry<String, DTimeline> item : timelines.entrySet())
 		{

@@ -141,7 +141,7 @@ public class DAggregatorTest {
 						  4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4};
 
 		
-		dAgg.finalizeAll(opsMgr.getIntStatus("MISSING"));
+		dAgg.settleAll(opsMgr.getIntStatus("MISSING"));
 		dAgg.aggregate("AND",opsMgr);
 		
 		assertArrayEquals("Aggregation test 3",expected,dAgg.aggregation.samples);
