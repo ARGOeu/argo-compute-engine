@@ -20,13 +20,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-public class Recalculations {
+public class Recomputations {
 
-	private static final Logger LOG = Logger.getLogger(Recalculations.class.getName());
+	private static final Logger LOG = Logger.getLogger(Recomputations.class.getName());
 
-	public ArrayList<RecalcItem> list;
+	public ArrayList<RecompItem> list;
 
-	private class RecalcItem {
+	private class RecompItem {
 		String reason; // Recalculation reason
 		String status; // Recalculation status
 		String supergroup; // Name of supergroup that adheres to recalculation
@@ -35,7 +35,7 @@ public class Recalculations {
 		String submitted;
 		ArrayList<String> exclude; // Exclude list
 
-		public RecalcItem() {
+		public RecompItem() {
 			// Initializations
 			this.reason = "";
 			this.status = "";
@@ -46,7 +46,7 @@ public class Recalculations {
 			this.exclude = new ArrayList<String>();
 		}
 
-		public RecalcItem(String reason, String status, String supergroup,
+		public RecompItem(String reason, String status, String supergroup,
 				String start, String end, String submitted,
 				ArrayList<String> exclude) {
 			this.reason = reason;
@@ -59,19 +59,19 @@ public class Recalculations {
 		}
 	}
 
-	public Recalculations() {
-		this.list = new ArrayList<RecalcItem>();
+	public Recomputations() {
+		this.list = new ArrayList<RecompItem>();
 	}
 
 	// Clear all the recalc data
 	public void clear() {
-		this.list = new ArrayList<RecalcItem>();
+		this.list = new ArrayList<RecompItem>();
 	}
 
 	public void insert(String reason, String status, String supergroup,
 			String start, String end, String submitted,
 			ArrayList<String> exclude) {
-		this.list.add(new RecalcItem(reason, status, supergroup, start, end,
+		this.list.add(new RecompItem(reason, status, supergroup, start, end,
 				submitted, exclude));
 	}
 
@@ -79,35 +79,37 @@ public class Recalculations {
 		return this.list.size();
 	}
 
-	public boolean check(String supergroup, String groupname, String targetDate)
+	public boolean shouldRecompute(String supergroup, String groupname, String targetDate)
 			throws ParseException {
 
-		for (RecalcItem item : this.list) {
+		for (RecompItem item : this.list) {
 			// supergroup found
 			if (item.supergroup.equalsIgnoreCase(supergroup)) {
 
-				// check if site is excluded
+				// loop through all excluded sites
 				for (String subitem : item.exclude) {
-					if (groupname.equalsIgnoreCase(subitem))
-						return false;
+				    // if site exists in the exclude list
+					if (groupname.equalsIgnoreCase(subitem)) {
+					    
+					    // check if the dates alingn
+                        SimpleDateFormat dmy = new SimpleDateFormat("yyyy-MM-dd");
+                        Date sDate = dmy.parse(item.start);
+                        Date eDate = dmy.parse(item.end);
+                        Date tDate = dmy.parse(targetDate);
+                        
+                        return (tDate.compareTo(sDate) >= 0 && tDate.compareTo(eDate) <= 0); 
+					    
+					}
 				}
-
-				// check dates
-				SimpleDateFormat dmy = new SimpleDateFormat("yyyy-MM-dd");
-				Date sDate = dmy.parse(item.start);
-				Date eDate = dmy.parse(item.end);
-				Date tDate = dmy.parse(targetDate);
-
-				return (tDate.compareTo(sDate) >= 0 && tDate.compareTo(eDate) <= 0);
-
 			}
 		}
 
+		// Site doesn't belong in recomputation exclude list
 		return false;
 	}
 
 	public String getStart(String supergroup) {
-		for (RecalcItem item : this.list) {
+		for (RecompItem item : this.list) {
 			if (item.supergroup.equalsIgnoreCase(supergroup)) {
 				return item.start;
 			}
@@ -117,7 +119,7 @@ public class Recalculations {
 	}
 
 	public String getEnd(String supergroup) {
-		for (RecalcItem item : this.list) {
+		for (RecompItem item : this.list) {
 			if (item.supergroup.equalsIgnoreCase(supergroup)) {
 				return item.end;
 			}

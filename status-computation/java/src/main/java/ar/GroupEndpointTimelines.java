@@ -27,7 +27,7 @@ import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import sync.AvailabilityProfiles;
 import sync.GroupsOfGroups;
-import sync.Recalculations;
+import sync.Recomputations;
 
 public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 
@@ -36,7 +36,7 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 
 	public OpsManager opsMgr;
 	public AvailabilityProfiles apMgr;
-    public Recalculations recMgr;
+    public Recomputations recMgr;
 	public GroupsOfGroups ggMgr;
 	public ConfigManager cfgMgr;
 	
@@ -77,7 +77,7 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 		this.groupEndpointAggr = new HashMap<String, DAggregator>();
 		this.opsMgr = new OpsManager();
 		this.apMgr = new AvailabilityProfiles();
-		this.recMgr = new Recalculations();
+		this.recMgr = new Recomputations();
 		this.ggMgr = new GroupsOfGroups();
 		this.cfgMgr = new ConfigManager();
 		
@@ -254,7 +254,7 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 		
 		try {
 			
-			if (this.recMgr.check(supergroup, groupname,this.targetDate)){
+			if (this.recMgr.shouldRecompute(supergroup, groupname,this.targetDate)){
 				
 				String startRec = this.recMgr.getStart(supergroup);
 				String endRec = this.recMgr.getEnd(supergroup);
