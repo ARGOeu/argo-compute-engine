@@ -40,10 +40,10 @@ public class DIntergatorTest {
 		dtl.settle(opsMgr.getIntStatus("MISSING"));
 		inter.calculateAR(dtl.samples,opsMgr);		
 		
-		System.out.println(inter.availability);
-		System.out.println(inter.reliability);
+		assertEquals(inter.availability,95.83,0.01);
+		assertEquals(inter.reliability,97.18,0.01);
 				
-		System.out.println(Arrays.toString(dtl.samples));
+		
 	}
 
 }
