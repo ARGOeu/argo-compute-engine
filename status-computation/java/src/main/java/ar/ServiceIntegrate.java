@@ -85,7 +85,8 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 				this.init(); // If not open them				
 			} catch (IOException e) {
 				LOG.error("Could not initialize sync structures");
-				throw new RuntimeException("pig Eval Init Error");
+				LOG.error(e);
+				throw new IllegalStateException();
 			}
 		}
 
@@ -103,14 +104,17 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 		} catch (ClassCastException e) {
 			LOG.error("Failed to cast input to approriate type");
 			LOG.error("Bad tuple input:" + input.toString());
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		} catch (IndexOutOfBoundsException e) {
 			LOG.error("Malformed tuple schema");
 			LOG.error("Bad tuple input:" + input.toString());
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		} catch (ExecException e) {
 			LOG.error("Execution error");
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		}
 		// Get the Timeline
 		DTimeline serviceTl = new DTimeline();
@@ -124,10 +128,12 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 			} catch (NumberFormatException e) {
 	    		LOG.error ("Failed to cast input to approriate type");
 	    		LOG.error ("Bad subitem:" + curItem.toString());
-	    		throw new RuntimeException("bad bag item input");
+	    		LOG.error(e);
+				throw new IllegalArgumentException();
 			} catch (ExecException e) {
 	    		LOG.error ("Execution error");
-	    		throw new RuntimeException("bad bag item input");
+	    		LOG.error(e);
+				throw new IllegalArgumentException();
 			}
 			j++;
 		}

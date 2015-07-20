@@ -102,7 +102,7 @@ public class DAggregator {
 	{
 		for (Entry<String, DTimeline> item : timelines.entrySet())
 		{
-			item.getValue().finalize(missingStart);
+			item.getValue().settle(missingStart);
 		}
 	}
 	

@@ -128,7 +128,7 @@ public class DTimeline {
 		this.inputStates.put(slot,state);
 	}
 	
-	public void finalize(int missingStart)
+	public void settle(int missingStart)
 	{
 		if (this.startState == -1)
 		{

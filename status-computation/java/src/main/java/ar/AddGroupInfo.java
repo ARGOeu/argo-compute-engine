@@ -12,7 +12,6 @@ import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
-
 import sync.EndpointGroups;
 
 
@@ -74,7 +73,8 @@ public class AddGroupInfo extends EvalFunc<Tuple>{
 				this.init();
 			} catch (IOException e) {
 				LOG.error("Could not initialize sync structures");
-				throw new RuntimeException("pig Eval Init Error");
+				LOG.error(e);
+				throw new IllegalStateException("pig Eval Init Error");
 			} 
         }
 		
@@ -88,14 +88,17 @@ public class AddGroupInfo extends EvalFunc<Tuple>{
 		} catch (ClassCastException e) {
 			LOG.error("Failed to cast input to approriate type");
 			LOG.error("Bad tuple input:" + input.toString());
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException("pig Eval bad input");
 		} catch (IndexOutOfBoundsException e) {
 			LOG.error("Malformed tuple schema");
 			LOG.error("Bad tuple input:" + input.toString());
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException("pig Eval bad input");
 		} catch (ExecException e) {
 			LOG.error("Execution error");
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException("pig Eval bad input");
 		}
 		
 		input.append(endpointMgr.getGroup(this.type,hostname,service));
@@ -127,7 +130,7 @@ public class AddGroupInfo extends EvalFunc<Tuple>{
         try {
             tl = new Schema.FieldSchema("timeline", timeline, DataType.BAG);
         } catch (FrontendException ex) {
-           
+           LOG.error(ex);
         }
         
         endpoint.add(tl);
@@ -137,7 +140,7 @@ public class AddGroupInfo extends EvalFunc<Tuple>{
         try {
             return new Schema(new Schema.FieldSchema("endpoint", endpoint, DataType.TUPLE));
         } catch (FrontendException ex) {
-           
+        	LOG.error(ex);
         }
 	    
 	    return null;

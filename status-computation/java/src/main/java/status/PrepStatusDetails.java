@@ -9,8 +9,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import ops.ConfigManager;
 
@@ -24,6 +23,7 @@ import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.eclipse.jdt.core.dom.ThisExpression;
 
+import ar.AddGroupInfo;
 import sync.AvailabilityProfiles;
 import sync.EndpointGroups;
 import sync.GroupsOfGroups;
@@ -47,6 +47,8 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 	private TupleFactory tupFactory;
 	
 	private boolean initialized;
+	
+	private static final Logger LOG = Logger.getLogger(PrepStatusDetails.class.getName());
 	
 	public PrepStatusDetails (String fnGgrp, String fnEgrp, String fnCfg, String targetDate, String fsUsed){
 		
@@ -143,7 +145,7 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 			 try {
 				 parsedDate = dateFormat.parse((String) item.get(0));
 			 } catch (ParseException e) {
-					e.printStackTrace();
+					LOG.error(e);
 			 }
 			 Calendar cal = Calendar.getInstance();
 			 cal.setTime(parsedDate); 
@@ -235,7 +237,7 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
         try {
             timelines = new Schema.FieldSchema("timelines", timeline, DataType.BAG);
         } catch (FrontendException ex) {
-            Logger.getLogger(PrepStatusDetails.class.getName()).log(Level.SEVERE, null, ex);
+        	LOG.error(ex);
         }
         
         status_metric.add(timelines);
@@ -244,7 +246,7 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
         try {
             return new Schema(new Schema.FieldSchema("status_metric", status_metric, DataType.TUPLE));
         } catch (FrontendException ex) {
-           
+           LOG.error(ex);
         }
         
         return null;

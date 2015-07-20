@@ -66,9 +66,9 @@ public class DAggregatorTest {
 		t3.insert("2014-01-15T12:50:42Z", opsMgr.getIntStatus("OK"));
 		t3.insert("2014-01-15T16:33:44Z", opsMgr.getIntStatus("WARNING"));
 		
-		t1.finalize(opsMgr.getIntStatus("MISSING"));
-		t2.finalize(opsMgr.getIntStatus("MISSING"));
-		t3.finalize(opsMgr.getIntStatus("MISSING"));
+		t1.settle(opsMgr.getIntStatus("MISSING"));
+		t2.settle(opsMgr.getIntStatus("MISSING"));
+		t3.settle(opsMgr.getIntStatus("MISSING"));
 		
 		dAgg.timelines.put("timeline1", t1);
 		dAgg.timelines.put("timeline2", t2);

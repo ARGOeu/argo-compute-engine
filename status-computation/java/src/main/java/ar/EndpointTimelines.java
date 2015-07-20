@@ -124,7 +124,8 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	        	this.init(); // If not open them 			
 			} catch (IOException e) {
 				LOG.error("Could not initialize sync structures");
-				throw new RuntimeException("pig Eval Init Error");
+				LOG.error(e);
+				throw new IllegalStateException();
 			}
         }
 		
@@ -146,14 +147,17 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 		} catch (ClassCastException e) {
 			LOG.error("Failed to cast input to approriate type");
 			LOG.error("Bad tuple input:" + input.toString());
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		} catch (IndexOutOfBoundsException e) {
 			LOG.error("Malformed tuple schema");
 			LOG.error("Bad tuple input:" + input.toString());
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		} catch (ExecException e) {
 			LOG.error("Execution error");
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		}
 		
 		// Iterate the whole timeline
@@ -182,15 +186,19 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 			} catch (ClassCastException e) {
 				LOG.error("Failed to cast input to approriate type");
 				LOG.error("Bad tuple input:" + cur_item.toString());
-				throw new RuntimeException("pig Eval bad input");
+				LOG.error(e);
+				throw new IllegalArgumentException();
 			} catch (IndexOutOfBoundsException e) {
 				LOG.error("Malformed tuple schema");
 				LOG.error("Bad tuple input:" + cur_item.toString());
-				throw new RuntimeException("pig Eval bad input");
+				LOG.error(e);
+				throw new IllegalArgumentException();
 	    	} catch (ExecException e) {
 	    		LOG.error ("Execution error");
-	    		throw new RuntimeException("bad bag item input");
+	    		LOG.error(e);
+	    		throw new IllegalArgumentException();
 	    	}
+	    	
 	    	if (! ( ts.substring(0, ts.indexOf("T")).equals(this.targetDate)) ) {
 	    		this.endpointAggr.setStartState(metric, this.opsMgr.getIntStatus(status));
 	    		continue;
@@ -200,7 +208,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 	    		this.endpointAggr.insert(metric, ts, this.opsMgr.getIntStatus(status));
 			
 	    	} catch (ParseException e) {
-				e.printStackTrace();
+	    		LOG.error(e);
 			}
 	    	
 		}
@@ -219,8 +227,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
 			try {
 				this.endpointAggr.aggregation.fill(this.opsMgr.getDefaultDownInt(), downPeriod.get(0), downPeriod.get(1), this.targetDate);
 			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.error(e);
 			}
 		}
 		
@@ -274,6 +281,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
         try {
             tl = new Schema.FieldSchema("timeline", timeline, DataType.BAG);
         } catch (FrontendException ex) {
+        	LOG.error(ex);
            
         }
         
@@ -282,6 +290,7 @@ public class EndpointTimelines extends EvalFunc<Tuple> {
         try {
             return new Schema(new Schema.FieldSchema("endpoint", endpoint, DataType.TUPLE));
         } catch (FrontendException ex) {
+        	LOG.error(ex);
            
         }
         

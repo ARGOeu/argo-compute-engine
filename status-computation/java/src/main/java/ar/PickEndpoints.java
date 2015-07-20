@@ -105,7 +105,8 @@ public class PickEndpoints extends FilterFunc {
 				this.init();
 			} catch (IOException e) {
 				LOG.error("Could not initialize sync structures");
-				throw new RuntimeException("pig Eval Init Error");
+				LOG.error(e);
+				throw new IllegalStateException();
 			} 
 		}
 		
@@ -124,14 +125,17 @@ public class PickEndpoints extends FilterFunc {
 		} catch (ClassCastException e) {
 			LOG.error("Failed to cast input to approriate type");
 			LOG.error("Bad tuple input:" + input.toString());
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		} catch (IndexOutOfBoundsException e) {
 			LOG.error("Malformed tuple schema");
 			LOG.error("Bad tuple input:" + input.toString());
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		} catch (ExecException e) {
 			LOG.error("Execution error");
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		}
 		
 		//Only 1 profile per job

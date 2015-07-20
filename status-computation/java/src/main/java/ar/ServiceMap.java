@@ -122,7 +122,8 @@ public class ServiceMap extends EvalFunc<Tuple> {
 				this.init(); // If not open them				
 			} catch (IOException e) {
 				LOG.error("Could not initialize sync structures");
-				throw new RuntimeException("pig Eval Init Error");
+				LOG.error(e);
+				throw new IllegalStateException();
 			}
 		}
 
@@ -151,14 +152,17 @@ public class ServiceMap extends EvalFunc<Tuple> {
 		} catch (ClassCastException e) {
 			LOG.error("Failed to cast input to approriate type");
 			LOG.error("Bad tuple input:" + input.toString());
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		} catch (IndexOutOfBoundsException e) {
 			LOG.error("Malformed tuple schema");
 			LOG.error("Bad tuple input:" + input.toString());
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		} catch (ExecException e) {
 			LOG.error("Execution error");
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		}
 		
 		// Supplement info for datastore
@@ -211,9 +215,9 @@ public class ServiceMap extends EvalFunc<Tuple> {
 			try {
 				this.initFrontend();
 			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+				LOG.error(e);
 			} catch (IOException e) {
-				e.printStackTrace();
+				LOG.error(e);
 			}
 		}
 		

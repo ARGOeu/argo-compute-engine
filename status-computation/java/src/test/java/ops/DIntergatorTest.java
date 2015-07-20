@@ -37,7 +37,7 @@ public class DIntergatorTest {
 		dtl.insert("2015-01-24T22:00:21Z", opsMgr.getIntStatus("CRITICAL"));
 		dtl.insert("2015-01-24T22:42:21Z", opsMgr.getIntStatus("OK"));
 	
-		dtl.finalize(opsMgr.getIntStatus("MISSING"));
+		dtl.settle(opsMgr.getIntStatus("MISSING"));
 		inter.calculateAR(dtl.samples,opsMgr);		
 		
 		System.out.println(inter.availability);

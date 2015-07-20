@@ -58,7 +58,7 @@ public class DTimelineTest {
 	    dtl.insert("2014-01-15T01:33:44Z", opsMgr.getIntStatus("OK"));
 	    dtl.insert("2014-01-15T05:53:40Z", opsMgr.getIntStatus("WARNING"));
 	    dtl.insert("2014-01-15T12:33:22Z", opsMgr.getIntStatus("UNKNOWN"));
-	    dtl.finalize(opsMgr.getIntStatus("MISSING"));
+	    dtl.settle(opsMgr.getIntStatus("MISSING"));
 	    
 	    // Create expected state array 
 	    int[] expected = new int[288];
@@ -118,7 +118,7 @@ public class DTimelineTest {
 	    dt2.insert("2015-01-24T22:45:51Z",opsMgr.getIntStatus("OK"));
 	    dt2.insert("2015-01-24T23:45:52Z",opsMgr.getIntStatus("OK"));
 	    
-	    dt2.finalize(opsMgr.getIntStatus("MISSING"));
+	    dt2.settle(opsMgr.getIntStatus("MISSING"));
 	    
 	    int[] expected2 = new int[288];
 	    for (int i=0;i<288;i++) expected2[i] =0;
@@ -139,7 +139,7 @@ public class DTimelineTest {
 	    dt3.insert("2015-01-24T05:01:00Z",opsMgr.getIntStatus("OK"));
 	    dt3.insert("2015-01-24T09:25:56Z",opsMgr.getIntStatus("CRITICAL"));
 	    dt3.insert("2015-01-24T14:53:00Z",opsMgr.getIntStatus("OK"));
-	    dt3.finalize(opsMgr.getIntStatus("MISSING"));
+	    dt3.settle(opsMgr.getIntStatus("MISSING"));
 	    
 	    System.out.println(Arrays.toString(dt3.samples));
 	    

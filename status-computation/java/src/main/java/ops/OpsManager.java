@@ -96,7 +96,8 @@ public class OpsManager {
         try {
             result = this.truthTable[op][a][b];
         } catch (IndexOutOfBoundsException ex) {
-            result = -1;
+            LOG.info(ex);
+        	result = -1;
         }
 
         return result;

@@ -132,7 +132,8 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
                 this.init(); // If not open them
             } catch (IOException e) {
                 LOG.error("Could not initialize sync structures");
-                throw new RuntimeException("pig Eval Init Error");
+                LOG.error(e);
+                throw new IllegalStateException();
             }
         }
 
@@ -153,14 +154,17 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
         } catch (ClassCastException e) {
             LOG.error("Failed to cast input to approriate type");
             LOG.error("Bad tuple input:" + input.toString());
-            throw new RuntimeException("pig Eval bad input");
+            LOG.error(e);
+            throw new IllegalArgumentException();
         } catch (IndexOutOfBoundsException e) {
             LOG.error("Malformed tuple schema");
             LOG.error("Bad tuple input:" + input.toString());
-            throw new RuntimeException("pig Eval bad input");
+            LOG.error(e);
+            throw new IllegalArgumentException();
         } catch (ExecException e) {
             LOG.error("Execution error");
-            throw new RuntimeException("pig Eval bad input");
+            LOG.error(e);
+            throw new IllegalArgumentException();
         }
 
         // Iterate the whole timeline
@@ -179,14 +183,17 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
             } catch (ClassCastException e) {
                 LOG.error("Failed to cast input to approriate type");
                 LOG.error("Bad tuple input:" + cur_item.toString());
-                throw new RuntimeException("pig Eval bad input");
+                LOG.error(e);
+                throw new IllegalArgumentException();
             } catch (IndexOutOfBoundsException e) {
                 LOG.error("Malformed tuple schema");
                 LOG.error("Bad tuple input:" + cur_item.toString());
-                throw new RuntimeException("pig Eval bad input");
+                LOG.error(e);
+                throw new IllegalArgumentException();
             } catch (ExecException e) {
                 LOG.error("Execution error");
-                throw new RuntimeException("bad bag item input");
+                LOG.error(e);
+                throw new IllegalArgumentException();
             }
             // Get the availability group
             String group = apMgr.getGroupByService(aprofile, service);
@@ -208,10 +215,12 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
                 } catch (NumberFormatException e) {
                     LOG.error("Failed to cast input to approriate type");
                     LOG.error("Bad subitem:" + cur_subitem.toString());
-                    throw new RuntimeException("bad bag item input");
+                    LOG.error(e);
+                    throw new IllegalArgumentException();
                 } catch (ExecException e) {
                     LOG.error("Execution error");
-                    throw new RuntimeException("bad bag item input");
+                    LOG.error(e);
+                    throw new IllegalArgumentException();
                 }
 
                 j++;
@@ -263,7 +272,7 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
             }
 
         } catch (ParseException e) {
-            e.printStackTrace();
+            LOG.error(e);
         }
 
         // Create output Tuple
@@ -307,7 +316,7 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
         try {
             tl = new Schema.FieldSchema("timeline", timeline, DataType.BAG);
         } catch (FrontendException ex) {
-
+        	 LOG.error(ex);
         }
 
         endpoint.add(tl);
@@ -315,7 +324,7 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
         try {
             return new Schema(new Schema.FieldSchema("serviceTl", endpoint, DataType.TUPLE));
         } catch (FrontendException ex) {
-
+        	 LOG.error(ex);
         }
 
         return null;

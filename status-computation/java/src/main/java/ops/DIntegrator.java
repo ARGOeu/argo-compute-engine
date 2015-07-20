@@ -15,7 +15,7 @@ public class DIntegrator {
 	
 	 public static double round(double input, int prec, int mode) {
         try {
-            BigDecimal inputBD = new BigDecimal(input);
+            BigDecimal inputBD = BigDecimal.valueOf(input);
             BigDecimal rounded = inputBD.setScale(prec, mode);
             return rounded.doubleValue();
             
