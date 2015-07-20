@@ -100,8 +100,7 @@ public class AvailabilityProfiles {
 
 		if (this.list.containsKey(avProfile)) {
 			ArrayList<String> result = new ArrayList<String>();
-			Iterator<String> groupIterator = this.list.get(avProfile).groups
-					.keySet().iterator();
+			Iterator<String> groupIterator = this.list.get(avProfile).groups.keySet().iterator();
 
 			while (groupIterator.hasNext()) {
 				result.add(groupIterator.next());
@@ -124,13 +123,12 @@ public class AvailabilityProfiles {
 		return null;
 	}
 
-	public ArrayList<String> getProfileGroupServices(String avProfile,
-			String groupName) {
+	public ArrayList<String> getProfileGroupServices(String avProfile, String groupName) {
 		if (this.list.containsKey(avProfile)) {
 			if (this.list.get(avProfile).groups.containsKey(groupName)) {
 				ArrayList<String> result = new ArrayList<String>();
-				Iterator<String> srvIterator = this.list.get(avProfile).groups
-						.get(groupName).services.keySet().iterator();
+				Iterator<String> srvIterator = this.list.get(avProfile).groups.get(groupName).services.keySet()
+						.iterator();
 
 				while (srvIterator.hasNext()) {
 					result.add(srvIterator.next());
@@ -143,14 +141,11 @@ public class AvailabilityProfiles {
 		return null;
 	}
 
-	public String getProfileGroupServiceOp(String avProfile, String groupName,
-			String service) {
+	public String getProfileGroupServiceOp(String avProfile, String groupName, String service) {
 		if (this.list.containsKey(avProfile)) {
 			if (this.list.get(avProfile).groups.containsKey(groupName)) {
-				if (this.list.get(avProfile).groups.get(groupName).services
-						.containsKey(service)) {
-					return this.list.get(avProfile).groups.get(groupName).services
-							.get(service);
+				if (this.list.get(avProfile).groups.get(groupName).services.containsKey(service)) {
+					return this.list.get(avProfile).groups.get(groupName).services.get(service);
 				}
 			}
 		}
@@ -225,7 +220,7 @@ public class AvailabilityProfiles {
 
 	}
 
-	public void loadJson(File jsonFile) throws  IOException {
+	public void loadJson(File jsonFile) throws IOException {
 
 		BufferedReader br = null;
 		try {
@@ -253,14 +248,11 @@ public class AvailabilityProfiles {
 				String itemName = item.getKey();
 				JsonObject itemObj = item.getValue().getAsJsonObject();
 				String itemOp = itemObj.get("operation").getAsString();
-				JsonObject itemServices = itemObj.get("services")
-						.getAsJsonObject();
+				JsonObject itemServices = itemObj.get("services").getAsJsonObject();
 				tmpAvp.insertGroup(itemName, itemOp);
 
-				for (Entry<String, JsonElement> subItem : itemServices
-						.entrySet()) {
-					tmpAvp.insertService(itemName, subItem.getKey(), subItem
-							.getValue().getAsString());
+				for (Entry<String, JsonElement> subItem : itemServices.entrySet()) {
+					tmpAvp.insertService(itemName, subItem.getKey(), subItem.getValue().getAsString());
 				}
 
 			}

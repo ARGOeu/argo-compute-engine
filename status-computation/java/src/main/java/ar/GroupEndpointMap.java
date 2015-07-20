@@ -52,9 +52,8 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 	private boolean initialized;
 	private boolean frontInit;
 
-	public GroupEndpointMap(String fnConfig, String fnAps, String fnWeights,
-			String fnGgroups, String fnEgroups, String targetDate,
-			String fsUsed, String localCfg) {
+	public GroupEndpointMap(String fnConfig, String fnAps, String fnWeights, String fnGgroups, String fnEgroups,
+			String targetDate, String fsUsed, String localCfg) {
 
 		this.fsUsed = fsUsed;
 		this.fnConfig = fnConfig;
@@ -122,7 +121,7 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 		// Check if cache files have been opened
 		if (this.initialized == false) {
 			try {
-				this.init(); // If not open them				
+				this.init(); // If not open them
 			} catch (IOException e) {
 				LOG.error("Could not initialize sync structures");
 				LOG.error(e);
@@ -141,15 +140,15 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 		double upFraction;
 		double unknownFraction;
 		double downFraction;
-		
+
 		try {
 			// Get input fields
-			egroupName = (String)input.get(0);
-			av = (Double)input.get(1);
-			rel = (Double)input.get(2);
-			upFraction = (Double)input.get(3);
-			unknownFraction = (Double)input.get(4);
-			downFraction = (Double)input.get(5);
+			egroupName = (String) input.get(0);
+			av = (Double) input.get(1);
+			rel = (Double) input.get(2);
+			upFraction = (Double) input.get(3);
+			unknownFraction = (Double) input.get(4);
+			downFraction = (Double) input.get(5);
 		} catch (ClassCastException e) {
 			LOG.error("Failed to cast input to approriate type");
 			LOG.error("Bad tuple input:" + input.toString());
@@ -197,8 +196,7 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 			output.append(item.getValue());
 		}
 
-		HashMap<String, String> ggTags = this.ggMgr.getGroupTags(ggroupType,
-				egroupName);
+		HashMap<String, String> ggTags = this.ggMgr.getGroupTags(ggroupType, egroupName);
 
 		// Get ggroup config tags
 		for (Entry<String, String> item : this.cfgMgr.ggroupTags.entrySet()) {
@@ -223,54 +221,43 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 		}
 
 		Schema groupEndpointData = new Schema();
-		
-		
 
 		// Define first fields
-		Schema.FieldSchema sDateInt = new Schema.FieldSchema(
-				this.localCfgMgr.getMapped("ar", "date"), DataType.INTEGER);
-		Schema.FieldSchema sAvProfile = new Schema.FieldSchema(
-				this.localCfgMgr.getMapped("ar", "av_profile"),
+		Schema.FieldSchema sDateInt = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "date"),
+				DataType.INTEGER);
+		Schema.FieldSchema sAvProfile = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "av_profile"),
 				DataType.CHARARRAY);
-		Schema.FieldSchema sMetricProfile = new Schema.FieldSchema(
-				this.localCfgMgr.getMapped("ar", "metric_profile"),
+		Schema.FieldSchema sMetricProfile = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "metric_profile"),
 				DataType.CHARARRAY);
-		Schema.FieldSchema sGroup = new Schema.FieldSchema(
-				this.localCfgMgr.getMapped("ar", "group"), DataType.CHARARRAY);
-		Schema.FieldSchema sSuperGroup = new Schema.FieldSchema(
-				this.localCfgMgr.getMapped("ar", "supergroup"),
+		Schema.FieldSchema sGroup = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "group"),
 				DataType.CHARARRAY);
-		Schema.FieldSchema sWeight = new Schema.FieldSchema(
-				this.localCfgMgr.getMapped("ar", "weight"), DataType.INTEGER);
+		Schema.FieldSchema sSuperGroup = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "supergroup"),
+				DataType.CHARARRAY);
+		Schema.FieldSchema sWeight = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "weight"),
+				DataType.INTEGER);
 		// Define the ar results fields
-		Schema.FieldSchema sAv = new Schema.FieldSchema(
-				this.localCfgMgr.getMapped("ar", "availability"),
+		Schema.FieldSchema sAv = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "availability"),
 				DataType.DOUBLE);
-		Schema.FieldSchema sRel = new Schema.FieldSchema(
-				this.localCfgMgr.getMapped("ar", "reliability"),
+		Schema.FieldSchema sRel = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "reliability"),
 				DataType.DOUBLE);
-		Schema.FieldSchema sUp = new Schema.FieldSchema(
-				this.localCfgMgr.getMapped("ar", "up_f"), DataType.DOUBLE);
-		Schema.FieldSchema sUnknown = new Schema.FieldSchema(
-				this.localCfgMgr.getMapped("ar", "unknown_f"), DataType.DOUBLE);
-		Schema.FieldSchema sDown = new Schema.FieldSchema(
-				this.localCfgMgr.getMapped("ar", "down_f"), DataType.DOUBLE);
+		Schema.FieldSchema sUp = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "up_f"), DataType.DOUBLE);
+		Schema.FieldSchema sUnknown = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "unknown_f"),
+				DataType.DOUBLE);
+		Schema.FieldSchema sDown = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "down_f"), DataType.DOUBLE);
 
 		// Create a field schema list for egroup tags
 		ArrayList<Schema.FieldSchema> egroupFields = new ArrayList<Schema.FieldSchema>();
 		// Get egroup config tags
-		for (Entry<String, String> item : this.localCfgMgr.egroupTags
-				.entrySet()) {
-			egroupFields.add(new Schema.FieldSchema(this.localCfgMgr.getMapped(
-					"egroups", item.getKey()), DataType.CHARARRAY));
+		for (Entry<String, String> item : this.localCfgMgr.egroupTags.entrySet()) {
+			egroupFields.add(
+					new Schema.FieldSchema(this.localCfgMgr.getMapped("egroups", item.getKey()), DataType.CHARARRAY));
 		}
 
 		ArrayList<Schema.FieldSchema> ggroupFields = new ArrayList<Schema.FieldSchema>();
 		// Get ggroup config tags
-		for (Entry<String, String> item : this.localCfgMgr.ggroupTags
-				.entrySet()) {
-			ggroupFields.add(new Schema.FieldSchema(this.localCfgMgr.getMapped(
-					"ggroups", item.getKey()), DataType.CHARARRAY));
+		for (Entry<String, String> item : this.localCfgMgr.ggroupTags.entrySet()) {
+			ggroupFields.add(
+					new Schema.FieldSchema(this.localCfgMgr.getMapped("ggroups", item.getKey()), DataType.CHARARRAY));
 		}
 
 		// Add fields to schema
@@ -295,12 +282,9 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 			groupEndpointData.add(item);
 		}
 
-		
 		return groupEndpointData;
-		
-		
 
-		//return null;
+		// return null;
 
 	}
 

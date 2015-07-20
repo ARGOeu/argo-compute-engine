@@ -35,7 +35,7 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 
 	private String fnOps;
 	private String fnAps;
-	
+
 	private int sPeriod;
 	private int sInterval;
 
@@ -50,13 +50,13 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 		this.fnAps = fnAps;
 		// set distribute cache flag
 		this.fsUsed = fsUsed;
-		
+
 		// set frequency config
 		this.sPeriod = Integer.parseInt(sPeriod);
 		this.sInterval = Integer.parseInt(sInterval);
 
 		// set the Structures
-		this.serviceAggr = new DAggregator(this.sPeriod,this.sInterval);
+		this.serviceAggr = new DAggregator(this.sPeriod, this.sInterval);
 		this.opsMgr = new OpsManager();
 		this.apsMgr = new AvailabilityProfiles();
 		// set up factories
@@ -73,8 +73,7 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 			this.opsMgr.loadJson(new File("./ops"));
 			this.apsMgr.loadJson(new File("./aps"));
 
-		}
-		else if (this.fsUsed.equalsIgnoreCase("local")) {
+		} else if (this.fsUsed.equalsIgnoreCase("local")) {
 			this.apsMgr.loadJson(new File(this.fnAps));
 			this.opsMgr.loadJson(new File(this.fnOps));
 		}
@@ -96,7 +95,7 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 		// Check if cache files have been opened
 		if (this.initialized == false) {
 			try {
-				this.init(); // If not open them				
+				this.init(); // If not open them
 			} catch (IOException e) {
 				LOG.error("Could not initialize sync structures");
 				LOG.error(e);
@@ -114,8 +113,8 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 		DefaultDataBag bag;
 		try {
 			// /Grab endpoint info
-			groupname = (String)input.get(0);
-			service = (String)input.get(1);
+			groupname = (String) input.get(0);
+			service = (String) input.get(1);
 			// Get timeline info
 			bag = (DefaultDataBag) input.get(2);
 		} catch (ClassCastException e) {
@@ -144,8 +143,8 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 			DefaultDataBag bag2;
 			try {
 				// Get timeline item info
-				hostname = (String)cur_item.get(0);
-				bag2 = (DefaultDataBag)cur_item.get(1);
+				hostname = (String) cur_item.get(0);
+				bag2 = (DefaultDataBag) cur_item.get(1);
 			} catch (ClassCastException e) {
 				LOG.error("Failed to cast input to approriate type");
 				LOG.error("Bad tuple input:" + cur_item.toString());
@@ -170,19 +169,18 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 
 				Tuple cur_subitem = it_bag2.next();
 				try {
-					this.serviceAggr.insertSlot(hostname, j,
-							Integer.parseInt(cur_subitem.get(0).toString()));	
+					this.serviceAggr.insertSlot(hostname, j, Integer.parseInt(cur_subitem.get(0).toString()));
 				} catch (NumberFormatException e) {
-		    		LOG.error ("Failed to cast input to approriate type");
-		    		LOG.error ("Bad subitem:" + cur_subitem.toString());
-		    		LOG.error(e);
+					LOG.error("Failed to cast input to approriate type");
+					LOG.error("Bad subitem:" + cur_subitem.toString());
+					LOG.error(e);
 					throw new IllegalArgumentException();
 				} catch (ExecException e) {
-		    		LOG.error ("Execution error");
-		    		LOG.error(e);
+					LOG.error("Execution error");
+					LOG.error(e);
 					throw new IllegalArgumentException();
 				}
-				
+
 				j++;
 
 			}
@@ -194,8 +192,7 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 		// Get the availability Group in which this service belongs
 		String avGroup = this.apsMgr.getGroupByService(avProfile, service);
 		// Get the availability operation on this service instances
-		String avOp = this.apsMgr.getProfileGroupServiceOp(avProfile, avGroup,
-				service);
+		String avOp = this.apsMgr.getProfileGroupServiceOp(avProfile, avGroup, service);
 
 		this.serviceAggr.aggregate(avOp, this.opsMgr); // now the operation is
 														// read from
@@ -228,15 +225,12 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 	@Override
 	public Schema outputSchema(Schema input) {
 
-		Schema.FieldSchema groupname = new Schema.FieldSchema("groupname",
-				DataType.CHARARRAY);
-		Schema.FieldSchema service = new Schema.FieldSchema("service",
-				DataType.CHARARRAY);
+		Schema.FieldSchema groupname = new Schema.FieldSchema("groupname", DataType.CHARARRAY);
+		Schema.FieldSchema service = new Schema.FieldSchema("service", DataType.CHARARRAY);
 
 		// Schema.FieldSchema slot = new Schema.FieldSchema("slot",
 		// DataType.INTEGER);
-		Schema.FieldSchema statusInt = new Schema.FieldSchema("status",
-				DataType.INTEGER);
+		Schema.FieldSchema statusInt = new Schema.FieldSchema("status", DataType.INTEGER);
 
 		Schema endpoint = new Schema();
 		Schema timeline = new Schema();
@@ -257,8 +251,7 @@ public class ServiceTimelines extends EvalFunc<Tuple> {
 		endpoint.add(tl);
 
 		try {
-			return new Schema(new Schema.FieldSchema("serviceTl", endpoint,
-					DataType.TUPLE));
+			return new Schema(new Schema.FieldSchema("serviceTl", endpoint, DataType.TUPLE));
 		} catch (FrontendException ex) {
 			LOG.error(ex);
 		}
