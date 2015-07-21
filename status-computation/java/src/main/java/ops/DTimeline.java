@@ -90,7 +90,7 @@ public class DTimeline {
     	}
     	
     	if (endDt.after(targetDt) && !(( endTs.substring(0, endTs.indexOf("T")).equals(targetDate)))){
-    		end = this.samples.length;
+    		end = this.samples.length - 1;
     	}
     	else {
     		end = tsInt(endTs);
