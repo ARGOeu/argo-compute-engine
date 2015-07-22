@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
 Version: 1.6.2
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -65,6 +65,8 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
+* Tue Jul 21 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-7%{?dist}
+- ARGO-190 Recomputation exclude list fix
 * Tue Jun 30 2015 Avraam Tsantekidis <avraamt@grid.auth.gr> - 1.6.2-6%{?dist}
 - ARGO-153 fix in call for recomputation script from poller
 * Tue Jun 23 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.2-5%{?dist}
