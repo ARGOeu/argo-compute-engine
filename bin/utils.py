@@ -29,7 +29,9 @@ class ArgoConfiguration(object):
     # sampling
     sampling_period = None
     sampling_interval = None
-
+    # clean
+    sync_clean = None
+    prefilter_clean = None
     # tenant ar store configuration
     tenant_db_conf = {}
 
@@ -83,6 +85,10 @@ class ArgoConfiguration(object):
         # Grab sampling parameters
         self.sampling_period = ar_config.get('sampling', 's_period')
         self.sampling_interval = ar_config.get('sampling', 's_interval')
+
+        # Grab clean parameters
+        self.prefilter_clean = ar_config.get('default', 'prefilter_clean')
+        self.sync_clean = ar_config.get('default', 'sync_clean')
 
     def load_tenant_db_conf(self, filename):
         """
