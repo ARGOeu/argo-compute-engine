@@ -172,38 +172,22 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 		int weightVal = this.weightMgr.getWeight(weightType, egroupName);
 
 		String ggroupName = this.ggMgr.getGroup(ggroupType, egroupName);
-		String avProfile = this.apsMgr.getAvProfiles().get(0);
-		String avNamespace = this.apsMgr.getProfileNamespace(avProfile);
-		String metricProfile = this.apsMgr.getProfileMetricProfile(avProfile);
-		String fullAvProfile = avNamespace + "-" + avProfile;
+
 		// Add the previous info before adding the tags
-		output.append(dateInt); // 0
-		output.append(fullAvProfile); // 1
-		output.append(metricProfile); // 2
-		output.append(egroupName); // 3
-		output.append(ggroupName); // 4
-		output.append(weightVal); // 5
+		output.append(dateInt); 				// 0 - date
+		output.append(egroupName); 				// 1 - name
+		output.append(ggroupName); 				// 2 - supergroup 
+		output.append(weightVal); 				// 4 - weight
 
 		// Add the a/r info
-		output.append(av); // 6
-		output.append(rel); // 7
-		output.append(upFraction); // 8
-		output.append(unknownFraction); // 9
-		output.append(downFraction); // 10
-
-		// Get egroup config tags
-		for (Entry<String, String> item : this.cfgMgr.egroupTags.entrySet()) {
-			output.append(item.getValue());
-		}
-
-		HashMap<String, String> ggTags = this.ggMgr.getGroupTags(ggroupType, egroupName);
-
-		// Get ggroup config tags
-		for (Entry<String, String> item : this.cfgMgr.ggroupTags.entrySet()) {
-			String curValue = ggTags.get(item.getKey());
-			output.append(curValue);
-		}
-
+		output.append(av); 						// 5 - availability  
+		output.append(rel); 					// 6 - reliability 
+		output.append(upFraction); 				// 7 - up 
+		output.append(downFraction); 			// 8 - down
+		output.append(unknownFraction); 		// 9 - unknown 
+	
+		// NOTE: tags will be handled properly in a later PR
+		
 		return output;
 	}
 
@@ -225,11 +209,7 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 		// Define first fields
 		Schema.FieldSchema sDateInt = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "date"),
 				DataType.INTEGER);
-		Schema.FieldSchema sAvProfile = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "av_profile"),
-				DataType.CHARARRAY);
-		Schema.FieldSchema sMetricProfile = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "metric_profile"),
-				DataType.CHARARRAY);
-		Schema.FieldSchema sGroup = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "group"),
+		Schema.FieldSchema sName = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "group"),
 				DataType.CHARARRAY);
 		Schema.FieldSchema sSuperGroup = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "supergroup"),
 				DataType.CHARARRAY);
@@ -240,52 +220,27 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 				DataType.DOUBLE);
 		Schema.FieldSchema sRel = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "reliability"),
 				DataType.DOUBLE);
-		Schema.FieldSchema sUp = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "up_f"), DataType.DOUBLE);
-		Schema.FieldSchema sUnknown = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "unknown_f"),
+		Schema.FieldSchema sUp = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "up"), DataType.DOUBLE);
+		Schema.FieldSchema sDown = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "down"), DataType.DOUBLE);
+		Schema.FieldSchema sUnknown = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "unknown"),
 				DataType.DOUBLE);
-		Schema.FieldSchema sDown = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "down_f"), DataType.DOUBLE);
+		
+		// NOTE: tags will be handled properly in a later PR
 
-		// Create a field schema list for egroup tags
-		ArrayList<Schema.FieldSchema> egroupFields = new ArrayList<Schema.FieldSchema>();
-		// Get egroup config tags
-		for (Entry<String, String> item : this.localCfgMgr.egroupTags.entrySet()) {
-			egroupFields.add(
-					new Schema.FieldSchema(this.localCfgMgr.getMapped("egroups", item.getKey()), DataType.CHARARRAY));
-		}
-
-		ArrayList<Schema.FieldSchema> ggroupFields = new ArrayList<Schema.FieldSchema>();
-		// Get ggroup config tags
-		for (Entry<String, String> item : this.localCfgMgr.ggroupTags.entrySet()) {
-			ggroupFields.add(
-					new Schema.FieldSchema(this.localCfgMgr.getMapped("ggroups", item.getKey()), DataType.CHARARRAY));
-		}
 
 		// Add fields to schema
 		groupEndpointData.add(sDateInt);
-		groupEndpointData.add(sAvProfile);
-		groupEndpointData.add(sMetricProfile);
-		groupEndpointData.add(sGroup);
+		groupEndpointData.add(sName);
 		groupEndpointData.add(sSuperGroup);
 		groupEndpointData.add(sWeight);
 
 		groupEndpointData.add(sAv);
 		groupEndpointData.add(sRel);
 		groupEndpointData.add(sUp);
-		groupEndpointData.add(sUnknown);
 		groupEndpointData.add(sDown);
-
-		for (Schema.FieldSchema item : egroupFields) {
-			groupEndpointData.add(item);
-		}
-
-		for (Schema.FieldSchema item : ggroupFields) {
-			groupEndpointData.add(item);
-		}
+		groupEndpointData.add(sUnknown);
 
 		return groupEndpointData;
-
-		// return null;
-
 	}
 
 }
