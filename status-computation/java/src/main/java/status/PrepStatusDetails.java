@@ -155,23 +155,12 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 			}
 		}
 
-		// Find egroup and gggroup
-
-		String egroupType = this.cfgMgr.egroup;
-		String egroupName = this.egrpMgr.getGroup(egroupType, hostname, service);
-		String ggroupType = this.cfgMgr.ggroup;
-		String ggroupName = this.ggrpMgr.getGroup(ggroupType, egroupName);
-
 		// add stuff to the output
 
 		output.append(monitoring_host);
 		output.append(service);
 		output.append(hostname);
 		output.append(metric);
-		output.append(ggroupName);
-		output.append(egroupName);
-		output.append(this.cfgMgr.agroup);
-		output.append(this.cfgMgr.agroup);
 		output.append(outBag);
 
 		return output;
@@ -185,19 +174,15 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 		Schema.FieldSchema hostname = new Schema.FieldSchema("hostname", DataType.CHARARRAY);
 		Schema.FieldSchema service_type = new Schema.FieldSchema("service", DataType.CHARARRAY);
 		Schema.FieldSchema metric = new Schema.FieldSchema("metric", DataType.CHARARRAY);
-		Schema.FieldSchema ggroup = new Schema.FieldSchema("ggroup", DataType.CHARARRAY);
-		Schema.FieldSchema egroup = new Schema.FieldSchema("egroup", DataType.CHARARRAY);
-		Schema.FieldSchema altgroup = new Schema.FieldSchema("altg", DataType.CHARARRAY);
-		Schema.FieldSchema altgroupf = new Schema.FieldSchema("altgf", DataType.CHARARRAY);
 
 		Schema.FieldSchema timestamp = new Schema.FieldSchema("timestamp", DataType.CHARARRAY);
 		Schema.FieldSchema status = new Schema.FieldSchema("status", DataType.CHARARRAY);
 		Schema.FieldSchema summary = new Schema.FieldSchema("summary", DataType.CHARARRAY);
 		Schema.FieldSchema message = new Schema.FieldSchema("message", DataType.CHARARRAY);
-		Schema.FieldSchema prev_state = new Schema.FieldSchema("prev_state", DataType.CHARARRAY);
-		Schema.FieldSchema prev_ts = new Schema.FieldSchema("prev_ts", DataType.CHARARRAY);
-		Schema.FieldSchema date_int = new Schema.FieldSchema("date_int", DataType.INTEGER);
-		Schema.FieldSchema time_int = new Schema.FieldSchema("time_int", DataType.INTEGER);
+		Schema.FieldSchema prev_state = new Schema.FieldSchema("previous_state", DataType.CHARARRAY);
+		Schema.FieldSchema prev_ts = new Schema.FieldSchema("previous_timestamp", DataType.CHARARRAY);
+		Schema.FieldSchema date_int = new Schema.FieldSchema("date_integer", DataType.INTEGER);
+		Schema.FieldSchema time_int = new Schema.FieldSchema("time_integer", DataType.INTEGER);
 
 		Schema status_metric = new Schema();
 		Schema timeline = new Schema();
@@ -206,11 +191,6 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 		status_metric.add(service_type);
 		status_metric.add(hostname);
 		status_metric.add(metric);
-		status_metric.add(egroup);
-		status_metric.add(ggroup);
-
-		status_metric.add(altgroup);
-		status_metric.add(altgroupf);
 
 		timeline.add(timestamp);
 		timeline.add(status);
