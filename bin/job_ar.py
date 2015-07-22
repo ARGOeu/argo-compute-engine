@@ -90,16 +90,11 @@ def main(args=None):
     pig_params['dt'] = args.date
     pig_params['mode'] = mode
     pig_params['name_eg'] = json_cfg['egroup']
-    pig_params['name_sg'] = json_cfg['ggroup']
-    pig_params['n_alt'] = cfg.n_alt
     pig_params['s_period'] = cfg.sampling_period
     pig_params['s_interval'] = cfg.sampling_interval
-    pig_params['e_map'] = cfg.e_map
-    pig_params['s_map'] = cfg.s_map
     pig_params['flt'] = '1'
-    # collection names are temporarily matching old schema. will be updated in ARGO-153
-    pig_params['mongo_service'] = cfg.get_mongo_uri('service_ar')
-    pig_params['mongo_egroup'] = cfg.get_mongo_uri('endpoint_group_ar')
+    pig_params['mongo_service'] = cfg.get_mongo_uri('ar', 'service_ar')
+    pig_params['mongo_egroup'] = cfg.get_mongo_uri('ar', 'endpoint_group_ar')
 
     cmd_pig = []
 

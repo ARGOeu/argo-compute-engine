@@ -8,6 +8,9 @@ mongo_host=127.0.0.1
 mongo_port=27017
 mode=local
 
+prefilter_clean=true
+sync_clean=true
+
 [logging]    
 log_mode=file
 log_file=/var/log/ar-compute.log
