@@ -42,7 +42,7 @@ status_detail =	FOREACH  (GROUP mdata_full BY (monitoring_host,service,hostname,
 	GENERATE  FLATTEN( f_PrepStatus(group.monitoring_host, group.service, group.hostname, group.metric, t.(timestamp,status,summary,message)) );
 };
 
-status_unwrap = FOREACH status_detail GENERATE $0 as monitoring_box, $1 as service, $2 as host, $3 as metric, FLATTEN($8) as (timestamp,status,summary,message,previous_state,previous_timestamp,date_integer,time_integer);
+status_unwrap = FOREACH status_detail GENERATE $0 as monitoring_box, $1 as service, $2 as host, $3 as metric, FLATTEN($4) as (timestamp,status,summary,message,previous_state,previous_timestamp,date_integer,time_integer);
 describe status_unwrap;
 STORE status_unwrap INTO '$mongo_status_detail' USING com.mongodb.hadoop.pig.MongoInsertStorage();
 

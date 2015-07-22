@@ -158,7 +158,7 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 		// add stuff to the output
 
 		output.append(monitoring_host);
-		output.append(service);
+		output.append(service);		   
 		output.append(hostname);
 		output.append(metric);
 		output.append(outBag);
@@ -170,7 +170,7 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 	@Override
 	public Schema outputSchema(Schema input) {
 
-		Schema.FieldSchema monitoring_box = new Schema.FieldSchema("monitoring_host", DataType.CHARARRAY);
+		Schema.FieldSchema monitoring_box = new Schema.FieldSchema("monitoring_box", DataType.CHARARRAY);
 		Schema.FieldSchema hostname = new Schema.FieldSchema("hostname", DataType.CHARARRAY);
 		Schema.FieldSchema service_type = new Schema.FieldSchema("service", DataType.CHARARRAY);
 		Schema.FieldSchema metric = new Schema.FieldSchema("metric", DataType.CHARARRAY);
