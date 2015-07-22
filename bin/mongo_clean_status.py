@@ -50,7 +50,7 @@ def main(args=None):
     log.info("Opening collection: %s", col_status)
     col = db[col_status]
 
-    num_of_rows = col.find({"di": date_int}).count()
+    num_of_rows = col.find({"date_integer": date_int}).count()
     log.info("Found %s entries for date %s", num_of_rows, args.date)
 
     if num_of_rows > 0:

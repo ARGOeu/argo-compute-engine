@@ -58,20 +58,20 @@ def main(args=None):
     log.info("Opening collection: %s", col_service)
     col = db[col_service]
 
-    if args.profile:
-        num_of_rows = col.find({"dt": date_int, "ap": args.profile}).count()
-        log.info("Found %s entries for date %s and profile %s",
-                 num_of_rows, args.date, args.profile)
+    if args.report:
+        num_of_rows = col.find({"date": date_int, "report": args.report}).count()
+        log.info("Found %s entries for date %s and report %s",
+                 num_of_rows, args.date, args.report)
     else:
-        num_of_rows = col.find({"dt": date_int}).count()
+        num_of_rows = col.find({"date": date_int}).count()
         log.info("Found %s entries for date %s", num_of_rows, args.date)
 
     if num_of_rows > 0:
 
-        if args.profile:
+        if args.report:
             log.info(
-                "Remove entries for date: %s and av.profile: %s", args.date, args.profile)
-            col.remove({"dt": date_int, "ap": args.profile})
+                "Remove entries for date: %s and report: %s", args.date, args.report)
+            col.remove({"dt": date_int, "ap": args.report})
         else:
             log.info("Remove entries for date: %s", args.date)
             col.remove({"dt": date_int})
@@ -90,20 +90,20 @@ def main(args=None):
     log.info("Opening collection: %s", col_egroup)
     col = db[col_egroup]
 
-    if args.profile:
-        num_of_rows = col.find({"dt": date_int, "ap": args.profile}).count()
-        log.info("Found %s entries for date %s and profile %s",
-                 num_of_rows, args.date, args.profile)
+    if args.report:
+        num_of_rows = col.find({"date": date_int, "report": args.report}).count()
+        log.info("Found %s entries for date %s and report %s",
+                 num_of_rows, args.date, args.report)
     else:
         num_of_rows = col.find({"dt": date_int}).count()
         log.info("Found %s entries for date %s", num_of_rows, args.date)
 
     if num_of_rows > 0:
 
-        if args.profile:
+        if args.report:
             log.info(
-                "Remove entries for date: %s and av.profile: %s", args.date, args.profile)
-            col.remove({"dt": date_int, "ap": args.profile})
+                "Remove entries for date: %s and report: %s", args.date, args.report)
+            col.remove({"dt": date_int, "ap": args.report})
         else:
             log.info("Remove entries for date: %s", args.date)
             col.remove({"dt": date_int})
@@ -122,7 +122,7 @@ if __name__ == "__main__":
     arg_parser.add_argument(
         "-d", "--date", help="date", dest="date", metavar="DATE", required="TRUE")
     arg_parser.add_argument(
-        "-p", "--profile", help="availability profile", dest="profile", metavar="STRING")
+        "-r", "--report", help="report", dest="report", metavar="STRING")
 
     # Parse the command line arguments accordingly and introduce them to
     # main...
