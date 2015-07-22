@@ -24,7 +24,7 @@ public class ConfigManager {
 	private static final Logger LOG = Logger.getLogger(ConfigManager.class.getName());
 
 	public String tenant;
-	public String job;
+	public String report;
 	public String egroup; // endpoint group
 	public String ggroup; // group of groups
 	public String agroup; // alternative group
@@ -36,7 +36,7 @@ public class ConfigManager {
 
 	public ConfigManager() {
 		this.tenant = null;
-		this.job = null;
+		this.report = null;
 		this.egroup = null;
 		this.ggroup = null;
 		this.weight = null;
@@ -48,7 +48,7 @@ public class ConfigManager {
 
 	public void clear() {
 		this.tenant = null;
-		this.job = null;
+		this.report = null;
 		this.egroup = null;
 		this.ggroup = null;
 		this.weight = null;
@@ -79,7 +79,7 @@ public class ConfigManager {
 			JsonObject jObj = jElement.getAsJsonObject();
 			// Get the simple fields
 			this.tenant = jObj.getAsJsonPrimitive("tenant").getAsString();
-			this.job = jObj.getAsJsonPrimitive("job").getAsString();
+			this.report = jObj.getAsJsonPrimitive("job").getAsString();
 			this.egroup = jObj.getAsJsonPrimitive("egroup").getAsString();
 			this.ggroup = jObj.getAsJsonPrimitive("ggroup").getAsString();
 			this.weight = jObj.getAsJsonPrimitive("weight").getAsString();
