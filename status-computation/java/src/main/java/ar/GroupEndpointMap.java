@@ -174,9 +174,10 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 		String ggroupName = this.ggMgr.getGroup(ggroupType, egroupName);
 
 		// Add the previous info before adding the tags
-		output.append(dateInt); 				// 0 - date
-		output.append(egroupName); 				// 1 - name
-		output.append(ggroupName); 				// 2 - supergroup 
+		output.append(cfgMgr.report);			// 0 - reportName
+		output.append(dateInt); 				// 1 - date
+		output.append(egroupName); 				// 2 - name
+		output.append(ggroupName); 				// 3 - supergroup 
 		output.append(weightVal); 				// 4 - weight
 
 		// Add the a/r info
@@ -207,6 +208,8 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 		Schema groupEndpointData = new Schema();
 
 		// Define first fields
+		Schema.FieldSchema sReport = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "report"),
+				DataType.CHARARRAY);
 		Schema.FieldSchema sDateInt = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "date"),
 				DataType.INTEGER);
 		Schema.FieldSchema sName = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "group"),
@@ -229,6 +232,7 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 
 
 		// Add fields to schema
+		groupEndpointData.add(sReport);
 		groupEndpointData.add(sDateInt);
 		groupEndpointData.add(sName);
 		groupEndpointData.add(sSuperGroup);
