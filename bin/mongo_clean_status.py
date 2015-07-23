@@ -3,6 +3,7 @@
 # arg parsing related imports
 import os
 import sys
+import utils
 from argolog import init_log
 from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser
@@ -13,30 +14,20 @@ def main(args=None):
 
     # default config
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
+    arcomp_conf = "/etc/ar-compute/"
+    # Init configuration
+    cfg = utils.ArgoConfiguration(fn_ar_cfg)
+    cfg.load_tenant_db_conf(os.path.join(arcomp_conf, args.tenant + "_db_conf.json"))
+    # Init logging
+    log = init_log(cfg.log_mode, cfg.log_file, cfg.log_level, 'argo.job_ar')
 
-    ArConfig = SafeConfigParser()
-    ArConfig.read(fn_ar_cfg)
-
-    # Initialize logging
-    log_mode = ArConfig.get('logging', 'log_mode')
-    log_file = None
-
-    if log_mode == 'file':
-        log_file = ArConfig.get('logging', 'log_file')
-
-    log_level = ArConfig.get('logging', 'log_level')
-    log = init_log(log_mode, log_file, log_level, 'argo.mongo_clean_status')
-
-    mongo_host = ArConfig.get('default', 'mongo_host')
-    mongo_port = ArConfig.get('default', 'mongo_port')
-
-    mongo_dest = ArConfig.get('datastore_mapping', 'sdetail_dest')
-
-    # Split db.collection path string to obtain database name and collection
+    # Split db.collection path strings to obtain database name and collection
     # name
-    mongo_dest = mongo_dest.split('.')
-    db_status = mongo_dest[0]
-    col_status = mongo_dest[1]
+
+    mongo_host = cfg.get_mongo_host("status")
+    mongo_port = cfg.get_mongo_port("status")
+    db_status = cfg.get_mongo_database("status")
+    col_status = "status_metric"
 
     # Creating a date integer for use in the database queries
     date_int = int(args.date.replace("-", ""))
@@ -55,7 +46,7 @@ def main(args=None):
 
     if num_of_rows > 0:
         log.info("Remove entries for date: %s", args.date)
-        col.remove({"di": date_int})
+        col.delete_many({"date_integer": date_int})
         log.info("Entries Removed!")
     else:
         log.info("Zero entries found. No need to remove anything")
@@ -68,6 +59,8 @@ if __name__ == "__main__":
         description="clean status detail data for a day")
     arg_parser.add_argument(
         "-d", "--date", help="date", dest="date", metavar="DATE", required="TRUE")
+    arg_parser.add_argument(
+        "-t", "--tenant", help="tenant owner ", dest="tenant", metavar="STRING", required="TRUE")
 
     # Parse the command line arguments accordingly and introduce them to
     # main...

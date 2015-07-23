@@ -108,6 +108,15 @@ class ArgoConfiguration(object):
 
         return "".join(mongo_uri)
 
+    def get_mongo_database(self, store):
+        return self.tenant_db_conf[store]["database"]
+
+    def get_mongo_host(self, store):
+        return self.tenant_db_conf[store]["server"]
+
+    def get_mongo_port(self, store):
+        return self.tenant_db_conf[store]["port"]
+
 
 def get_date_under(date):
     """
