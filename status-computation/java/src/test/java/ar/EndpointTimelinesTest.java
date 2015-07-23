@@ -29,44 +29,40 @@ public class EndpointTimelinesTest {
 		// Assert that files are present
 		assertNotNull("Test file missing", EndpointTimelinesTest.class.getResource("/ar/endpoint_timeline.json"));
 	}
-	
+
 	@Test
 	public void test() throws URISyntaxException, IOException {
-		//Prepare Resource File
+		// Prepare Resource File
 		URL resJsonFile = OpsManagerTest.class.getResource("/ops/EGI-algorithm.json");
 		File jsonFile = new File(resJsonFile.toURI());
 		// Instatiate class
-		
-		String jsonStr = IOUtils.toString(this.getClass().getResourceAsStream("/ar/cream-ce-timeline.json"),"UTF-8");
+
+		String jsonStr = IOUtils.toString(this.getClass().getResourceAsStream("/ar/cream-ce-timeline.json"), "UTF-8");
 		TupleFactory tf = TupleFactory.getInstance();
-		
+
 		Tuple cur = tf.newTuple();
 		Tuple inpTuple = JsonToPig.jsonToTuple(jsonStr);
-		EndpointTimelines et = new EndpointTimelines("","","","","2015-02-06","test","1440","5");
-	   
+		EndpointTimelines et = new EndpointTimelines("", "", "", "", "2015-02-06", "test", "1440", "5");
+
 		URL downRes = EndpointTimelinesTest.class.getResource("/avro/downtimes_v2.avro");
 		File downAvro = new File(downRes.toURI());
-		
+
 		URL avpJsonFile = EndpointTimelines.class.getResource("/ops/ap1.json");
 		File avpFile = new File(avpJsonFile.toURI());
-		
+
 		URL metricRes = EndpointTimelines.class.getResource("/avro/poem_sync_v2.avro");
 		File metricFile = new File(metricRes.toURI());
-		
-		
+
 		et.avMgr.loadJson(avpFile);
 		et.downMgr.loadAvro(downAvro);
 		et.metricMgr.loadAvro(metricFile);
 		et.opsMgr.loadJson(jsonFile);
 		cur = et.exec(inpTuple);
-		
-		
-		
-		String curToStr="(CREAM-CE,cce.ihep.ac.cn,{(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(4),(4),(4),(4),(4),(4),(4),(4),(4),(4),(4),(4),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(4),(4),(4),(4),(4),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(4),(4),(4),(4),(4),(4),(4),(4),(4),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2)})";
+
+		String curToStr = "(CREAM-CE,cce.ihep.ac.cn,{(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(4),(4),(4),(4),(4),(4),(4),(4),(4),(4),(4),(4),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(4),(4),(4),(4),(4),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(4),(4),(4),(4),(4),(4),(4),(4),(4),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2)})";
 		assertTrue(curToStr.equals(cur.toString()));
-		
-		
-		//assertTrue(expTuple.toString().equals(cur.toString()));
+
+		// assertTrue(expTuple.toString().equals(cur.toString()));
 	}
 
 }
