@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import json
 from ConfigParser import SafeConfigParser
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -20,14 +20,27 @@ class ArgoConfiguration(object):
     # connector parameters
     sync_exec = None
     sync_path = None
+    # ce run mode
+    mode = None
+    # datastore mapping
+    n_alt = None
+    e_map = None
+    s_map = None
+    # sampling
+    sampling_period = None
+    sampling_interval = None
+    # clean
+    sync_clean = None
+    prefilter_clean = None
+    # tenant ar store configuration
+    tenant_db_conf = {}
 
     def __init__(self, filename):
-
         self.load_config(filename)
 
     def load_config(self, filename):
         """
-        Load configuration from filename. 
+        Load configuration from filename.
         Create tenant list
         Create tenant/jobs dictionary
 
@@ -56,10 +69,62 @@ class ArgoConfiguration(object):
             job_set = job_set.split(',')
             for job_item in job_set:
                 self.jobs[tenant_item].append(job_item)
-        
+
         # Grab connector sync path
-        self.sync_exec = ar_config.get('connectors','sync_exec')
-        self.sync_path = ar_config.get('connectors','sync_path')
+        self.sync_exec = ar_config.get('connectors', 'sync_exec')
+        self.sync_path = ar_config.get('connectors', 'sync_path')
+
+        # Grab run mode
+        self.mode = ar_config.get('default', 'mode')
+
+        # Grab mapping info (will be removed in the near future)
+        self.n_alt = ar_config.get('datastore_mapping', 'n_alt')
+        self.e_map = ar_config.get('datastore_mapping', 'e_map')
+        self.s_map = ar_config.get('datastore_mapping', 's_map')
+
+        # Grab sampling parameters
+        self.sampling_period = ar_config.get('sampling', 's_period')
+        self.sampling_interval = ar_config.get('sampling', 's_interval')
+
+        # Grab clean parameters
+        self.prefilter_clean = ar_config.get('default', 'prefilter_clean')
+        self.sync_clean = ar_config.get('default', 'sync_clean')
+
+    def load_tenant_db_conf(self, filename):
+        """
+        Load tenant db configuration and return it as a dictionary
+
+        :param filename: path to json file containing tenant db configuration
+        :returns: dictionary with database configuration
+        """
+        self.tenant_db_conf = {}
+
+        with open(filename) as json_file:
+            json_data = json.load(json_file)
+
+        for item in json_data["db_conf"]:
+            self.tenant_db_conf[item["store"]] = item
+
+    def get_mongo_uri(self, store, collection):
+        store_cfg = self.tenant_db_conf[store]
+        if store_cfg["username"] and store_cfg["password"]:
+            mongo_uri = ["mongodb://", store_cfg["username"], ":", store_cfg["password"],
+                         "@", store_cfg["server"], ":", str(store_cfg["port"]),
+                         "/", store_cfg["database"], ".", collection]
+        else:
+            mongo_uri = ["mongodb://", store_cfg["server"], ":", str(store_cfg["port"]),
+                         "/", store_cfg["database"], ".", collection]
+
+        return "".join(mongo_uri)
+
+    def get_mongo_database(self, store):
+        return self.tenant_db_conf[store]["database"]
+
+    def get_mongo_host(self, store):
+        return self.tenant_db_conf[store]["server"]
+
+    def get_mongo_port(self, store):
+        return self.tenant_db_conf[store]["port"]
 
 
 def get_date_under(date):
@@ -75,7 +140,7 @@ def get_date_under(date):
 def get_actual_date(date):
     """
     Convert date str to actual python date object
-    
+
     :param date: string using format (YYYY-MM-DD)
     :returns: python date object
     """
@@ -85,7 +150,7 @@ def get_actual_date(date):
 def get_date_str(date):
     """
     Convert date object to date string (YYYY-MM-DD)
-    
+
     :param date: python date object
     :returns: string using format (YYYY-MM-DD)
     """
