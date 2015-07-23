@@ -117,7 +117,7 @@ def main(args=None):
 
     # Command to clean a/r data from mongo
     cmd_clean_mongo_ar = [os.path.join(
-        stdl_exec, "mongo_clean_ar.py"), '-d', args.date, '-p', json_cfg["aprofile"]]
+        stdl_exec, "mongo_clean_ar.py"), '-d', args.date, '-r', json_cfg["job"], '-t', args.tenant]
 
     # Command to upload sync data to hdfs
     cmd_upload_sync = [os.path.join(
