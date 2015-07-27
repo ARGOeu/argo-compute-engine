@@ -19,18 +19,18 @@ public class EndpointGroupsTest {
 		// Assert that files are present
 		assertNotNull("Test file missing", EndpointGroupsTest.class.getResource("/avro/group_endpoints_v2.avro"));
 	}
-	
+
 	@Test
 	public void test() throws URISyntaxException, IOException {
-		//Prepare Resource File
+		// Prepare Resource File
 		URL resAvroFile = EndpointGroupsTest.class.getResource("/avro/group_endpoints_v2.avro");
 		File avroFile = new File(resAvroFile.toURI());
 		// Instatiate class
 		EndpointGroups ge = new EndpointGroups();
 		// Test loading file
 		ge.loadAvro(avroFile);
-		assertNotNull("File Loaded",ge);
-		
+		assertNotNull("File Loaded", ge);
+
 		// Test Check if service endpoint exists in topology
 		assertTrue(ge.checkEndpoint("storage1.grid.upjs.sk", "ARC-CE"));
 		assertTrue(ge.checkEndpoint("storage1.grid.upjs.sk", "ARC-CE"));
@@ -39,19 +39,20 @@ public class EndpointGroupsTest {
 		assertTrue(ge.checkEndpoint("se.grid.tuke.sk", "SRMv2"));
 		assertTrue(ge.checkEndpoint("dpm.grid.atomki.hu", "SRMv2"));
 		// Test check Group retrieval
-		assertEquals(ge.getGroup("SITES", "gt3.pnpi.nw.ru", "CREAM-CE"),"ru-PNPI");
-	
-		// Test Tag Filtering (Wont filter out anything since input is already filtered)
+		assertEquals(ge.getGroup("SITES", "gt3.pnpi.nw.ru", "CREAM-CE"), "ru-PNPI");
+
+		// Test Tag Filtering (Wont filter out anything since input is already
+		// filtered)
 		URL resJson = GroupsOfGroupsTest.class.getResource("/ops/config.json");
 		File cfgFile = new File(resJson.toURI());
 		ConfigManager cfgMgr = new ConfigManager();
 		cfgMgr.loadJson(cfgFile);
 		ge.filter(cfgMgr.egroupTags);
-		
-		// Check non-existent groups 
-		assertTrue(ge.checkEndpoint("ce.etfos.cro-ngi.hr", "GRAM5")==false);
-		assertTrue(ge.checkEndpoint("grid129.sinp.msu.ru", "CREAM-CE")==false);
-		
+
+		// Check non-existent groups
+		assertTrue(ge.checkEndpoint("ce.etfos.cro-ngi.hr", "GRAM5") == false);
+		assertTrue(ge.checkEndpoint("grid129.sinp.msu.ru", "CREAM-CE") == false);
+
 	}
 
 }

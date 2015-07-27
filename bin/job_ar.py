@@ -4,6 +4,7 @@
 import os
 import sys
 import json
+import utils
 from argolog import init_log
 from argorun import run_cmd
 from datetime import datetime, timedelta
@@ -20,46 +21,24 @@ def main(args=None):
     stdl_exec = "/usr/libexec/ar-compute/bin"
     pig_script_path = "/usr/libexec/ar-compute/pig/"
 
-    actual_date = datetime.strptime(args.date, '%Y-%m-%d')
-    one_day_ago = actual_date - timedelta(days=1)
-    prev_date = one_day_ago.strftime('%Y-%m-%d')
-    prev_date_under = prev_date.replace("-", "_")
+    one_day_ago = utils.get_actual_date(args.date) - timedelta(days=1)
+    prev_date = utils.get_date_str(one_day_ago)
+    prev_date_under = utils.get_date_under(prev_date)
+    date_under = utils.get_date_under(args.date)
 
-    date_under = args.date.replace("-", "_")
-
-    ArConfig = SafeConfigParser()
-    ArConfig.read(fn_ar_cfg)
-
-    # Get sync exec and path
-    arsync_exec = ArConfig.get('connectors', 'sync_exec')
-    arsync_lib = ArConfig.get('connectors', 'sync_path')
-
-    # Initialize logging
-    log_mode = ArConfig.get('logging', 'log_mode')
-    log_file = None
-
-    if log_mode == 'file':
-        log_file = ArConfig.get('logging', 'log_file')
-
-    log_level = ArConfig.get('logging', 'log_level')
-    log = init_log(log_mode, log_file, log_level, 'argo.job_ar')
-
-    mongo_host = ArConfig.get('default', 'mongo_host')
-    mongo_port = ArConfig.get('default', 'mongo_port')
-    mongo_dest_service = ArConfig.get('datastore_mapping', 'service_dest')
-    mongo_dest_egroup = ArConfig.get('datastore_mapping', 'egroup_dest')
-    ar_mode = ArConfig.get('default', 'mode')
+    # Init configuration
+    cfg = utils.ArgoConfiguration(fn_ar_cfg)
+    cfg.load_tenant_db_conf(os.path.join(arcomp_conf, args.tenant + "_db_conf.json"))
+    # Init logging
+    log = init_log(cfg.log_mode, cfg.log_file, cfg.log_level, 'argo.job_ar')
 
     # Inform the user in wether argo runs locally or distributed
-    if ar_mode == 'local':
+    if cfg.mode == 'local':
         log.info("ARGO compute engine runs in LOCAL mode")
         log.info("computation job will be run locally")
     else:
         log.info("ARGO compute engine runs in CLUSTER mode")
         log.info("computation job will be submitted to the hadoop cluster")
-
-    # check if sync_data must be cleaned in hdfs
-    sync_clean = ArConfig.get('default', 'sync_clean')
 
     # Proposed hdfs pathways
     hdfs_mdata_path = './' + args.tenant + "/mdata/"
@@ -72,7 +51,7 @@ def main(args=None):
         '/' + args.job + '/' + date_under + '/'
     local_cfg_path = arcomp_conf
 
-    if ar_mode == 'cluster':
+    if cfg.mode == 'cluster':
         mode = 'cache'
         mdata_path = hdfs_mdata_path
         sync_path = hdfs_sync_path
@@ -112,16 +91,15 @@ def main(args=None):
     pig_params['mode'] = mode
     pig_params['name_eg'] = json_cfg['egroup']
     pig_params['name_sg'] = json_cfg['ggroup']
-    pig_params['n_alt'] = ArConfig.get('datastore_mapping', 'n_alt')
-    pig_params['s_period'] = ArConfig.get('sampling', 's_period')
-    pig_params['s_interval'] = ArConfig.get('sampling', 's_interval')
-    pig_params['e_map'] = ArConfig.get('datastore_mapping', 'e_map')
-    pig_params['s_map'] = ArConfig.get('datastore_mapping', 's_map')
+    pig_params['n_alt'] = cfg.n_alt
+    pig_params['s_period'] = cfg.sampling_period
+    pig_params['s_interval'] = cfg.sampling_interval
+    pig_params['e_map'] = cfg.e_map
+    pig_params['s_map'] = cfg.s_map
     pig_params['flt'] = '1'
-    pig_params['mongo_service'] = 'mongodb://' + mongo_host + \
-        ':' + mongo_port + '/' + mongo_dest_service
-    pig_params['mongo_egroup'] = 'mongodb://' + mongo_host + \
-        ':' + mongo_port + '/' + mongo_dest_egroup
+    # collection names are temporarily matching old schema. will be updated in ARGO-153
+    pig_params['mongo_service'] = cfg.get_mongo_uri('service_ar')
+    pig_params['mongo_egroup'] = cfg.get_mongo_uri('endpoint_group_ar')
 
     cmd_pig = []
 
@@ -129,7 +107,7 @@ def main(args=None):
     cmd_pig.append('pig')
 
     # Append Pig local execution mode flag
-    if ar_mode == 'local':
+    if cfg.mode == 'local':
         cmd_pig.append('-x')
         cmd_pig.append('local')
 
@@ -167,7 +145,7 @@ def main(args=None):
     run_cmd(cmd_pig, log)
 
     # Cleaning hdfs sync data
-    if sync_clean == "true":
+    if cfg.sync_clean == "true":
         log.info("System configured to clean sync hdfs data after job")
         run_cmd(cmd_clean_sync, log)
 

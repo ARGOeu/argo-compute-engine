@@ -82,10 +82,11 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 		// Check if cache files have been opened
 		if (this.initialized == false) {
 			try {
-				this.init(); // If not open them				
+				this.init(); // If not open them
 			} catch (IOException e) {
 				LOG.error("Could not initialize sync structures");
-				throw new RuntimeException("pig Eval Init Error");
+				LOG.error(e);
+				throw new IllegalStateException();
 			}
 		}
 
@@ -95,22 +96,25 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 		String groupname;
 		String service;
 		DefaultDataBag bag;
-		
+
 		try {
-			groupname = (String)input.get(0);
-			service = (String)input.get(1);
+			groupname = (String) input.get(0);
+			service = (String) input.get(1);
 			bag = (DefaultDataBag) input.get(2);
 		} catch (ClassCastException e) {
 			LOG.error("Failed to cast input to approriate type");
 			LOG.error("Bad tuple input:" + input.toString());
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		} catch (IndexOutOfBoundsException e) {
 			LOG.error("Malformed tuple schema");
 			LOG.error("Bad tuple input:" + input.toString());
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		} catch (ExecException e) {
 			LOG.error("Execution error");
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		}
 		// Get the Timeline
 		DTimeline serviceTl = new DTimeline();
@@ -120,14 +124,16 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 		while (itBag.hasNext()) {
 			Tuple curItem = itBag.next();
 			try {
-				serviceTl.samples[j] = Integer.parseInt(curItem.get(0).toString());				
+				serviceTl.samples[j] = Integer.parseInt(curItem.get(0).toString());
 			} catch (NumberFormatException e) {
-	    		LOG.error ("Failed to cast input to approriate type");
-	    		LOG.error ("Bad subitem:" + curItem.toString());
-	    		throw new RuntimeException("bad bag item input");
+				LOG.error("Failed to cast input to approriate type");
+				LOG.error("Bad subitem:" + curItem.toString());
+				LOG.error(e);
+				throw new IllegalArgumentException();
 			} catch (ExecException e) {
-	    		LOG.error ("Execution error");
-	    		throw new RuntimeException("bad bag item input");
+				LOG.error("Execution error");
+				LOG.error(e);
+				throw new IllegalArgumentException();
 			}
 			j++;
 		}
@@ -150,20 +156,13 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 	public Schema outputSchema(Schema input) {
 
 		Schema serviceAR = new Schema();
-		Schema.FieldSchema service = new Schema.FieldSchema("service",
-				DataType.DOUBLE);
-		Schema.FieldSchema groupname = new Schema.FieldSchema("groupname",
-				DataType.DOUBLE);
-		Schema.FieldSchema av = new Schema.FieldSchema("availability",
-				DataType.DOUBLE);
-		Schema.FieldSchema rel = new Schema.FieldSchema("reliability",
-				DataType.DOUBLE);
-		Schema.FieldSchema upFraction = new Schema.FieldSchema("up_f",
-				DataType.DOUBLE);
-		Schema.FieldSchema unknownFraction = new Schema.FieldSchema(
-				"unknown_f", DataType.DOUBLE);
-		Schema.FieldSchema downFraction = new Schema.FieldSchema("down_f",
-				DataType.DOUBLE);
+		Schema.FieldSchema service = new Schema.FieldSchema("service", DataType.DOUBLE);
+		Schema.FieldSchema groupname = new Schema.FieldSchema("groupname", DataType.DOUBLE);
+		Schema.FieldSchema av = new Schema.FieldSchema("availability", DataType.DOUBLE);
+		Schema.FieldSchema rel = new Schema.FieldSchema("reliability", DataType.DOUBLE);
+		Schema.FieldSchema upFraction = new Schema.FieldSchema("up_f", DataType.DOUBLE);
+		Schema.FieldSchema unknownFraction = new Schema.FieldSchema("unknown_f", DataType.DOUBLE);
+		Schema.FieldSchema downFraction = new Schema.FieldSchema("down_f", DataType.DOUBLE);
 
 		serviceAR.add(service);
 		serviceAR.add(groupname);

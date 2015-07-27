@@ -27,47 +27,43 @@ public class MetricTimelinesTest {
 		// Assert that files are present
 		assertNotNull("Test file missing", MetricTimelinesTest.class.getResource("/ar/metric_timeline.json"));
 	}
-	
-	
+
 	@Test
 	public void test() throws IOException, URISyntaxException {
-		
-		//Prepare Resource File
+
+		// Prepare Resource File
 		URL resJsonFile = MetricTimelinesTest.class.getResource("/ops/EGI-algorithm.json");
 		File jsonFile = new File(resJsonFile.toURI());
 		// Instatiate class
-		
-		String jsonStr = IOUtils.toString(this.getClass().getResourceAsStream("/ar/metric_timeline.json"),"UTF-8");
+
+		String jsonStr = IOUtils.toString(this.getClass().getResourceAsStream("/ar/metric_timeline.json"), "UTF-8");
 		TupleFactory tf = TupleFactory.getInstance();
-		
+
 		Tuple cur = tf.newTuple();
 		Tuple inpTuple = JsonToPig.jsonToTuple(jsonStr);
-		MetricTimelines mt = new MetricTimelines("","","test","1440","5");
-	   
+		MetricTimelines mt = new MetricTimelines("", "", "test", "1440", "5");
+
 		mt.opsMgr.loadJson(jsonFile);
 		cur = mt.exec(inpTuple);
-		
+
 		Tuple expTuple = tf.newTuple();
-		
+
 		BagFactory bf = BagFactory.getInstance();
 		DataBag expBag = bf.newDefaultBag();
-		
-		for (int i=0;i<288;i++) {
+
+		for (int i = 0; i < 288; i++) {
 			Tuple subTuple = tf.newTuple();
 			subTuple.append(0);
 			expBag.add(subTuple);
 		}
-		
+
 		expTuple.append("unicore6.TargetSystemFactory");
 		expTuple.append("unicore.grid.task.gda.pl");
 		expTuple.append("emi.unicore.UNICORE-Job");
 		expTuple.append(expBag);
-		
+
 		assertTrue(expTuple.toString().equals(cur.toString()));
-		
-		
-		
-		
+
 	}
 
 }

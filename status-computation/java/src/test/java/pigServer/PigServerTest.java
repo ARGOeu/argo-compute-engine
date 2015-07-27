@@ -33,14 +33,14 @@ public class PigServerTest {
 
 	@Test
 	public void test() throws ExecException {
-		PigServer pigServer ;
-	    PigContext pigContext ;
-	    Cluster cluster ;
+		PigServer pigServer;
+		PigContext pigContext;
+		Cluster cluster;
 		pigServer = new PigServer(ExecType.LOCAL);
 		pigContext = pigServer.getPigContext();
-	
-	    assertTrue(pigServer!=null);   
-	    
+
+		assertTrue(pigServer != null);
+
 	}
 
 }
