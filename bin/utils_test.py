@@ -43,7 +43,7 @@ TEST_TENANT_DB_CONTENTS = r"""
       "store": "ar",
       "server": "192.168.0.99",
       "port": 27017,
-      "database": "argo-egi",
+      "database": "argo-EGI",
       "username": "",
       "password": ""
     },
@@ -51,7 +51,7 @@ TEST_TENANT_DB_CONTENTS = r"""
       "store": "status",
       "server": "192.168.0.99",
       "port": 27017,
-      "database": "argo-egi",
+      "database": "argo-EGI",
       "username": "",
       "password": ""
     }
@@ -107,13 +107,13 @@ def test_load_configuration(tmpdir):
     expected_tenants = ["TenantA", "TenantB"]
     expected_jobs = {"TenantA": ["JobA", "JobB"], "TenantB": ["JobC", "JobD"]}
 
-    expected_tenant_db_conf = {'ar': {'database': 'argo-egi',
+    expected_tenant_db_conf = {'ar': {'database': 'argo-EGI',
                                       'password': '',
                                       'port': 27017,
                                       'server': '192.168.0.99',
                                       'store': 'ar',
                                       'username': ''},
-                               'status': {'database': 'argo-egi',
+                               'status': {'database': 'argo-EGI',
                                           'password': '',
                                           'port': 27017,
                                           'server': '192.168.0.99',
@@ -121,8 +121,8 @@ def test_load_configuration(tmpdir):
                                           'username': ''}
                                }
 
-    mongo_uri_a = "mongodb://192.168.0.99:27017/argo-egi.endpoint_groups"
-    mongo_uri_b = "mongodb://192.168.0.99:27017/argo-egi.status_metric"
+    mongo_uri_a = "mongodb://192.168.0.99:27017/argo-EGI.endpoint_groups"
+    mongo_uri_b = "mongodb://192.168.0.99:27017/argo-EGI.status_metric"
 
     assert cfg.mongo_host == "127.0.0.1"
     assert cfg.mongo_port == "27017"
