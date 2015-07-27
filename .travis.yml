@@ -2,7 +2,7 @@ language: java
 
 before_install:  
  - sudo pip install pytest 
-
+ - sudo pip install mock
 script: 
  - cd status-computation/java && mvn test
  - cd ../../bin && py.test
