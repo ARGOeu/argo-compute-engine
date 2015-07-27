@@ -1,2 +1,4 @@
 language: java
-script: cd status-computation/java && mvn test
+script: 
+ - cd status-computation/java && mvn test
+ - cd ../bin && py.test
