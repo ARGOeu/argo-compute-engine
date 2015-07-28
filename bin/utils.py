@@ -22,10 +22,6 @@ class ArgoConfiguration(object):
     sync_path = None
     # ce run mode
     mode = None
-    # datastore mapping
-    n_alt = None
-    e_map = None
-    s_map = None
     # sampling
     sampling_period = None
     sampling_interval = None
@@ -76,11 +72,6 @@ class ArgoConfiguration(object):
 
         # Grab run mode
         self.mode = ar_config.get('default', 'mode')
-
-        # Grab mapping info (will be removed in the near future)
-        self.n_alt = ar_config.get('datastore_mapping', 'n_alt')
-        self.e_map = ar_config.get('datastore_mapping', 'e_map')
-        self.s_map = ar_config.get('datastore_mapping', 's_map')
 
         # Grab sampling parameters
         self.sampling_period = ar_config.get('sampling', 's_period')
