@@ -78,13 +78,8 @@ def main(args=None):
     pig_params['aps'] = cfg_path + args.tenant + '_' + job_set[0] + '_ap.json'
     pig_params['dt'] = args.date
     pig_params['mode'] = mode
-    pig_params['n_eg'] = ArConfig.get('datastore_mapping', 'n_eg')
-    pig_params['n_gg'] = ArConfig.get('datastore_mapping', 'n_gg')
-    pig_params['n_alt'] = ArConfig.get('datastore_mapping', 'n_alt')
-    pig_params['n_altf'] = ArConfig.get('datastore_mapping', 'n_altf')
-    pig_params['sd_map'] = ArConfig.get('datastore_mapping', 'sd_map')
     pig_params['flt'] = '0'
-    pig_params['mongo_status_detail'] = cfg.get_mongo_uri('status_metric')
+    pig_params['mongo_status_detail'] = cfg.get_mongo_uri('status', 'status_metric')
 
     cmd_pig = []
 

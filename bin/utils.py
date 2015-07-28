@@ -22,14 +22,12 @@ class ArgoConfiguration(object):
     sync_path = None
     # ce run mode
     mode = None
-    # datastore mapping
-    n_alt = None
-    e_map = None
-    s_map = None
     # sampling
     sampling_period = None
     sampling_interval = None
-
+    # clean
+    sync_clean = None
+    prefilter_clean = None
     # tenant ar store configuration
     tenant_db_conf = {}
 
@@ -75,14 +73,13 @@ class ArgoConfiguration(object):
         # Grab run mode
         self.mode = ar_config.get('default', 'mode')
 
-        # Grab mapping info (will be removed in the near future)
-        self.n_alt = ar_config.get('datastore_mapping', 'n_alt')
-        self.e_map = ar_config.get('datastore_mapping', 'e_map')
-        self.s_map = ar_config.get('datastore_mapping', 's_map')
-
         # Grab sampling parameters
         self.sampling_period = ar_config.get('sampling', 's_period')
         self.sampling_interval = ar_config.get('sampling', 's_interval')
+
+        # Grab clean parameters
+        self.prefilter_clean = ar_config.get('default', 'prefilter_clean')
+        self.sync_clean = ar_config.get('default', 'sync_clean')
 
     def load_tenant_db_conf(self, filename):
         """
