@@ -45,10 +45,8 @@ The main configuration files includes various global parameters used by the engi
 |------|------|-------------|---------|
 |`mongo_host`| String | Specify the ip address of the datastore node (running mongodb) | `YES` |
 |`mongo_port`| String |Specify the port number of the datastore node (running mongodb) | `YES` |
-| `mode` | String| The mode the engine runs. There are two available options: _cluster_ and _local_: *_cluster_*: If the mode is specified as _cluster_, the engine runs connecting to an existing hadoop cluster. It expects that the hadoop client is properly installed and configured. *_local_* : If the mode is specified as _local_, the engine runs local node. | `YES`|
-| `serialization`| String|  The serialization type used. There are two available options _avro_ and _none_:
-  - If specified as _avro_, the engine expects metric and sync data in avro format.
-  - If specified as _none_, the engine expects to find metric and sync data in simple text file delimited format. | `YES`|
+| `mode` | String| The mode the engine runs. There are two available options: _cluster_ and _local_: `_cluster_`: If the mode is specified as _cluster_, the engine runs connecting to an existing hadoop cluster. It expects that the hadoop client is properly installed and configured. `_local_` : If the mode is specified as _local_, the engine runs local node. | `YES`|
+| `serialization`| String|  The serialization type used. There are two available options _avro_ and _none_: `_avro_` : If specified as _avro_, the engine expects metric and sync data in avro format.  `_none_` :If specified as _none_, the engine expects to find metric and sync data in simple text file delimited format. | `YES`|
 | `prefilter_clean`| Boolean | Controls whether the local prefilter file will be automatically removed after it has been uploaded to the Compute Engine. If set to _true_, the local prefilter file will be automatically removed after it is  uploaded. |`YES`|
 | `sync_clean`| Boolean | Controls whether the uploaded sync files will be automatically removed after a job completion. If set to _true_ the uploaded sync files will be automatically removed after the job completion | `YES`|
 
