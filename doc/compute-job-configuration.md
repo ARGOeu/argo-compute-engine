@@ -173,9 +173,10 @@ The ARGO Compute Engine requires the user to define a mapping for the default_do
 
 | Name | Description |
 |------|-------------|
-| `"default_down": "DOWNTIME"` | means that whenever compute engine needs to produce a status for a scheduled downtime will mark it using the "DOWNTIME" state. |
-| `"default_missing": "MISSING"` | means whenever compute engine decides that a service status must declared missing (because there is no information provided from the metric data) will mark it using the "MISSING" state. |
-| `"default_unknown: "UNKNOWN"` | means whenever compute engine decides that must produce a service status to be considered unknown (for e.g. during recomputation requests) will mark it using the "UNKNOWN" state. |
+| `"default_down": "DOWNTIME"` | Means that whenever compute engine needs to produce a status for a scheduled downtime will mark it using the "DOWNTIME" state. |
+| `"default_missing": "MISSING"` | Means whenever compute engine decides that a service status must declared missing (because there is no information provided from the metric data) will mark it using the "MISSING" state. |
+| `"default_unknown: "UNKNOWN"` | Means whenever compute engine decides that must produce a service status to be considered unknown (for e.g. during recomputation requests) will mark it using the "UNKNOWN" state. |
+
 
 The available operations are declared in the operations list using truth tables as follows:
 
@@ -236,6 +237,7 @@ In the above snippet we have declared the name of the tenant, the name of the jo
 | `"ggroup"` | This field is used to declare the group of groups that will be used during computation aggregations. The value corresponds to one of the values present in the field `type` of the topology file [group_groups.avro](/guides/compute/compute-input/#groupgroupsavro) |
 | `"weight"` | This field is used to declare the type of weight that will be used during computation aggregations. The value corresponds to one of the values present in the field `type` of the weight (factors) file [weight_sync.avro](/guides/compute/compute-input/#weights-factors) |
 
+
 In the configuration file are specified the specific tag values that will be used during the job in order to filter metric data.
 
 For example:
@@ -260,11 +262,12 @@ The information in the availability profile JSON file is automatically picked up
 
 | Name | Type | Description | 
 |------|------|-------------|
-| `"name"` | string | the name of the availability profile |
-| `"namespace"` | string | the name of the namespace used by the profile |
-| `"metric_profile"` | string | the name of the metric profile linked to this availability profile |
-| `"metric_ops"` | string | the default operation to be used when aggregating low level metric statuses |
-| `"group_type"` | string | the default endpoint group type used in aggregation |
+| `"name"` | string | The name of the availability profile |
+| `"namespace"` | string | The name of the namespace used by the profile |
+| `"metric_profile"` | string | The name of the metric profile linked to this availability profile |
+| `"metric_ops"` | string | The default operation to be used when aggregating low level metric statuses |
+| `"group_type"` | string | The default endpoint group type used in aggregation |
+
 
 In the availability profile JSON file also are declared custom grouping of services to be used in the aggregation. The grouping of services are expressed in the JSON "groups" list see example below:
 
