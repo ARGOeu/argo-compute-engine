@@ -257,6 +257,7 @@ The full avro specification of the weight file:
 Downtime information: the period (start_time --> end_time) in which a specific service endpoint was in scheduled downtime. This information resided in the corresponding downtime avro file. The file has the following fields:
 
 |Name|Description|Required|
+|----|-----------|--------|
 |`hostname`| The hostname fqdn info part of the specific service endpoint|`YES`|
 |`service` | The service name info part of the specific service endpoint|`YES`|
 |`start_time` | WC3 date/time when the period begins |`YES`|
