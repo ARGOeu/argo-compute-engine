@@ -58,19 +58,16 @@ In this section we declare the specific logging options for the compute engine
 | Name | Type | Description | Required|
 |------|------|-------------|---------|
 |`log_mode`| String | This parameter specifies the log_mode used by compute engine. Possible values: `syslog` (default), `file`, `none`.
-|`syslog`| String | The compute engine is configured to use the syslog facility
-   a) `file`: the compute engine can write directly to a file defined by `log_file`
-   b) `none`: the compute engine does not output any logs| `YES`|
+|`syslog`| String | The compute engine is configured to use the syslog facility, a) `file`: the compute engine can write directly to a file defined by `log_file`,  b) `none`: the compute engine does not output any logs| `YES`|
 |`log_file`| String | This parameter must be specified if `log_mode=file`. The file which the compute engine will use in order to write logging information |`NO`|
 |`log_level`| String | Possible values: `DEBUG` (default), `INFO`, `WARNING`, `ERROR`, `CRITICAL`. Defines the log level that is used by the  compute engine.|`YES`|
-|`hadoop_log_root` | String | Hadoop clients log level and log appender. If the user wants the hadoop components to log via SYSLOG must make sure to define an appropriate appender  in hadoop log4j.properties file. The name of this appender must be added in this parameter.
-   For example if the available appenders in the log4j.properties file are SYSLOG and console the above line will be:
+|`hadoop_log_root` | String | Hadoop clients log level and log appender. If the user wants the hadoop components to log via SYSLOG must make sure to define an appropriate appender  in hadoop log4j.properties file. The name of this appender must be added in this parameter.|`YES`|
 
+  For example at `hadoop_log_root` if the available appenders in the log4j.properties file are SYSLOG and console the above line will be:
    ```
    hadoop_log_root=SYSLOG,console
    ```
-|`YES`|
-
+   
 #### `[reports]`
 
 In this section we declare the specific tenant used in the installation and the set of jobs available (as we described them above in the [_"Tenant and Report configuration"_](#tenant-and-report-configuration)).
@@ -117,15 +114,17 @@ This section contains various optional parameters used for correctly mapping res
 
 The following options define a set of mappings to shorter datastore field names and is recommended not to be changed. Will be removed in further editions.
 
+
 | Name | Description | Required|
 |------|-------------|---------|
-|`e_map={fieldname1},{fieldname2}...,{fieldnameN}`| When storing endpoint a/r results in mongodb compute engine uses the above field map to store the results using abbreviated fields. the default value is `e_map=dt,ap,p,s,n,hs,a,r,up,u,d,m,pr,ss,cs,i,sc`, where dt->date,a->availability etc... (recommended not to be changed) | `NO`|
-| `s_map={fieldname1},{fieldname2}...,{fieldnameN}`| When storing service a/r results in mongodb compute engine uses the above field map to store the results using abbreviated fields. the default value is `s_map=dt,ap,p,s,n,sf,a,r,up,u,d,m,pr,ss,cs,i,sc`, where dt->date,a->availability etc... (recommended not to be changed) | `NO`| 
-|`sd_map={fieldname1},{fieldname2}`| When storing status detailed results in mongodb compute engine uses the above field map to store the results using abbreviated fields. the default value is `sd_map=ts,s,sum,msg,ps,pts,di,ti`, where ts->timestamp, msg->message etc... (recommended not to be changed) | `YES`|
+|`e_map={fieldname1}, {fieldname2}..., {fieldnameN}`| When storing endpoint a/r results in mongodb compute engine uses the above field map to store the results using abbreviated fields. the default value is `e_map=dt,ap,p,s,n,hs,a,r,up,u,d,m,pr,ss,cs,i,sc`, where dt->date,a->availability etc... (recommended not to be changed) | `NO`|
+| `s_map={fieldname1}, {fieldname2}..., {fieldnameN}`| When storing service a/r results in mongodb compute engine uses the above field map to store the results using abbreviated fields. the default value is `s_map=dt,ap,p,s,n,sf,a,r,up,u,d,m,pr,ss,cs,i,sc`, where dt->date,a->availability etc... (recommended not to be changed) | `NO`| 
+|`sd_map={fieldname1}, {fieldname2}`| When storing status detailed results in mongodb compute engine uses the above field map to store the results using abbreviated fields. the default value is `sd_map=ts,s,sum,msg,ps,pts,di,ti`, where ts->timestamp, msg->message etc... (recommended not to be changed) | `YES`|
 | `n_eg={STRING}`| Endpoint group name type used in status detailed calculations. For e.g. `n_eg=site` if site is used as a group type|`NO`|
 | `n_gg={STRING}`| Group of groups name type used in status detailed calculations| `NO`|
 | `n_alt={STRING}` | Mapping of alternative grouping parameter used in status detail calc. | `NO`|
 | `n_altf={STRING}` | Mapping of alternative grouping parameter used in status detail calc. | `NO`|
+
 
 ### `/etc/ar-compute/`
 
@@ -265,7 +264,7 @@ The information in the availability profile JSON file is automatically picked up
 | `"namespace"` | string | the name of the namespace used by the profile |
 | `"metric_profile"` | string | the name of the metric profile linked to this availability profile |
 | `"metric_ops"` | string | the default operation to be used when aggregating low level metric statuses |
-| `"group_type"` | string | the default endpoint group type used in aggregation
+| `"group_type"` | string | the default endpoint group type used in aggregation |
 
 In the availability profile JSON file also are declared custom grouping of services to be used in the aggregation. The grouping of services are expressed in the JSON "groups" list see example below:
 
