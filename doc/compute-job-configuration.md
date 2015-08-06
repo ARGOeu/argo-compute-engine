@@ -95,13 +95,13 @@ In this section we declare the specific tenant used in the installation and the 
 
 #### `[datastore-mapping]`
 
-This section contains various optional parameters used for correctly mapping results to expected datastore collections and fields
+This section contains various parameters used for correctly mapping results to expected datastore collections and fields
 
 | Name | Description | Required|
 |------|-------------|---------|
-|`service_dest={db_name}.{collection_name}`| Destination for storing service a/r reports E.g: AR.sfreports | `NO`|
-|`egroup_dest={db_name}.{collection_name}` | Destination for storing endpoint grouped a/r reports. E.g: AR.sites | `NO`|
-|`sdetail_dest={db_name}.{collection_name}`| Destination for storing status detailed results | `NO` |
+|`service_dest={db_name}.{collection_name}`| Destination for storing service a/r reports E.g: AR.sfreports | `YES`|
+|`egroup_dest={db_name}.{collection_name}` | Destination for storing endpoint grouped a/r reports. E.g: AR.sites | `YES`|
+|`sdetail_dest={db_name}.{collection_name}`| Destination for storing status detailed results | `YES` |
 
 > **Note**
 >
