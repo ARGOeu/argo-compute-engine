@@ -65,7 +65,7 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
-* Fri Aug 8 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.4-1%{?dist}
+* Fri Aug 7 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.4-1%{?dist}
 - ARGO-146 Implement multi-tenancy required changes for the CE
 * Tue Jul 21 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-7%{?dist}
 - ARGO-190 Recomputation exclude list fix
