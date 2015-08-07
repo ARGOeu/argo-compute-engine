@@ -57,8 +57,7 @@ In this section we declare the specific logging options for the compute engine
 
 | Name | Type | Description | Required|
 |------|------|-------------|---------|
-|`log_mode`| String | This parameter specifies the log_mode used by the compute engine. Possible values: `syslog` (default), `file`, `none`.
-|`syslog`| String | The compute engine is configured to use the syslog facility, a) `file`: the compute engine can write directly to a file defined by `log_file`,  b) `none`: the compute engine does not output any logs| `YES`|
+|`log_mode`| String | This parameter specifies the log_mode used by the compute engine. Possible values: `syslog` (default), `file`, `none`. a) `syslog`: the compute engine is configured to use the syslog facility, b) `file`: the compute engine can write directly to a file defined by `log_file`,  c) `none`: the compute engine does not output any logs| `YES`|
 |`log_file`| String | This parameter must be specified if `log_mode=file`. The file which the compute engine will use in order to write logging information |`NO`|
 |`log_level`| String | Possible values: `DEBUG` (default), `INFO`, `WARNING`, `ERROR`, `CRITICAL`. Defines the log level that is used by the  compute engine.|`YES`|
 |`hadoop_log_root` | String | Hadoop clients log level and log appender. If the user wants the hadoop components to log via SYSLOG must make sure to define an appropriate appender  in hadoop log4j.properties file. The name of this appender must be added in this parameter.|`YES`|
