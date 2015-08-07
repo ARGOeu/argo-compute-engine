@@ -41,91 +41,48 @@ The main configuration files includes various global parameters used by the engi
 
 #### `[default]`
 
-- `mongo_host` (Required)
+| Name | Type | Description | Required|
+|------|------|-------------|---------|
+|`mongo_host`| String | Specify the ip address of the datastore node (running mongodb) | `YES` |
+|`mongo_port`| String |Specify the port number of the datastore node (running mongodb) | `YES` |
+| `mode` | String| The mode the engine runs. There are two available options: _cluster_ and _local_: `cluster`: If the mode is specified as _cluster_, the engine runs connecting to an existing hadoop cluster. It expects that the hadoop client is properly installed and configured. `local` : If the mode is specified as _local_, the engine runs local node. | `YES`|
+| `serialization`| String|  The serialization type used. There are two available options _avro_ and _none_: `avro` : If specified as _avro_, the engine expects metric and sync data in avro format.  `none` :If specified as _none_, the engine expects to find metric and sync data in simple text file delimited format. | `YES`|
+| `prefilter_clean`| Boolean | Controls whether the local prefilter file will be automatically removed after it has been uploaded to the Compute Engine. If set to _true_, the local prefilter file will be automatically removed after it is  uploaded. |`YES`|
+| `sync_clean`| Boolean | Controls whether the uploaded sync files will be automatically removed after a job completion. If set to _true_ the uploaded sync files will be automatically removed after the job completion | `YES`|
 
-  Specify the ip address of the datastore node (running mongodb)
-
-- `mongo_port`(Required)
-
-  Specify the port number of the datastore node (running mongodb)
-
-- `mode` (Required)
-
-   The mode the engine runs. There are two available options: _cluster_ and _local_:
-
-   - If the mode is specified as _cluster_, the engine runs connecting to an existing hadoop cluster. It expects that the hadoop client is properly installed and configured.
-
-   - If the mode is specified as _local_, the engine runs local node.
-
-- `serialization` (Required)
-
-  The serialization type used. There are two available options _avro_ and _none_:
-
-  - If specified as _avro_, the engine expects metric and sync data in avro format.
-
-  - If specified as _none_, the engine expects to find metric and sync data in simple text file delimited format.
-
-- `prefilter_clean`(Required])
-
-  Boolean. Controls whether the local prefilter file will be automatically removed after it has been uploaded to the Compute Engine. If set to _true_, the local prefilter file will be automatically removed after it is  uploaded.
-
-- `sync_clean`(Required)
-
-  Boolean. Controls whether the uploaded sync files will be automatically removed after a job completion. If set to _true_ the uploaded sync files will be automatically removed after the job completion
 
 #### `[logging]`
 
 In this section we declare the specific logging options for the compute engine
 
-- `log_mode` (Required)
+| Name | Type | Description | Required|
+|------|------|-------------|---------|
+|`log_mode`| String | This parameter specifies the log_mode used by the compute engine. Possible values: `syslog` (default), `file`, `none`. a) `syslog`: the compute engine is configured to use the syslog facility, b) `file`: the compute engine can write directly to a file defined by `log_file`,  c) `none`: the compute engine does not output any logs| `YES`|
+|`log_file`| String | This parameter must be specified if `log_mode=file`. The file which the compute engine will use in order to write logging information |`NO`|
+|`log_level`| String | Possible values: `DEBUG` (default), `INFO`, `WARNING`, `ERROR`, `CRITICAL`. Defines the log level that is used by the  compute engine.|`YES`|
+|`hadoop_log_root` | String | Hadoop clients log level and log appender. If the user wants the hadoop components to log via SYSLOG must make sure to define an appropriate appender  in hadoop log4j.properties file. The name of this appender must be added in this parameter.|`YES`|
 
-   This parameter specifies the log_mode used by compute engine. Possible values: `syslog` (default), `file`, `none`.
-
-   - `syslog`: the compute engine is configured to use the syslog facility
-
-   - `file`: the compute engine can write directly to a file defined by `log_file`
-
-   - `none`: the compute engine does not output any logs
-
-- `log_file`
-
-  This parameter must be specified if `log_mode=file`. The file which the compute engine will use in order to write logging information
-
-- `log_level` (Required)
-
-  Possible values: `DEBUG` (default), `INFO`, `WARNING`, `ERROR`, `CRITICAL`. Defines the log level that is used by the  compute engine.
-
-- `hadoop_log_root` (Required)
-
-   Hadoop clients log level and log appender. If the user wants the hadoop components to log via SYSLOG must make sure to define an appropriate appender  in hadoop log4j.properties file. The name of this appender must be added in this parameter.
-
-   For example if the available appenders in the log4j.properties file are SYSLOG and console the above line will be:
-
+  For example at `hadoop_log_root` if the available appenders in the log4j.properties file are SYSLOG and console the above line will be:
    ```
    hadoop_log_root=SYSLOG,console
    ```
-
+   
 #### `[reports]`
 
 In this section we declare the specific tenant used in the installation and the set of jobs available (as we described them above in the [_"Tenant and Report configuration"_](#tenant-and-report-configuration)).
 
-- `tenant` (Required)
-
-  The name of the tenant. It must be unique within an installation.
-
-- `job_set` (Required)
-
-  A comma-separated list of the report configuration. Names are case-sensitive. For the same tenant multiple report configurations can be defined. Each report configurations is defined by a set of  topologies,metric profiles,weights,etc.
+| Name | Type | Description | Required|
+|------|------|-------------|---------|
+|`tenant`| String | The name of the tenant. It must be unique within an installation.|`YES`|
+| `job_set`| List | A comma-separated list of the report configuration. Names are case-sensitive. For the same tenant multiple report configurations can be defined. Each report configurations is defined by a set of  topologies,metric profiles,weights,etc.| `YES`|
 
 #### `[sampling]`
 
-- `s_period` (Required)
+| Name | Type | Description | Required|
+|------|------|-------------|---------|
+| `s_period` |  minutes |The sampling period time in minutes | `YES`|
+| `s_interval` | minutes |The sampling interval time in minutes | `YES`|
 
-  The sampling period time in minutes
-
-- `s_interval` (Required)
-
-  The sampling interval time in minutes
 
 > **Note**
 >
@@ -137,19 +94,13 @@ In this section we declare the specific tenant used in the installation and the 
 
 #### `[datastore-mapping]`
 
-This section contains various optional parameters used for correctly mapping results to expected datastore collections and fields
+This section contains various parameters used for correctly mapping results to expected datastore collections and fields
 
-- `service_dest={db_name}.{collection_name}` (Required)
-
-  Destination for storing service a/r reports E.g: AR.sfreports
-
-- `egroup_dest={db_name}.{collection_name}` (Required)
-
-  Destination for storing endpoint grouped a/r reports. E.g: AR.sites
-
-- `sdetail_dest={db_name}.{collection_name}` (Required)
-
-  Destination for storing status detailed results |
+| Name | Description | Required|
+|------|-------------|---------|
+|`service_dest={db_name}.{collection_name}`| Destination for storing service a/r reports E.g: AR.sfreports | `YES`|
+|`egroup_dest={db_name}.{collection_name}` | Destination for storing endpoint grouped a/r reports. E.g: AR.sites | `YES`|
+|`sdetail_dest={db_name}.{collection_name}`| Destination for storing status detailed results | `YES` |
 
 > **Note**
 >
@@ -162,33 +113,17 @@ This section contains various optional parameters used for correctly mapping res
 
 The following options define a set of mappings to shorter datastore field names and is recommended not to be changed. Will be removed in further editions.
 
-- `e_map={fieldname1},{fieldname2}...,{fieldnameN}`
 
-  When storing endpoint a/r results in mongodb compute engine uses the above field map to store the results using abbreviated fields. the default value is `e_map=dt,ap,p,s,n,hs,a,r,up,u,d,m,pr,ss,cs,i,sc`, where dt->date,a->availability etc... (recommended not to be changed)
+| Name | Description | Required|
+|------|-------------|---------|
+|`e_map={fieldname1}, {fieldname2}..., {fieldnameN}`| When storing endpoint a/r results in mongodb compute engine uses the above field map to store the results using abbreviated fields. The default value is `e_map=dt,ap,p,s,n,hs,a,r,up,u,d,m,pr,ss,cs,i,sc`, where dt->date,a->availability etc... (recommended not to be changed) | `NO`|
+| `s_map={fieldname1}, {fieldname2}..., {fieldnameN}`| When storing service a/r results in mongodb compute engine uses the above field map to store the results using abbreviated fields. The default value is `s_map=dt,ap,p,s,n,sf,a,r,up,u,d,m,pr,ss,cs,i,sc`, where dt->date,a->availability etc... (recommended not to be changed) | `NO`| 
+|`sd_map={fieldname1}, {fieldname2}`| When storing status detailed results in mongodb compute engine uses the above field map to store the results using abbreviated fields. The default value is `sd_map=ts,s,sum,msg,ps,pts,di,ti`, where ts->timestamp, msg->message etc... (recommended not to be changed) | `YES`|
+| `n_eg={STRING}`| Endpoint group name type used in status detailed calculations. For e.g. `n_eg=site` if site is used as a group type|`NO`|
+| `n_gg={STRING}`| Group of groups name type used in status detailed calculations| `NO`|
+| `n_alt={STRING}` | Mapping of alternative grouping parameter used in status detail calc. | `NO`|
+| `n_altf={STRING}` | Mapping of alternative grouping parameter used in status detail calc. | `NO`|
 
-- `s_map={fieldname1},{fieldname2}...,{fieldnameN}`
-
-  When storing service a/r results in mongodb compute engine uses the above field map to store the results using abbreviated fields. the default value is `s_map=dt,ap,p,s,n,sf,a,r,up,u,d,m,pr,ss,cs,i,sc`, where dt->date,a->availability etc... (recommended not to be changed)
-
-- `sd_map={fieldname1},{fieldname2}` (Required)
-
-  When storing status detailed results in mongodb compute engine uses the above field map to store the results using abbreviated fields. the default value is `sd_map=ts,s,sum,msg,ps,pts,di,ti`, where ts->timestamp, msg->message etc... (recommended not to be changed)
-
-- `n_eg={STRING}`
-
-  Endpoint group name type used in status detailed calculations. For e.g. `n_eg=site` if site is used as a group type
-
-- `n_gg={STRING}`
-
-  Group of groups name type used in status detailed calculations
-
-- `n_alt={STRING}`
-
-  Mapping of alternative grouping parameter used in status detail calc.
-
-- `n_altf={STRING}`
-
-  Mapping of alternative grouping parameter used in status detail calc.
 
 ### `/etc/ar-compute/`
 
@@ -235,17 +170,12 @@ The ARGO Compute Engine requires the user to define a mapping for the default_do
 >
 > Since compute engine gives the ability to define completely custom states based on your monitoring infrastructure output we must also tag some custom states with specific meaning. These states might not be present in the monitoring messages but are produced during computations by the compute engine according to a specific logic. So we need to "tie" some of the custom status we declare to a specific default state of service.
 
-- `"default_down": "DOWNTIME"`
+| Name | Description |
+|------|-------------|
+| `"default_down": "DOWNTIME"` | Means that whenever compute engine needs to produce a status for a scheduled downtime will mark it using the "DOWNTIME" state. |
+| `"default_missing": "MISSING"` | Means whenever compute engine decides that a service status must declared missing (because there is no information provided from the metric data) will mark it using the "MISSING" state. |
+| `"default_unknown: "UNKNOWN"` | Means whenever compute engine decides that must produce a service status to be considered unknown (for e.g. during recomputation requests) will mark it using the "UNKNOWN" state. |
 
-  means that whenever compute engine needs to produce a status for a scheduled downtime will mark it using the "DOWNTIME" state.
-
-- `"default_missing": "MISSING"`
-
-  means whenever compute engine decides that a service status must declared missing (because there is no information provided from the metric data) will mark it using the "MISSING" state.
-
-- `"default_unknown: "UNKNOWN"`
-
-  means whenever compute engine decides that must produce a service status to be considered unknown (for e.g. during recomputation requests) will mark it using the "UNKNOWN" state.
 
 The available operations are declared in the operations list using truth tables as follows:
 
@@ -297,29 +227,15 @@ The configuration file of the job contains mandatory and optional fields with ri
 
 In the above snippet we have declared the name of the tenant, the name of the job, the name of the specific availability profile used in the job. Also the type of endpoint grouping that will be used is declared here and the type of upper hierarchical grouping. Also if available here is declared the type of weight factor used for upper level A/R aggregations
 
-- `"tenant"`
+| Name | Description | 
+|------|-------------|
+| `"tenant"` | This field is explicitly linked to the value of the tenant declaration of the global ar-compute-engine.conf file [link to description above](/#parameters-for-section-jobs) |
+| `"job"` | This field is explicitly linked to the name of a job declared in the job_set variable of the global ar-compute-engine.conf file [link to description above](#parameters-for-section-jobs) |
+| `"aprofile"` | This field is explicitly linked to one of the availability profile json files declared in the `/etc/ar_compute/` folder and they are described below [link to description further below](#availability-profile-per-tenant--per-job) |
+| `"egroup"` | This field is used to declare the endpoint group that will be used during computation aggregations. The value corresponds to one of the values present in the field `type` of the topology file [group_endpoints.avro](/guides/compute/compute-input/#groupendpointsavro) |
+| `"ggroup"` | This field is used to declare the group of groups that will be used during computation aggregations. The value corresponds to one of the values present in the field `type` of the topology file [group_groups.avro](/guides/compute/compute-input/#groupgroupsavro) |
+| `"weight"` | This field is used to declare the type of weight that will be used during computation aggregations. The value corresponds to one of the values present in the field `type` of the weight (factors) file [weight_sync.avro](/guides/compute/compute-input/#weights-factors) |
 
-  This field is explicitly linked to the value of the tenant declaration of the global ar-compute-engine.conf file [link to description above](/#parameters-for-section-jobs)
-
-- `"job"`
-
-  This field is explicitly linked to the name of a job declared in the job_set variable of the global ar-compute-engine.conf file [link to description above](#parameters-for-section-jobs)
-
-- `"aprofile"`
-
-  This field is explicitly linked to one of the availability profile json files declared in the `/etc/ar_compute/` folder and they are described below [link to description further below](#availability-profile-per-tenant--per-job)
-
-- `"egroup"`
-
-  This field is used to declare the endpoint group that will be used during computation aggregations. The value corresponds to one of the values present in the field `type` of the topology file [group_endpoints.avro](/guides/compute/compute-input/#groupendpointsavro)
-
-- `"ggroup"`
-
-  This field is used to declare the group of groups that will be used during computation aggregations. The value corresponds to one of the values present in the field `type` of the topology file [group_groups.avro](/guides/compute/compute-input/#groupgroupsavro)
-
-- `"weight"`
-
-  This field is used to declare the type of weight that will be used during computation aggregations. The value corresponds to one of the values present in the field `type` of the weight (factors) file [weight_sync.avro](/guides/compute/compute-input/#weights-factors)
 
 In the configuration file are specified the specific tag values that will be used during the job in order to filter metric data.
 
@@ -343,25 +259,14 @@ The availability profile is a json file used per specific job that describes the
 
 The information in the availability profile JSON file is automatically picked up by the compute-engine during computations.
 
-- `"name"` _(string)_
+| Name | Type | Description | 
+|------|------|-------------|
+| `"name"` | string | The name of the availability profile |
+| `"namespace"` | string | The name of the namespace used by the profile |
+| `"metric_profile"` | string | The name of the metric profile linked to this availability profile |
+| `"metric_ops"` | string | The default operation to be used when aggregating low level metric statuses |
+| `"group_type"` | string | The default endpoint group type used in aggregation |
 
-  the name of the availability profile
-
-- `"namespace"` _(string)_
-
-  the name of the namespace used by the profile
-
-- `"metric_profile"` _(string)_
-
-  the name of the metric profile linked to this availability profile
-
-- `"metric_ops"` _(string)_
-
-  the default operation to be used when aggregating low level metric statuses
-
-- `"group_type"`_(string)_
-
-  the default endpoint group type used in aggregation
 
 In the availability profile JSON file also are declared custom grouping of services to be used in the aggregation. The grouping of services are expressed in the JSON "groups" list see example below:
 
