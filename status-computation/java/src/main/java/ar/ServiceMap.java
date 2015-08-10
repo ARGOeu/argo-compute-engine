@@ -171,16 +171,17 @@ public class ServiceMap extends EvalFunc<Tuple> {
 		String fullAvProfile = avNamespace + "-" + avProfile;
 		// Add the previous info before adding the tags
 		
-		output.append(dateInt); 			// 0 - date
-		output.append(service); 			// 1 - name
-		output.append(egroupName); 			// 2 - supergroup 
+		output.append(cfgMgr.report);       // 0 - report name
+		output.append(dateInt); 			// 1 - date
+		output.append(service); 			// 2 - name
+		output.append(egroupName); 			// 3 - supergroup 
 
 		// Add the a/r info
-		output.append(av); 					// 3 - availability 
-		output.append(rel); 				// 4 - reliability 
-		output.append(upFraction); 			// 5 - up fraction
-		output.append(downFraction); 		// 6 - down fraction
-		output.append(unknownFraction); 	// 7 - unknown fraction 
+		output.append(av); 					// 4 - availability 
+		output.append(rel); 				// 5 - reliability 
+		output.append(upFraction); 			// 6 - up fraction
+		output.append(downFraction); 		// 7 - down fraction
+		output.append(unknownFraction); 	// 8 - unknown fraction 
 
 		// NOTE: tags will be handled properly in a later PR
 
@@ -203,6 +204,8 @@ public class ServiceMap extends EvalFunc<Tuple> {
 		Schema serviceData = new Schema();
 
 		// Define first fields
+		Schema.FieldSchema sReport = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "report"),
+				DataType.CHARARRAY);
 		Schema.FieldSchema sDateInt = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "date"),
 				DataType.INTEGER);
 		Schema.FieldSchema sName = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "name"),
@@ -223,10 +226,10 @@ public class ServiceMap extends EvalFunc<Tuple> {
 		// NOTE: tags and tag schema will be handled properly in a later PR
 
 		// Add fields to schema
-		serviceData.add(sDateInt); // 0 - date
-		serviceData.add(sName); // 
-		serviceData.add(sSuperGroup); // 1 - name
-
+		serviceData.add(sReport);
+		serviceData.add(sDateInt); 
+		serviceData.add(sName); 
+		serviceData.add(sSuperGroup); 
 
 		serviceData.add(sAvailability);
 		serviceData.add(sReliability);
