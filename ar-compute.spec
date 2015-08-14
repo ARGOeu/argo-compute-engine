@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.6.2
-Release: 7%{?dist}
+Version: 1.6.4
+Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -65,6 +65,8 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
+* Fri Aug 7 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.4-1%{?dist}
+- ARGO-146 Implement multi-tenancy required changes for the CE
 * Tue Jul 21 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-7%{?dist}
 - ARGO-190 Recomputation exclude list fix
 * Tue Jun 30 2015 Avraam Tsantekidis <avraamt@grid.auth.gr> - 1.6.2-6%{?dist}

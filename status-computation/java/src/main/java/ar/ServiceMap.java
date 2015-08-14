@@ -170,32 +170,20 @@ public class ServiceMap extends EvalFunc<Tuple> {
 		String metricProfile = this.apsMgr.getProfileMetricProfile(avProfile);
 		String fullAvProfile = avNamespace + "-" + avProfile;
 		// Add the previous info before adding the tags
-		output.append(dateInt); // 0
-		output.append(fullAvProfile); // 1
-		output.append(metricProfile); // 2
-		output.append(egroupName); // 3
-		output.append(ggroupName); // 4
-		output.append(service); // 5
+		
+		output.append(cfgMgr.report);       // 0 - report name
+		output.append(dateInt); 			// 1 - date
+		output.append(service); 			// 2 - name
+		output.append(egroupName); 			// 3 - supergroup 
 
 		// Add the a/r info
-		output.append(av); // 6
-		output.append(rel); // 7
-		output.append(upFraction); // 8
-		output.append(unknownFraction); // 9
-		output.append(downFraction); // 10
+		output.append(av); 					// 4 - availability 
+		output.append(rel); 				// 5 - reliability 
+		output.append(upFraction); 			// 6 - up fraction
+		output.append(downFraction); 		// 7 - down fraction
+		output.append(unknownFraction); 	// 8 - unknown fraction 
 
-		// Get egroup config tags
-		for (Entry<String, String> item : this.cfgMgr.egroupTags.entrySet()) {
-			output.append(item.getValue());
-		}
-
-		HashMap<String, String> ggTags = this.ggMgr.getGroupTags(ggroupType, egroupName);
-
-		// Get ggroup config tags
-		for (Entry<String, String> item : this.cfgMgr.ggroupTags.entrySet()) {
-			String curValue = ggTags.get(item.getKey());
-			output.append(curValue);
-		}
+		// NOTE: tags will be handled properly in a later PR
 
 		return output;
 	}
@@ -216,64 +204,39 @@ public class ServiceMap extends EvalFunc<Tuple> {
 		Schema serviceData = new Schema();
 
 		// Define first fields
+		Schema.FieldSchema sReport = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "report"),
+				DataType.CHARARRAY);
 		Schema.FieldSchema sDateInt = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "date"),
 				DataType.INTEGER);
-		Schema.FieldSchema sAvProfile = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "av_profile"),
-				DataType.CHARARRAY);
-		Schema.FieldSchema sMetricProfile = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "metric_profile"),
-				DataType.CHARARRAY);
-		Schema.FieldSchema sGroup = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "group"),
+		Schema.FieldSchema sName = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "name"),
 				DataType.CHARARRAY);
 		Schema.FieldSchema sSuperGroup = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "supergroup"),
 				DataType.CHARARRAY);
-		Schema.FieldSchema sService = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "service"),
-				DataType.CHARARRAY);
+		
 		// Define the ar results fields
-		Schema.FieldSchema sAv = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "availability"),
+		Schema.FieldSchema sAvailability = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "availability"),
 				DataType.DOUBLE);
-		Schema.FieldSchema sRel = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "reliability"),
+		Schema.FieldSchema sReliability = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "reliability"),
 				DataType.DOUBLE);
-		Schema.FieldSchema sUp = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "up_f"), DataType.DOUBLE);
-		Schema.FieldSchema sUnknown = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "unknown_f"),
+		Schema.FieldSchema sUp = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "up"), DataType.DOUBLE);
+		Schema.FieldSchema sDown = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "down"), DataType.DOUBLE);
+		Schema.FieldSchema sUnknown = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "unknown"),
 				DataType.DOUBLE);
-		Schema.FieldSchema sDown = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "down_f"), DataType.DOUBLE);
-
-		// Create a field schema list for egroup tags
-		ArrayList<Schema.FieldSchema> egroupFields = new ArrayList<Schema.FieldSchema>();
-		// Get egroup config tags
-		for (Entry<String, String> item : this.localCfgMgr.egroupTags.entrySet()) {
-			egroupFields.add(
-					new Schema.FieldSchema(this.localCfgMgr.getMapped("egroups", item.getKey()), DataType.CHARARRAY));
-		}
-
-		ArrayList<Schema.FieldSchema> ggroupFields = new ArrayList<Schema.FieldSchema>();
-		// Get ggroup config tags
-		for (Entry<String, String> item : this.localCfgMgr.ggroupTags.entrySet()) {
-			ggroupFields.add(
-					new Schema.FieldSchema(this.localCfgMgr.getMapped("ggroups", item.getKey()), DataType.CHARARRAY));
-		}
+		
+		// NOTE: tags and tag schema will be handled properly in a later PR
 
 		// Add fields to schema
-		serviceData.add(sDateInt);
-		serviceData.add(sAvProfile);
-		serviceData.add(sMetricProfile);
-		serviceData.add(sGroup);
-		serviceData.add(sSuperGroup);
-		serviceData.add(sService);
+		serviceData.add(sReport);
+		serviceData.add(sDateInt); 
+		serviceData.add(sName); 
+		serviceData.add(sSuperGroup); 
 
-		serviceData.add(sAv);
-		serviceData.add(sRel);
+		serviceData.add(sAvailability);
+		serviceData.add(sReliability);
 		serviceData.add(sUp);
 		serviceData.add(sUnknown);
 		serviceData.add(sDown);
 
-		for (Schema.FieldSchema item : egroupFields) {
-			serviceData.add(item);
-		}
-
-		for (Schema.FieldSchema item : ggroupFields) {
-			serviceData.add(item);
-		}
 
 		return serviceData;
 
