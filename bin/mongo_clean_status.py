@@ -46,7 +46,7 @@ def main(args=None):
 
     if num_of_rows > 0:
         log.info("Remove entries for date: %s", args.date)
-        col.delete_many({"date_integer": date_int})
+        col.remove({"date_integer": date_int})
         log.info("Entries Removed!")
     else:
         log.info("Zero entries found. No need to remove anything")
