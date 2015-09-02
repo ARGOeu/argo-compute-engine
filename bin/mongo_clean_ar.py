@@ -59,10 +59,10 @@ def main(args=None):
         if args.report:
             log.info(
                 "Remove entries for date: %s and report: %s", args.date, args.report)
-            col.delete_many({"date": date_int, "report": args.report})
+            col.remove({"date": date_int, "report": args.report})
         else:
             log.info("Remove entries for date: %s", args.date)
-            col.delete_many({"date": date_int})
+            col.remove({"date": date_int})
 
         log.info("Entries Removed!")
 
@@ -91,10 +91,10 @@ def main(args=None):
         if args.report:
             log.info(
                 "Remove entries for date: %s and report: %s", args.date, args.report)
-            col.delete_many({"date": date_int, "report": args.report})
+            col.remove({"date": date_int, "report": args.report})
         else:
             log.info("Remove entries for date: %s", args.date)
-            col.delete_many({"date": date_int})
+            col.remove({"date": date_int})
 
         log.info("Entries Removed!")
     else:
