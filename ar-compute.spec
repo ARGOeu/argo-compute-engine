@@ -54,7 +54,7 @@ mvn clean
 
 %files
 %defattr(0644,root,root)
-%attr(0755,root,root) /usr/libexec/ar-compute/ar-compute.py
+%attr(0755,root,root) /usr/libexec/ar-compute/ar-compute.p*
 %attr(0755,root,root) /usr/libexec/ar-compute/pig/*.pig
 %attr(0755,root,root) /usr/libexec/ar-compute/lib/*
 %attr(0755,root,root) /usr/libexec/ar-compute/bin/*.py
