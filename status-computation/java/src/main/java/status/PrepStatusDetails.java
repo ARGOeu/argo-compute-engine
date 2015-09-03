@@ -159,7 +159,9 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 		String egroupType = this.cfgMgr.egroup;
 		String egroupName = this.egrpMgr.getGroup(egroupType, hostname, service);
 
+	
 		// add stuff to the output
+		output.append(this.cfgMgr.report); // Add report name
 		output.append(egroupName);
 		output.append(monitoringHost);
 		output.append(service);		   
@@ -173,6 +175,7 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 
 	@Override
 	public Schema outputSchema(Schema input) {
+		Schema.FieldSchema report = new Schema.FieldSchema("report",DataType.CHARARRAY);
 		Schema.FieldSchema endpointGroup = new Schema.FieldSchema("endpoint_group", DataType.CHARARRAY); 
 		Schema.FieldSchema monitoringBox = new Schema.FieldSchema("monitoring_box", DataType.CHARARRAY);
 		Schema.FieldSchema hostname = new Schema.FieldSchema("hostname", DataType.CHARARRAY);
@@ -191,6 +194,7 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 		Schema statusMetric = new Schema();
 		Schema timeline = new Schema();
 
+		statusMetric.add(report);
 		statusMetric.add(endpointGroup);
 		statusMetric.add(monitoringBox);
 		statusMetric.add(serviceType);
