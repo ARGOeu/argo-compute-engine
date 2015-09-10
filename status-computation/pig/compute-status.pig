@@ -44,6 +44,16 @@ status_detail =	FOREACH  (GROUP mdata_full BY (monitoring_host,service,hostname,
 
 status_unwrap = FOREACH status_detail GENERATE $0 as report, $1 as endpoint_group, $2 as monitoring_box, $3 as service, $4 as host, $5 as metric, FLATTEN($6) as (timestamp,status,summary,message,previous_state,previous_timestamp,date_integer,time_integer);
 describe status_unwrap;
-STORE status_unwrap INTO '$mongo_status_detail' USING com.mongodb.hadoop.pig.MongoInsertStorage();
+
+-- Continue here 
+endpoint_aggr = FOREACH (GROUP status_unwrap BY(report,endpoint_group,service,host)) {
+	t = ORDER status_unwrap BY metric ASC, timestamp ASC;
+	GENERATE group.report as report, group.endpoint_group as endpoint_group, group.service as service, group.host as host, t.(metric,timestamp,status,previous_state);
+}
+describe status_detail;
+describe endpoint_aggr;
+---STORE status_unwrap INTO '$mongo_status_detail' USING com.mongodb.hadoop.pig.MongoInsertStorage();
+STORE endpoint_aggr INTO 'endpoints.json' USING JsonStorage();
+
 
 --- Move here the status aggregation calls
