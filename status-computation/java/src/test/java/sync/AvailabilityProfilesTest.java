@@ -15,6 +15,8 @@ import ops.OpsManagerTest;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import junitx.framework.ListAssert;
+
 public class AvailabilityProfilesTest {
 
 	@BeforeClass
@@ -54,7 +56,7 @@ public class AvailabilityProfilesTest {
 		expGroups.add("compute");
 		expGroups.add("storage");
 		// Check the available group list
-		assertEquals("Profile Groups", avp.getProfileGroups("ap1"), expGroups);
+		ListAssert.assertEquals("Profile Groups", avp.getProfileGroups("ap1"), expGroups);
 
 		// Check compute group service list
 		ArrayList<String> expServices = new ArrayList<String>();
@@ -64,18 +66,18 @@ public class AvailabilityProfilesTest {
 		expServices.add("unicore6.TargetSystemFactory");
 		expServices.add("CREAM-CE");
 
-		assertEquals("compute service list", avp.getProfileGroupServices("ap1", "compute"), expServices);
+		ListAssert.assertEquals("compute service list", avp.getProfileGroupServices("ap1", "compute"), expServices);
 
 		// Check storage group service list
 		expServices = new ArrayList<String>();
 		expServices.add("SRM");
 		expServices.add("SRMv2");
-		assertEquals("storage service list", avp.getProfileGroupServices("ap1", "storage"), expServices);
+		ListAssert.assertEquals("storage service list", avp.getProfileGroupServices("ap1", "storage"), expServices);
 
 		// Check storage group service list
 		expServices = new ArrayList<String>();
 		expServices.add("Site-BDII");
-		assertEquals("accounting  list", avp.getProfileGroupServices("ap1", "information"), expServices);
+		ListAssert.assertEquals("accounting  list", avp.getProfileGroupServices("ap1", "information"), expServices);
 
 		// Check Various Service Instances operation
 		assertEquals("group compute: CREAM-CE op", avp.getProfileGroupServiceOp("ap1", "compute", "CREAM-CE"), "OR");

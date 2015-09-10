@@ -103,7 +103,7 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 			return null;
 
 		// parse input
-		String monitoring_host = (String) input.get(0);
+		String monitoringHost = (String) input.get(0);
 		String service = (String) input.get(1);
 		String hostname = (String) input.get(2);
 		String metric = (String) input.get(3);
@@ -154,10 +154,16 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 				outBag.add(item);
 			}
 		}
+		
+		// Find endpoint group
+		String egroupType = this.cfgMgr.egroup;
+		String egroupName = this.egrpMgr.getGroup(egroupType, hostname, service);
 
+	
 		// add stuff to the output
-
-		output.append(monitoring_host);
+		output.append(this.cfgMgr.report); // Add report name
+		output.append(egroupName);
+		output.append(monitoringHost);
 		output.append(service);		   
 		output.append(hostname);
 		output.append(metric);
@@ -169,37 +175,40 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 
 	@Override
 	public Schema outputSchema(Schema input) {
-
-		Schema.FieldSchema monitoring_box = new Schema.FieldSchema("monitoring_box", DataType.CHARARRAY);
+		Schema.FieldSchema report = new Schema.FieldSchema("report",DataType.CHARARRAY);
+		Schema.FieldSchema endpointGroup = new Schema.FieldSchema("endpoint_group", DataType.CHARARRAY); 
+		Schema.FieldSchema monitoringBox = new Schema.FieldSchema("monitoring_box", DataType.CHARARRAY);
 		Schema.FieldSchema hostname = new Schema.FieldSchema("hostname", DataType.CHARARRAY);
-		Schema.FieldSchema service_type = new Schema.FieldSchema("service", DataType.CHARARRAY);
+		Schema.FieldSchema serviceType = new Schema.FieldSchema("service", DataType.CHARARRAY);
 		Schema.FieldSchema metric = new Schema.FieldSchema("metric", DataType.CHARARRAY);
-
+		
 		Schema.FieldSchema timestamp = new Schema.FieldSchema("timestamp", DataType.CHARARRAY);
 		Schema.FieldSchema status = new Schema.FieldSchema("status", DataType.CHARARRAY);
 		Schema.FieldSchema summary = new Schema.FieldSchema("summary", DataType.CHARARRAY);
 		Schema.FieldSchema message = new Schema.FieldSchema("message", DataType.CHARARRAY);
-		Schema.FieldSchema prev_state = new Schema.FieldSchema("previous_state", DataType.CHARARRAY);
-		Schema.FieldSchema prev_ts = new Schema.FieldSchema("previous_timestamp", DataType.CHARARRAY);
-		Schema.FieldSchema date_int = new Schema.FieldSchema("date_integer", DataType.INTEGER);
-		Schema.FieldSchema time_int = new Schema.FieldSchema("time_integer", DataType.INTEGER);
+		Schema.FieldSchema prevState = new Schema.FieldSchema("previous_state", DataType.CHARARRAY);
+		Schema.FieldSchema prevTs = new Schema.FieldSchema("previous_timestamp", DataType.CHARARRAY);
+		Schema.FieldSchema dateInt = new Schema.FieldSchema("date_integer", DataType.INTEGER);
+		Schema.FieldSchema timeInt = new Schema.FieldSchema("time_integer", DataType.INTEGER);
 
-		Schema status_metric = new Schema();
+		Schema statusMetric = new Schema();
 		Schema timeline = new Schema();
 
-		status_metric.add(monitoring_box);
-		status_metric.add(service_type);
-		status_metric.add(hostname);
-		status_metric.add(metric);
+		statusMetric.add(report);
+		statusMetric.add(endpointGroup);
+		statusMetric.add(monitoringBox);
+		statusMetric.add(serviceType);
+		statusMetric.add(hostname);
+		statusMetric.add(metric);
 
 		timeline.add(timestamp);
 		timeline.add(status);
 		timeline.add(summary);
 		timeline.add(message);
-		timeline.add(prev_state);
-		timeline.add(prev_ts);
-		timeline.add(date_int);
-		timeline.add(time_int);
+		timeline.add(prevState);
+		timeline.add(prevTs);
+		timeline.add(dateInt);
+		timeline.add(timeInt);
 
 		Schema.FieldSchema timelines = null;
 		try {
@@ -208,10 +217,10 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 			LOG.error(ex);
 		}
 
-		status_metric.add(timelines);
+		statusMetric.add(timelines);
 
 		try {
-			return new Schema(new Schema.FieldSchema("status_metric", status_metric, DataType.TUPLE));
+			return new Schema(new Schema.FieldSchema("status_metric", statusMetric, DataType.TUPLE));
 		} catch (FrontendException ex) {
 			LOG.error(ex);
 		}

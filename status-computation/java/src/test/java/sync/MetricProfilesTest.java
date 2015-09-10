@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import junitx.framework.ListAssert;
+
 public class MetricProfilesTest {
 
 	@BeforeClass
@@ -45,7 +47,7 @@ public class MetricProfilesTest {
 		serviceList.add("CREAM-CE");
 		serviceList.add("SRMv2");
 
-		assertEquals("Test Presence of Loaded Profile Services", mp.getProfileServices("ch.cern.sam.ROC_CRITICAL"),
+		ListAssert.assertEquals("Test Presence of Loaded Profile Services", mp.getProfileServices("ch.cern.sam.ROC_CRITICAL"),
 				serviceList);
 
 		// Test Loaded Metric Profile service metrics;
@@ -56,7 +58,7 @@ public class MetricProfilesTest {
 		gram5Metrics.add("hr.srce.GRAM-CertLifetime");
 		gram5Metrics.add("hr.srce.GRAM-Command");
 
-		assertEquals("Test GRAM5 metrics", mp.getProfileServiceMetrics("ch.cern.sam.ROC_CRITICAL", "GRAM5"),
+		ListAssert.assertEquals("Test GRAM5 metrics", mp.getProfileServiceMetrics("ch.cern.sam.ROC_CRITICAL", "GRAM5"),
 				gram5Metrics);
 				// Test Loaded Metric Profile service metrics;
 
@@ -65,14 +67,14 @@ public class MetricProfilesTest {
 		qcgMetrics.add("hr.srce.QCG-Computing-CertLifetime");
 		qcgMetrics.add("pl.plgrid.QCG-Computing");
 
-		assertEquals("Test QCG metrics", mp.getProfileServiceMetrics("ch.cern.sam.ROC_CRITICAL", "QCG.Computing"),
+		ListAssert.assertEquals("Test QCG metrics", mp.getProfileServiceMetrics("ch.cern.sam.ROC_CRITICAL", "QCG.Computing"),
 				qcgMetrics);
 
 		// Site-BDII
 		ArrayList<String> siteBdiiMetrics = new ArrayList<String>();
 		siteBdiiMetrics.add("org.bdii.Entries");
 		siteBdiiMetrics.add("org.bdii.Freshness");
-		assertEquals("Test Site-BDII metrics", mp.getProfileServiceMetrics("ch.cern.sam.ROC_CRITICAL", "Site-BDII"),
+		ListAssert.assertEquals("Test Site-BDII metrics", mp.getProfileServiceMetrics("ch.cern.sam.ROC_CRITICAL", "Site-BDII"),
 				siteBdiiMetrics);
 
 		// SRMv2
@@ -85,7 +87,7 @@ public class MetricProfilesTest {
 		srmv2metrics.add("org.sam.SRM-Ls");
 		srmv2metrics.add("org.sam.SRM-LsDir");
 		srmv2metrics.add("org.sam.SRM-Put");
-		assertEquals("SRMv2 ", (mp.getProfileServiceMetrics("ch.cern.sam.ROC_CRITICAL", "SRMv2")), srmv2metrics);
+		ListAssert.assertEquals("SRMv2 ", (mp.getProfileServiceMetrics("ch.cern.sam.ROC_CRITICAL", "SRMv2")), srmv2metrics);
 
 		// Check Existense of Profile Service Metric
 
