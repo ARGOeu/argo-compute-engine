@@ -15,6 +15,7 @@ REGISTER /usr/libexec/ar-compute/MyUDF.jar
 
 DEFINE f_PickEndpoints ar.PickEndpoints('$egs','$mps','$aps','$ggs','$cfg', '$flt' , '$mode');
 DEFINE f_PrepStatus  status.PrepStatusDetails('$ggs','$egs','$cfg','$dt','$mode');
+DEFINE f_EndpointAggr status.EndpointStatus('$ops', '$aps', '$mps', '$dt','$mode');
 
 
 p_mdata = LOAD '$p_mdata' using org.apache.pig.piggybank.storage.avro.AvroStorage();
@@ -48,7 +49,7 @@ describe status_unwrap;
 -- Continue here 
 endpoint_aggr = FOREACH (GROUP status_unwrap BY(report,endpoint_group,service,host)) {
 	t = ORDER status_unwrap BY metric ASC, timestamp ASC;
-	GENERATE group.report as report, group.endpoint_group as endpoint_group, group.service as service, group.host as host, t.(metric,timestamp,status,previous_state);
+	GENERATE FLATTEN( f_EndpointAggr(group.report, group.endpoint_group, group.service, group.host, t.(metric,timestamp,status,previous_state)));
 }
 describe status_detail;
 describe endpoint_aggr;

@@ -8,6 +8,7 @@ import java.util.TreeMap;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 
 public class CTimeline {
@@ -23,20 +24,30 @@ public class CTimeline {
 	}
 	
 	CTimeline(String timestamp){
-		this.date = LocalDate.parse(timestamp,DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+		DateTime tmp_date = new DateTime();
+		DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		tmp_date = fmt.parseDateTime(timestamp);
+		tmp_date.withTime(0, 0, 0, 0);
+		this.date = tmp_date.toLocalDate();
 		this.samples = new TreeMap<DateTime,Integer>();
 	}
 	
 	CTimeline(String timestamp, int state){
-		this.date = LocalDate.parse(timestamp,DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+		DateTime tmp_date = new DateTime();
+		DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		tmp_date = fmt.parseDateTime(timestamp);
+		tmp_date = tmp_date.withTime(0, 0, 0, 0);
+		this.date = tmp_date.toLocalDate();
 		this.samples = new TreeMap<DateTime,Integer>();
-		this.samples.put(date.toDateTimeAtStartOfDay(), state);
+		this.samples.put(tmp_date, state);
 		
 	}
 	
 	public int get(String timestamp) {
-		DateTime cur_date = DateTime.parse(timestamp,DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
-		return this.samples.floorEntry(cur_date).getValue();
+		DateTime tmp_date = new DateTime();
+		DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		tmp_date = fmt.parseDateTime(timestamp);
+		return this.samples.floorEntry(tmp_date).getValue();
 	}
 	
 	public int get(DateTime point) {
@@ -45,14 +56,27 @@ public class CTimeline {
 	
 	public void insert(String timestamp, int status) 
 	{
-		DateTime cur_date = DateTime.parse(timestamp,DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
-		this.samples.put(cur_date, status);
+
+		DateTime tmp_date = new DateTime();
+		DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		tmp_date = fmt.parseDateTime(timestamp);
+		this.samples.put(tmp_date, status);
 	}
 	
 	public void insert(DateTime date, int status) 
 	{
 		samples.put(date, status);
 		
+	}
+	
+	public void setFirst(String timestamp, int state)
+	{
+		DateTime tmp_date = new DateTime();
+		DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		tmp_date = fmt.parseDateTime(timestamp);
+		this.samples = new TreeMap<DateTime,Integer>();
+		tmp_date = tmp_date.withTime(0, 0, 0, 0);
+		this.samples.put(tmp_date, state);
 	}
 	
 	public void clear(){

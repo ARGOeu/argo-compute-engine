@@ -8,19 +8,21 @@ import java.util.Set;
 
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 public class CAggregator {
 	
 	private CTimeline output;
 	private Map<String,CTimeline> inputs;
 	
-	CAggregator(String timestamp) throws ParseException
+	public CAggregator(String timestamp) throws ParseException
 	{
 		this.output = new CTimeline(timestamp);
 		this.inputs = new HashMap<String,CTimeline>();
 	}
 	
-	CAggregator(){
+	public CAggregator(){
 		this.output = new CTimeline();
 		this.inputs = new HashMap<String,CTimeline>();
 		
@@ -29,6 +31,14 @@ public class CAggregator {
 	public void clear(){
 		this.output.clear();
 		this.inputs.clear();
+	}
+	
+	public String tsFromDate(String date){
+		DateTime tmp_date = new DateTime();
+		DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd");
+		tmp_date = fmt.parseDateTime(date);
+        tmp_date = tmp_date.withTime(0, 0, 0, 0);
+        return tmp_date.toString(DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
 	}
 	
 	public void createTimeline(String name, String timestamp, int prevState){
@@ -46,6 +56,18 @@ public class CAggregator {
 		}
 		
 		this.inputs.get(name).insert(timestamp, status);
+	}
+	
+	public void setFirst(String name, String timestamp, int status){
+		// Check if timeline exists, if not create it
+		if (this.inputs.containsKey(name) == false)
+		{
+			CTimeline temp = new CTimeline(timestamp,status);
+			this.inputs.put(name, temp);
+			return;
+		}
+		
+		this.inputs.get(name).setFirst(timestamp, status);
 	}
 
 	public LocalDate getDate(){
