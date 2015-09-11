@@ -16,8 +16,7 @@ import TestIO.JsonToPig;
 import ar.EndpointTimelines;
 import ar.EndpointTimelinesTest;
 
-
-public class StatusMetricTest {
+public class ServiceStatusTest {
 
 	@Test
 	public void test() throws URISyntaxException, IOException {
@@ -26,12 +25,14 @@ public class StatusMetricTest {
 		File jsonFile = new File(resJsonFile.toURI());
 		
 		// Prepare Resource File
-		String jsonStr = IOUtils.toString(this.getClass().getResourceAsStream("/status/metric.json"), "UTF-8");
+		String jsonStr = IOUtils.toString(this.getClass().getResourceAsStream("/status/endpoint.json"), "UTF-8");
 		TupleFactory tf = TupleFactory.getInstance();
+		
 
 		Tuple inpTuple = JsonToPig.jsonToTuple(jsonStr);
 		Tuple cur = tf.newTuple();
-		EndpointStatus et = new EndpointStatus("", "", "", "2015-02-06", "test");
+		
+		ServiceStatus et = new ServiceStatus("", "", "", "2015-02-06", "test");
 
 		URL downRes = this.getClass().getResource("/avro/downtimes_v2.avro");
 		File downAvro = new File(downRes.toURI());
@@ -48,9 +49,9 @@ public class StatusMetricTest {
 		et.opsMgr.loadJson(jsonFile);
 		cur = et.exec(inpTuple);
 		
-		String expected = "(Critical,20150206,AEGIS01-IPB-SCL,CREAM-CE,ce64.ipb.ac.rs,{(2015-06-02T00:00:00Z,OK),(2015-06-02T05:20:28Z,CRITICAL),(2015-06-02T06:20:29Z,OK),(2015-06-02T18:33:37Z,CRITICAL),(2015-06-02T19:33:37Z,OK)})";
-		assertEquals(expected,cur.toString());
+		String expected = "(Critical,20150602,GRIF,SRMv2,{(2015-06-02T00:00:00Z,UNKNOWN),(2015-06-02T15:18:31Z,CRITICAL),(2015-06-02T15:19:01Z,WARNING),(2015-06-02T15:19:12Z,OK)})";
 		
+		assertEquals(expected,cur.toString());
 	}
 
 }
