@@ -26,30 +26,50 @@ def main(args=None):
 
     mongo_host = cfg.get_mongo_host("status")
     mongo_port = cfg.get_mongo_port("status")
-    db_status = cfg.get_mongo_database("status")
+    db_name = cfg.get_mongo_database("status")
     col_status = "status_metric"
 
-    # Creating a date integer for use in the database queries
+    # Create a date integer for use in the database queries
     date_int = int(args.date.replace("-", ""))
 
     log.info("Connecting to mongo server: %s:%s", mongo_host, mongo_port)
     client = MongoClient(str(mongo_host), int(mongo_port))
 
-    log.info("Opening database: %s", db_status)
-    db = client[db_status]
+    log.info("Regarding service a/r data...")
 
-    log.info("Opening collection: %s", col_status)
-    col = db[col_status]
+    log.info("Opening database: %s", db_name)
+    db = client[db_name]
 
-    num_of_rows = col.find({"date_integer": date_int}).count()
-    log.info("Found %s entries for date %s", num_of_rows, args.date)
+    cols = ["status_metrics","status_endpoints","status_services","status_endpoint_groups"]
 
-    if num_of_rows > 0:
-        log.info("Remove entries for date: %s", args.date)
-        col.delete_many({"date_integer": date_int})
-        log.info("Entries Removed!")
-    else:
-        log.info("Zero entries found. No need to remove anything")
+    # Iterate over collections
+    for item in cols:
+
+        log.info("Opening collection: %s", item)
+        col = db[item]
+
+        if args.report:
+            num_of_rows = col.find({"date_integer": date_int, "report": args.report}).count()
+            log.info("Found %s entries for date %s and report %s",
+                     num_of_rows, args.date, args.report)
+        else:
+            num_of_rows = col.find({"date_integer": date_int}).count()
+            log.info("Found %s entries for date %s", num_of_rows, args.date)
+
+        if num_of_rows > 0:
+
+            if args.report:
+                log.info(
+                    "Remove entries for date: %s and report: %s", args.date, args.report)
+                col.delete_many({"date_integer": date_int, "report": args.report})
+            else:
+                log.info("Remove entries for date: %s", args.date)
+                col.delete_many({"date_integer": date_int})
+
+            log.info("Entries Removed!")
+
+        else:
+            log.info("Zero entries found. No need to remove anything")
 
 if __name__ == "__main__":
 
@@ -61,6 +81,8 @@ if __name__ == "__main__":
         "-d", "--date", help="date", dest="date", metavar="DATE", required="TRUE")
     arg_parser.add_argument(
         "-t", "--tenant", help="tenant owner ", dest="tenant", metavar="STRING", required="TRUE")
+    arg_parser.add_argument(
+        "-r", "--report", help="report", dest="report", metavar="STRING")
 
     # Parse the command line arguments accordingly and introduce them to
     # main...
