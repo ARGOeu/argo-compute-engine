@@ -180,6 +180,9 @@ public class EndpointStatus extends EvalFunc<Tuple> {
 		
 		this.metricMgr.getProfileServiceMetrics(mProfile, service);
 		
+		
+		String mNames = this.metricMgr.getProfileServiceMetrics(mProfile, service).get(0);
+		
 		for (String mName : this.metricMgr.getProfileServiceMetrics(mProfile, service)) {
 			this.endpointAggr.createTimeline(mName,defTimestamp, defMissing);
 		}
@@ -236,9 +239,11 @@ public class EndpointStatus extends EvalFunc<Tuple> {
 		DataBag outBag = bagFactory.newDefaultBag();
 		
 		output.append(report);
+		output.append(Integer.parseInt(targetDate.replace("-", "")));
 		output.append(endpointGroup);
 		output.append(service);
 		output.append(hostname);
+		
 
 		// Append the timeline
 		for (Entry<DateTime,Integer> item : this.endpointAggr.getSamples()) {
@@ -260,7 +265,8 @@ public class EndpointStatus extends EvalFunc<Tuple> {
 
 	@Override
 	public Schema outputSchema(Schema input) {
-		Schema.FieldSchema report = new Schema.FieldSchema("service", DataType.CHARARRAY);
+		Schema.FieldSchema report = new Schema.FieldSchema("report", DataType.CHARARRAY);
+		Schema.FieldSchema dateInteger = new Schema.FieldSchema("date_integer", DataType.INTEGER);
 		Schema.FieldSchema endpointGroup = new Schema.FieldSchema("endpoint_group", DataType.CHARARRAY);
 		Schema.FieldSchema service = new Schema.FieldSchema("service", DataType.CHARARRAY);
 		Schema.FieldSchema hostname = new Schema.FieldSchema("hostname", DataType.CHARARRAY);
@@ -271,6 +277,9 @@ public class EndpointStatus extends EvalFunc<Tuple> {
 		Schema endpoint = new Schema();
 		Schema timeline = new Schema();
 
+		endpoint.add(report);
+		endpoint.add(dateInteger);
+		endpoint.add(endpointGroup);
 		endpoint.add(service);
 		endpoint.add(hostname);
 

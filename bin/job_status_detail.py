@@ -79,9 +79,11 @@ def main(args=None):
     pig_params['ops'] = cfg_path + args.tenant + '_ops.json'
     pig_params['dt'] = args.date
     pig_params['mode'] = mode
-    pig_params['flt'] = '0'
-    pig_params['mongo_status_detail'] = cfg.get_mongo_uri('status', 'status_metric')
-
+    pig_params['flt'] = '1'
+    pig_params['mongo_status_detail'] = cfg.get_mongo_uri('status', 'status_metrics')
+    pig_params['mongo_status_endpoints'] = cfg.get_mongo_uri('status', 'status_endpoints')
+    pig_params['mongo_status_services'] = cfg.get_mongo_uri('status', 'status_services')
+    pig_params['mongo_status_endpoint_groups'] = cfg.get_mongo_uri('status', 'status_endpoint_groups')
     cmd_pig = []
 
     # Append pig command

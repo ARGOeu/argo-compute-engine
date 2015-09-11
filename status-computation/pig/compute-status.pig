@@ -34,9 +34,6 @@ mdata_trim = FOREACH mdata GENERATE  monitoring_host,service,hostname,metric,tim
 mdata_clean = FILTER mdata_trim BY f_PickEndpoints(hostname,service,metric);
 
 mdata_full = UNION mdata_clean,p_ref;
-
-describe mdata_full;
-
 -- Group by hostname,metric to create timelines
 status_detail =	FOREACH  (GROUP mdata_full BY (monitoring_host,service,hostname,metric)) {
 	t = ORDER mdata_full BY timestamp ASC; 
@@ -44,17 +41,25 @@ status_detail =	FOREACH  (GROUP mdata_full BY (monitoring_host,service,hostname,
 };
 
 status_unwrap = FOREACH status_detail GENERATE $0 as report, $1 as endpoint_group, $2 as monitoring_box, $3 as service, $4 as host, $5 as metric, FLATTEN($6) as (timestamp,status,summary,message,previous_state,previous_timestamp,date_integer,time_integer);
-describe status_unwrap;
 
 -- Continue here 
 endpoint_aggr = FOREACH (GROUP status_unwrap BY(report,endpoint_group,service,host)) {
 	t = ORDER status_unwrap BY metric ASC, timestamp ASC;
-	GENERATE FLATTEN( f_EndpointAggr(group.report, group.endpoint_group, group.service, group.host, t.(metric,timestamp,status,previous_state)));
+	GENERATE  FLATTEN(f_EndpointAggr(group.report, group.endpoint_group, group.service, group.host, t.(metric,timestamp,status,previous_state))) as (report,date_integer,endpoint_group,service,host,timeline);
 }
-describe status_detail;
-describe endpoint_aggr;
+
+endpoint_data = FOREACH endpoint_aggr GENERATE $0 as report, $1 as data_integer, $2 as endpoint_group, $3 as service, $4 as host, FLATTEN($5) as (timestamp,status);
 ---STORE status_unwrap INTO '$mongo_status_detail' USING com.mongodb.hadoop.pig.MongoInsertStorage();
-STORE endpoint_aggr INTO 'endpoints.json' USING JsonStorage();
+---STORE service_aggr INTO 'yo.txt' USING PigStorage(',');
+--- debug schemas
+
+service_aggr = FOREACH (GROUP endpoint_data BY(report,endpoint_group,service)) {
+	t = ORDER endpoint_data BY host ASC, timestamp ASC;
+	GENERATE  group.report as report, group.endpoint_group as endpoint_group, service service, t.(host,timestamp);
+}
 
 
---- Move here the status aggregation calls
+--STORE endpoint_data INTO '$mongo_status_endpoints' USING com.mongodb.hadoop.pig.MongoInsertStorage();
+STORE service_aggr INTO 'yo.txt' USING JsonStorage();
+describe service_aggr;
+
