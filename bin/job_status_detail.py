@@ -32,7 +32,11 @@ def main(args=None):
     # Init logging
     log = init_log(cfg.log_mode, cfg.log_file, cfg.log_level, 'argo.job_status_detail')
 
-    job_set = cfg.jobs[args.tenant]
+    local_cfg_path = arcomp_conf
+    # open job configuration file
+    json_cfg_file = open(
+        local_cfg_path + args.tenant + "_" + args.job + "_cfg.json")
+    json_cfg = json.load(json_cfg_file)
 
     # Inform the user in wether argo runs locally or distributed
     if cfg.mode == 'local':
@@ -45,12 +49,12 @@ def main(args=None):
     # Proposed hdfs pathways
     hdfs_mdata_path = './' + args.tenant + "/mdata/"
     hdfs_sync_path = './scratch/sync/' + args.tenant + \
-        "/" + job_set[0] + "/" + date_under + "/"
+        "/" + args.job + "/" + date_under + "/"
 
     # Proposed local pathways
     local_mdata_path = '/tmp/' + args.tenant + "/mdata/"
     local_sync_path = '/tmp/scratch/sync/' + args.tenant + \
-        '/' + job_set[0] + '/' + date_under + '/'
+        '/' + args.job + '/' + date_under + '/'
     local_cfg_path = arcomp_conf
 
     if cfg.mode == 'cluster':
@@ -74,8 +78,8 @@ def main(args=None):
     pig_params['egs'] = sync_path + 'group_endpoints.avro'
     pig_params['ggs'] = sync_path + 'group_groups.avro'
     pig_params['mps'] = sync_path + 'poem_sync.avro'
-    pig_params['cfg'] = cfg_path + args.tenant + '_' + job_set[0] + '_cfg.json'
-    pig_params['aps'] = cfg_path + args.tenant + '_' + job_set[0] + '_ap.json'
+    pig_params['cfg'] = cfg_path + args.tenant + '_' + args.job + '_cfg.json'
+    pig_params['aps'] = cfg_path + args.tenant + '_' + args.job + '_ap.json'
     pig_params['ops'] = cfg_path + args.tenant + '_ops.json'
     pig_params['dt'] = args.date
     pig_params['mode'] = mode
@@ -105,11 +109,11 @@ def main(args=None):
 
     # Command to clean a/r data from mongo
     cmd_clean_mongo_status = [
-        os.path.join(stdl_exec, "mongo_clean_status.py"), '-d', args.date, '-t', args.tenant]
+        os.path.join(stdl_exec, "mongo_clean_status.py"), '-d', args.date, '-t', args.tenant, '-r', json_cfg['job']]
 
     # Command to upload sync data to hdfs
     cmd_upload_sync = [os.path.join(
-        stdl_exec, "upload_sync.py"), '-d', args.date, '-t', args.tenant, '-j', job_set[0]]
+        stdl_exec, "upload_sync.py"), '-d', args.date, '-t', args.tenant, '-j', args.job]
 
     # Command to clean hdfs data
     cmd_clean_sync = ['hadoop', 'fs', '-rm', '-r', '-f', hdfs_sync_path]
@@ -143,6 +147,8 @@ if __name__ == "__main__":
         "-d", "--date", help="date", dest="date", metavar="DATE", required="TRUE")
     arg_parser.add_argument(
         "-t", "--tenant", help="tenant owner ", dest="tenant", metavar="STRING", required="TRUE")
+    arg_parser.add_argument(
+        "-j", "--job", help="job name ", dest="job", metavar="STRING", required="TRUE")
     # Parse the command line arguments accordingly and introduce them to
     # main...
     sys.exit(main(arg_parser.parse_args()))

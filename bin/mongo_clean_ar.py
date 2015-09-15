@@ -48,11 +48,11 @@ def main(args=None):
         col = db[item]
 
         if args.report:
-            num_of_rows = col.find({"date_integer": date_int, "report": args.report}).count()
+            num_of_rows = col.find({"date": date_int, "report": args.report}).count()
             log.info("Found %s entries for date %s and report %s",
                      num_of_rows, args.date, args.report)
         else:
-            num_of_rows = col.find({"date_integer": date_int}).count()
+            num_of_rows = col.find({"date": date_int}).count()
             log.info("Found %s entries for date %s", num_of_rows, args.date)
 
         if num_of_rows > 0:
