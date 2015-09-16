@@ -92,38 +92,6 @@ In this section we declare the specific tenant used in the installation and the 
 >
 > so number of samples = 1440/5 = 288
 
-#### `[datastore-mapping]`
-
-This section contains various parameters used for correctly mapping results to expected datastore collections and fields
-
-| Name | Description | Required|
-|------|-------------|---------|
-|`service_dest={db_name}.{collection_name}`| Destination for storing service a/r reports E.g: AR.sfreports | `YES`|
-|`egroup_dest={db_name}.{collection_name}` | Destination for storing endpoint grouped a/r reports. E.g: AR.sites | `YES`|
-|`sdetail_dest={db_name}.{collection_name}`| Destination for storing status detailed results | `YES` |
-
-> **Note**
->
-> Due to nature of field/value storage in the default datastore (mongodb) a specific schema is used with abbreviated field names for storage optimization. For example:
->
->```
->date->dt
->availability profile->ap
->```
-
-The following options define a set of mappings to shorter datastore field names and is recommended not to be changed. Will be removed in further editions.
-
-
-| Name | Description | Required|
-|------|-------------|---------|
-|`e_map={fieldname1}, {fieldname2}..., {fieldnameN}`| When storing endpoint a/r results in mongodb compute engine uses the above field map to store the results using abbreviated fields. The default value is `e_map=dt,ap,p,s,n,hs,a,r,up,u,d,m,pr,ss,cs,i,sc`, where dt->date,a->availability etc... (recommended not to be changed) | `NO`|
-| `s_map={fieldname1}, {fieldname2}..., {fieldnameN}`| When storing service a/r results in mongodb compute engine uses the above field map to store the results using abbreviated fields. The default value is `s_map=dt,ap,p,s,n,sf,a,r,up,u,d,m,pr,ss,cs,i,sc`, where dt->date,a->availability etc... (recommended not to be changed) | `NO`| 
-|`sd_map={fieldname1}, {fieldname2}`| When storing status detailed results in mongodb compute engine uses the above field map to store the results using abbreviated fields. The default value is `sd_map=ts,s,sum,msg,ps,pts,di,ti`, where ts->timestamp, msg->message etc... (recommended not to be changed) | `YES`|
-| `n_eg={STRING}`| Endpoint group name type used in status detailed calculations. For e.g. `n_eg=site` if site is used as a group type|`NO`|
-| `n_gg={STRING}`| Group of groups name type used in status detailed calculations| `NO`|
-| `n_alt={STRING}` | Mapping of alternative grouping parameter used in status detail calc. | `NO`|
-| `n_altf={STRING}` | Mapping of alternative grouping parameter used in status detail calc. | `NO`|
-
 
 ### `/etc/ar-compute/`
 
