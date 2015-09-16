@@ -28,78 +28,47 @@ def main(args=None):
     mongo_port = cfg.get_mongo_port("ar")
     db_name = cfg.get_mongo_database("ar")
 
-    col_service = "service_ar"
-    col_egroup = "endpoint_group_ar"
-
     # Create a date integer for use in the database queries
     date_int = int(args.date.replace("-", ""))
 
     log.info("Connecting to mongo server: %s:%s", mongo_host, mongo_port)
     client = MongoClient(str(mongo_host), int(mongo_port))
 
-    # for service collection cleanup do the following
     log.info("Regarding service a/r data...")
 
     log.info("Opening database: %s", db_name)
     db = client[db_name]
 
-    log.info("Opening collection: %s", col_service)
-    col = db[col_service]
+    cols = ["service_ar", "endpoint_group_ar"]
 
-    if args.report:
-        num_of_rows = col.find({"date": date_int, "report": args.report}).count()
-        log.info("Found %s entries for date %s and report %s",
-                 num_of_rows, args.date, args.report)
-    else:
-        num_of_rows = col.find({"date": date_int}).count()
-        log.info("Found %s entries for date %s", num_of_rows, args.date)
+    # Iterate over collections
+    for item in cols:
 
-    if num_of_rows > 0:
+        log.info("Opening collection: %s", item)
+        col = db[item]
 
         if args.report:
-            log.info(
-                "Remove entries for date: %s and report: %s", args.date, args.report)
-            col.delete_many({"date": date_int, "report": args.report})
+            num_of_rows = col.find({"date": date_int, "report": args.report}).count()
+            log.info("Found %s entries for date %s and report %s",
+                     num_of_rows, args.date, args.report)
         else:
-            log.info("Remove entries for date: %s", args.date)
-            col.delete_many({"date": date_int})
+            num_of_rows = col.find({"date": date_int}).count()
+            log.info("Found %s entries for date %s", num_of_rows, args.date)
 
-        log.info("Entries Removed!")
+        if num_of_rows > 0:
 
-    else:
-        log.info("Zero entries found. No need to remove anything")
+            if args.report:
+                log.info(
+                    "Remove entries for date: %s and report: %s", args.date, args.report)
+                col.delete_many({"date": date_int, "report": args.report})
+            else:
+                log.info("Remove entries for date: %s", args.date)
+                col.delete_many({"date": date_int})
 
-    # for service collection cleanup do the following
-    log.info("Regarding endpoint group a/r data...")
+            log.info("Entries Removed!")
 
-    log.info("Opening database: %s", db_name)
-    db = client[db_name]
-
-    log.info("Opening collection: %s", col_egroup)
-    col = db[col_egroup]
-
-    if args.report:
-        num_of_rows = col.find({"date": date_int, "report": args.report}).count()
-        log.info("Found %s entries for date %s and report %s",
-                 num_of_rows, args.date, args.report)
-    else:
-        num_of_rows = col.find({"date": date_int}).count()
-        log.info("Found %s entries for date %s", num_of_rows, args.date)
-
-    if num_of_rows > 0:
-
-        if args.report:
-            log.info(
-                "Remove entries for date: %s and report: %s", args.date, args.report)
-            col.delete_many({"date": date_int, "report": args.report})
         else:
-            log.info("Remove entries for date: %s", args.date)
-            col.delete_many({"date": date_int})
-
-        log.info("Entries Removed!")
-    else:
-        log.info("Zero entries found. No need to remove anything")
-
+            log.info("Zero entries found. No need to remove anything")
 
 if __name__ == "__main__":
 

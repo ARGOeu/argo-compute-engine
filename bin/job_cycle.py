@@ -37,6 +37,9 @@ def main(args=None):
     tenant_list = ArConfig.get("jobs", "tenants")
     tenant_list = tenant_list.split(',')
 
+    if args.tenant is not None:
+        tenant_list = [args.tenant]
+
     # For each available tenant prepare and execute all tenant's jobs
     for tenant in tenant_list:
 
@@ -55,22 +58,17 @@ def main(args=None):
         log.info("Job Cycle: Upload metric data to hdfs")
         run_cmd(cmd_upload_metric, log)
 
-        # Command to submit job status detail
-        cmd_job_status = [
-            os.path.join(sdl_exec, "job_status_detail.py"), '-d', args.date, '-t', tenant]
-
-        log.info(
-            "Job Cycle: Run status detail job for tenant:%s and date: %s", tenant, args.date)
-        run_cmd(cmd_job_status, log)
-
-        log.info("Job Cycle: Iterate over a/r jobs and submit them")
+        log.info("Job Cycle: Iterate over jobs and submit them")
 
         # For each job genereate ar
         for job in job_set:
             log.info("Job Cycle: tenant %s has job named %s", tenant, job)
-            cmd_job_ar = [
-                os.path.join(sdl_exec, "job_ar.py"), '-d', args.date, '-t', tenant, '-j', job]
+            cmd_job_ar = [os.path.join(sdl_exec, "job_ar.py"), '-d', args.date, '-t', tenant, '-j', job]
             run_cmd(cmd_job_ar, log)
+            # Command to submit job status detail
+            cmd_job_status = [os.path.join(sdl_exec, "job_status_detail.py"), '-d', args.date, '-t', tenant, '-j', job]
+            run_cmd(cmd_job_status, log)
+            
 
 if __name__ == "__main__":
 
@@ -80,6 +78,8 @@ if __name__ == "__main__":
         description="Cycling daily jobs for all available tenants")
     arg_parser.add_argument(
         "-d", "--date", help="date", dest="date", metavar="DATE", required="TRUE")
+    arg_parser.add_argument(
+        "-t", "--tenant", help="tenant", dest="tenant", metavar="STRING")
     # Parse the command line arguments accordingly and introduce them to
     # main...
     sys.exit(main(arg_parser.parse_args()))
