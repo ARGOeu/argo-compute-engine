@@ -142,6 +142,7 @@ public class AvailabilityProfiles {
 	}
 
 	public String getProfileGroupServiceOp(String avProfile, String groupName, String service) {
+		
 		if (this.list.containsKey(avProfile)) {
 			if (this.list.get(avProfile).groups.containsKey(groupName)) {
 				if (this.list.get(avProfile).groups.get(groupName).services.containsKey(service)) {

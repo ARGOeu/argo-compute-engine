@@ -31,7 +31,7 @@ public class ConfigManagerTest {
 
 		// Assert that the simple fields are loaded correctly
 		assertEquals("EGI", cfgMgr.tenant);
-		assertEquals("Critical", cfgMgr.job);
+		assertEquals("Critical", cfgMgr.report);
 		assertEquals("SITES", cfgMgr.egroup);
 		assertEquals("NGI", cfgMgr.ggroup);
 		assertEquals("hepspec", cfgMgr.weight);
