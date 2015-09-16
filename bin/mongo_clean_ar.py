@@ -39,7 +39,7 @@ def main(args=None):
     log.info("Opening database: %s", db_name)
     db = client[db_name]
 
-    cols = ["service_ar","endpoint_group_ar"]
+    cols = ["service_ar", "endpoint_group_ar"]
 
     # Iterate over collections
     for item in cols:
@@ -60,10 +60,10 @@ def main(args=None):
             if args.report:
                 log.info(
                     "Remove entries for date: %s and report: %s", args.date, args.report)
-                col.delete_many({"date_integer": date_int, "report": args.report})
+                col.delete_many({"date": date_int, "report": args.report})
             else:
                 log.info("Remove entries for date: %s", args.date)
-                col.delete_many({"date_integer": date_int})
+                col.delete_many({"date": date_int})
 
             log.info("Entries Removed!")
 
