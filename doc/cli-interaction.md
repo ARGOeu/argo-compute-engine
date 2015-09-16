@@ -8,9 +8,8 @@ In the folder `/usr/libexec/ar-compute/bin/` reside executable scripts that can 
 |--------|-------------|----------|
 |upload_metric.py |The specific script is used in order to upload daily metric data (relative to a tenant) to HDFS. | [Description](#metric) |
 |upload_sync.py |The specific script is used in order to upload daily sync data (relative to a tenant and a job) to HDFS. |[Description](#sync)|
-<!-- [](These utilities are not multi-tenant aware yet)
-|mongo_clean_ar.py |The specific script is used if necessary to clean a/r data from the datastore regarding a specific day full path.  |[Description](#ar)|
-|mongo_clean_status.py |The specific script is used if necessary to clean status detail data from the datastore regarding a specific day. | [Description](#status)|
+|mongo_clean_ar.py |The specific script is used if necessary to clean a/r data from the datastore regarding for specified tenant,report and date.  |[Description](#ar)|
+|mongo_clean_status.py |The specific script is used if necessary to clean status detail data from the datastore for specified tenant,report and date. | [Description](#status)|
 -->
 
 <a id="metric"></a>
@@ -48,11 +47,11 @@ This utility is used in order to upload the daily sync data for a specified date
 - `-t --tenant {STRING}` the name of the tenant. Case sensitive. (Required)
 - `-j --job {STRING}` the name of the job. Case sensitive (Required)
 
-<!-- [](These utilities are not multi-tenant aware yet)
+
 <a id="ar"></a>
 ### mongo_clean_ar.py
 
-This utility is used in order to delete availability and reliability data for a specific day from the datastore. It is called automatically before each A/R computation, but can be ran also manually. The script reports back the number of records and from which collections these records are removed.
+This utility is used in order to delete availability and reliability data from the datastore, for a specified tenant,report and date. It is called automatically before each A/R computation, but can be ran also manually. The script reports back the number of records and from which collections these records are removed.
 
 #### Full path
 
@@ -63,22 +62,21 @@ This utility is used in order to delete availability and reliability data for a 
 #### Parameters
 
 - `-d --date {YYYY-MM-DD}` the date (day) for which to delete the availability and reliability data (Required)
-- `-p --profile {STRING}` the name of an availability profile. If specified, only availability and reliability data for the specified profile will be cleared.
-[](Comment: This utility does not support multiple tenants yet)
+- `-t --tenant {STRING}` the name of the tenant. Case sensitive. (Required)
+- `-r --report {STRING}` the name of the report that results belong to. Case sensitive (Required)
 
 <a id="status"></a>
 
 ### mongo_clean_status.py
 
-This utility can be used in order to delete the status detail data for a specific date from the datastore.
+This utility can be used in order to delete the status detail data from the datastore, for a specified tenant,report and date. 
 
 #### Full path
-
-  /usr/libexec/ar-compute/bin/mongo_clean_status.py
-
+```
+/usr/libexec/ar-compute/bin/mongo_clean_status.py
+```
 #### Parameters
 
 - `-d --date {YYYY-MM-DD}` the date for which to delete the status detail data from the datastore (Required)
-[](Comment: This utility does not support multiple tenants yet)
-
--->
+- `-t --tenant {STRING}` the name of the tenant. Case sensitive. (Required)
+- `-r --report {STRING}` the name of the report that results belong to. Case sensitive (Required)
