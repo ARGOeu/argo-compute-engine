@@ -1,4 +1,9 @@
-# ARGO Compute Engine input
+---
+title: Compute Engine documentation | ARGO
+page_title: Compute Engine Input
+font_title: 'fa fa-cog'
+description: This document describes the compute engine input data (metrics, topology, profiles, factors)
+---
 
 ## Input Data
 
@@ -32,30 +37,28 @@ Metric data come in the form of avro files and contain timestamped status inform
 
 The current **raw avro schema file** for the metric data is the following:
 
-```json
-{
-  "namespace": "argo.avro",
-  "type": "record",
-  "name": "metric_data",
-  "fields": [
-    { "name": "timestamp", "type": "string"},
-    { "name": "service", "type": "string"},
-    { "name": "hostname", "type": "string"},
-    { "name": "metric", "type": "string"},
-    { "name": "status", "type": "string"},
-    { "name": "monitoring_host", "type": ["null", "string"]},
-    { "name": "summary", "type": ["null", "string"]},
-    { "name": "message", "type": ["null", "string"]},
-    { "name": "tags", "type" : [
-      "null", { "name" : "Tags",
-                "type" : "map",
-                "values" : ["int", "string"]
-              }
-      ]
-    }
-  ]
-}
-```
+	{ "namespace": "argo.avro",
+	  "type": "record",
+	  "name": "metric_data",
+	  "fields": [
+	    { "name": "timestamp", "type": "string"},
+	    { "name": "service", "type": "string"},
+	    { "name": "hostname", "type": "string"},
+	    { "name": "metric", "type": "string"},
+	    { "name": "status", "type": "string"},
+	    { "name": "monitoring_host", "type": ["null", "string"]},
+	    { "name": "summary", "type": ["null", "string"]},
+	    { "name": "message", "type": ["null", "string"]},
+	    { "name": "tags", "type" : ["null", { "name" : "Tags",
+	       "type" : "map",
+	       "values" : ["int", "string"]
+		}
+	      ]
+	    }
+	  ]
+	}
+
+<a id="Profiles"></a>
 
 ## Additional input: topology, profiles, factors
 
@@ -98,26 +101,24 @@ The file uses avro format and contains the following fields:
 
 Below is the full description of the group_endpoints.avro specification
 
-```json
-{
-  "namespace": "argo.avro",
-  "type": "record",
-  "name": "group_of_service_endpoints",
-    "fields": [
-      { "name": "type", "type": "string" },
-      { "name": "group", "type": "string" },
-      { "name": "service", "type": "string" },
-      { "name": "hostname", "type": "string" },
-      { "name": "tags", "type" : [
-        "null", { "name" : "Tags",
-                  "type" : "map",
-                  "values" : ["int", "string"]
-                }
-        ]
-      }
-    ]
-}
-```
+	{
+	  "namespace": "argo.avro",
+	  "type": "record",
+	  "name": "group_of_service_endpoints",
+	    "fields": [
+	      { "name": "type", "type": "string" },
+	      { "name": "group", "type": "string" },
+	      { "name": "service", "type": "string" },
+	      { "name": "hostname", "type": "string" },
+	      { "name": "tags", "type" : [
+		"null", { "name" : "Tags",
+			  "type" : "map",
+			  "values" : ["int", "string"]
+			}
+		]
+	      }
+	    ]
+	}
 
 #### group_groups.avro
 
@@ -143,48 +144,47 @@ Below is the full description of the avro specification:
 |`subgroup`| The name of the lower level group contained (e.g. MY-SITE-A)|`YES`|
 |`tags`| User defined tags providing description metadata|`NO`|
 
+
 The structure of the specific file gives the ability to define recursively group entities that can be contained as subgroups on other group entities.
 
 An abstract example using cities, nations, continents
 
-```
-group: 'Athens', type: 'cities', subgroup:'location-1'
-group: 'Athens', type: 'cities', subgroup:'location-2'
-group: 'Athens', type: 'cities', subgroup:'location-3'
 
-group: 'Thessaloniki', type: 'cities', subgroup:'location-5'
-group: 'Thessaloniki', type: 'cities', subgroup:'location-6'
-group: 'Thessaloniki', type: 'cities', subgroup:'location-7'
+	group: 'Athens', type: 'cities', subgroup:'location-1'
+	group: 'Athens', type: 'cities', subgroup:'location-2'
+	group: 'Athens', type: 'cities', subgroup:'location-3'
 
-group: 'Greece', type: 'countries', subgroup: 'Athens'
-group: 'Greece', type: 'countries', subgroup: 'Thessaloniki'
+	group: 'Thessaloniki', type: 'cities', subgroup:'location-5'
+	group: 'Thessaloniki', type: 'cities', subgroup:'location-6'
+	group: 'Thessaloniki', type: 'cities', subgroup:'location-7'
 
-group: 'Europe', type: 'continents' subgroup: 'Greece'
-group: 'Europe', type: 'continents' subgroup: 'Croatia'
-group: 'Europe', type: 'continents' subgroup: 'France'
-```
+	group: 'Greece', type: 'countries', subgroup: 'Athens'
+	group: 'Greece', type: 'countries', subgroup: 'Thessaloniki'
+
+	group: 'Europe', type: 'continents' subgroup: 'Greece'
+	group: 'Europe', type: 'continents' subgroup: 'Croatia'
+	group: 'Europe', type: 'continents' subgroup: 'France'
+
 
 Below is the full avro specification of the group_groups.avro file:
 
-```json
-{
-  "namespace": "argo.avro",
-  "type": "record",
-  "name": "group_groups",
-  "fields": [
-    { "name": "type", "type": "string" },
-    { "name": "group", "type": "string" },
-    { "name": "subgroup", "type": "string" },
-    { "name": "tags", "type" : [
-      "null", { "name" : "Tags",
-                "type" : "map",
-                "values" : ["int", "string"]
-              }
-      ]
-    }
-  ]
-}
-```
+	{
+	  "namespace": "argo.avro",
+	  "type": "record",
+	  "name": "group_groups",
+	  "fields": [
+	    { "name": "type", "type": "string" },
+	    { "name": "group", "type": "string" },
+	    { "name": "subgroup", "type": "string" },
+	    { "name": "tags", "type" : [
+	      "null", { "name" : "Tags",
+			"type" : "map",
+			"values" : ["int", "string"]
+		      }
+	      ]
+	    }
+	  ]
+	}
 
 <a id="profiles"></a>
 
@@ -203,25 +203,23 @@ When wanting to look on the whole status information of the service for a given 
 
 and the full avro specification:
 
-```json
-{
-  "namespace": "argo.avro",
-  "type": "record",
-  "name": "metric_profiles",
-  "fields": [
-    { "name": "profile", "type": "string" },
-    { "name": "service", "type": "string" },
-    { "name": "metric", "type": "string" },
-    { "name": "tags", "type" : [
-      "null", { "name" : "Tags",
-                "type" : "map",
-                "values" : ["int", "string"]
-              }
-      ]
-    }
-  ]
-}
-```
+	{
+	  "namespace": "argo.avro",
+	  "type": "record",
+	  "name": "metric_profiles",
+	  "fields": [
+	    { "name": "profile", "type": "string" },
+	    { "name": "service", "type": "string" },
+	    { "name": "metric", "type": "string" },
+	    { "name": "tags", "type" : [
+	      "null", { "name" : "Tags",
+			"type" : "map",
+			"values" : ["int", "string"]
+		      }
+	      ]
+	    }
+	  ]
+	}
 
 <a id="weights"></a>
 
@@ -237,18 +235,16 @@ Some group items have an associated weight information (factors) on how they con
 
 The full avro specification of the weight file:
 
-```json
-{
-  "namespace": "argo.avro",
-  "type": "record",
-  "name": "weight_sites",
-  "fields": [
-    { "name": "type", "type": "string" },
-    { "name": "site", "type": "string" },
-    { "name": "weight", "type": "string" }
-  ]
-}
-```
+	{
+	  "namespace": "argo.avro",
+	  "type": "record",
+	  "name": "weight_sites",
+	  "fields": [
+	    { "name": "type", "type": "string" },
+	    { "name": "site", "type": "string" },
+	    { "name": "weight", "type": "string" }
+	  ]
+	}
 
 <a id="downtimes"></a>
 
@@ -265,16 +261,15 @@ Downtime information: the period (start_time --> end_time) in which a specific s
 
 The full avro specification of the file is provided below
 
-```json
-{
-  "namespace": "argo.avro",
-  "type": "record",
-  "name": "downtimes",
-  "fields": [
-    { "name": "hostname", "type": "string" },
-    { "name": "service", "type": "string" },
-    { "name": "start_time", "type": "string" },
-    { "name": "end_time", "type": "string" }
-  ]
-}
-```
+	{
+	  "namespace": "argo.avro",
+	  "type": "record",
+	  "name": "downtimes",
+	  "fields": [
+	    { "name": "hostname", "type": "string" },
+	    { "name": "service", "type": "string" },
+	    { "name": "start_time", "type": "string" },
+	    { "name": "end_time", "type": "string" }
+	  ]
+	}
+
