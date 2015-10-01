@@ -1,6 +1,6 @@
 ---
 title: Compute Engine documentation | ARGO
-page_title: Compute Engine
+page_title: Compute Engine Info
 font_title: 'fa fa-cog'
 description: The ARGO Compute Engine is responsible for computing the availability and reliability of services.
 ---
