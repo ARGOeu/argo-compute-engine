@@ -27,33 +27,23 @@ public class Recomputations {
 	public ArrayList<RecompItem> list;
 
 	private class RecompItem {
-		String reason; // Recalculation reason
-		String status; // Recalculation status
-		String supergroup; // Name of supergroup that adheres to recalculation
 		String start; // Start timestamp
 		String end; // Start timestamp
-		String submitted;
 		ArrayList<String> exclude; // Exclude list
 
 		public RecompItem() {
 			// Initializations
-			this.reason = "";
-			this.status = "";
-			this.supergroup = "";
+
 			this.start = "";
 			this.end = "";
-			this.submitted = "";
 			this.exclude = new ArrayList<String>();
 		}
 
-		public RecompItem(String reason, String status, String supergroup, String start, String end, String submitted,
-				ArrayList<String> exclude) {
-			this.reason = reason;
-			this.status = status;
-			this.supergroup = supergroup;
+		public RecompItem( String start, String end, ArrayList<String> exclude) {
+
 			this.start = start;
 			this.end = end;
-			this.submitted = submitted;
+
 			this.exclude = exclude;
 		}
 	}
@@ -67,57 +57,59 @@ public class Recomputations {
 		this.list = new ArrayList<RecompItem>();
 	}
 
-	public void insert(String reason, String status, String supergroup, String start, String end, String submitted,
-			ArrayList<String> exclude) {
-		this.list.add(new RecompItem(reason, status, supergroup, start, end, submitted, exclude));
+	public void insert(String start, String end, ArrayList<String> exclude) {
+		this.list.add(new RecompItem(start, end, exclude));
 	}
 
 	public int count() {
 		return this.list.size();
 	}
 
-	public boolean shouldRecompute(String supergroup, String groupname, String targetDate) throws ParseException {
+	public boolean shouldRecompute(String groupname, String targetDate) throws ParseException {
 
 		for (RecompItem item : this.list) {
 			// supergroup found
-			if (item.supergroup.equalsIgnoreCase(supergroup)) {
 
-				// loop through all excluded sites
-				for (String subitem : item.exclude) {
-					// if site exists in the exclude list
-					if (groupname.equalsIgnoreCase(subitem)) {
+			// loop through all excluded sites
+			for (String subitem : item.exclude) {
+				// if site exists in the exclude list
+				if (groupname.equalsIgnoreCase(subitem)) {
 
-						// check if the dates alingn
-						SimpleDateFormat dmy = new SimpleDateFormat("yyyy-MM-dd");
-						Date sDate = dmy.parse(item.start);
-						Date eDate = dmy.parse(item.end);
-						Date tDate = dmy.parse(targetDate);
+					// check if the dates alingn
+					SimpleDateFormat dmy = new SimpleDateFormat("yyyy-MM-dd");
+					Date sDate = dmy.parse(item.start);
+					Date eDate = dmy.parse(item.end);
+					Date tDate = dmy.parse(targetDate);
 
-						return (tDate.compareTo(sDate) >= 0 && tDate.compareTo(eDate) <= 0);
+					return (tDate.compareTo(sDate) >= 0 && tDate.compareTo(eDate) <= 0);
 
-					}
 				}
 			}
+
 		}
 
 		// Site doesn't belong in recomputation exclude list
 		return false;
 	}
 
-	public String getStart(String supergroup) {
+	public String getStart(String excluded) {
 		for (RecompItem item : this.list) {
-			if (item.supergroup.equalsIgnoreCase(supergroup)) {
-				return item.start;
+			for (String exItem : item.exclude) {
+				if (exItem.equals(excluded)) {
+					return item.start;
+				}
 			}
 		}
 
 		return null;
 	}
 
-	public String getEnd(String supergroup) {
+	public String getEnd(String excluded) {
 		for (RecompItem item : this.list) {
-			if (item.supergroup.equalsIgnoreCase(supergroup)) {
-				return item.end;
+			for (String exItem : item.exclude) {
+				if (exItem.equals(excluded)) {
+					return item.end;
+				}
 			}
 		}
 
@@ -137,21 +129,18 @@ public class Recomputations {
 			JsonArray jRootObj = jRootElement.getAsJsonArray();
 
 			for (JsonElement item : jRootObj) {
-				String reason = item.getAsJsonObject().get("r").getAsString();
-				String status = item.getAsJsonObject().get("s").getAsString();
-				String start = item.getAsJsonObject().get("st").getAsString();
-				String end = item.getAsJsonObject().get("et").getAsString();
-				String submitted = item.getAsJsonObject().get("t").getAsString();
-				String supergroup = item.getAsJsonObject().get("n").getAsString();
+				String start = item.getAsJsonObject().get("start_time").getAsString();
+				String end = item.getAsJsonObject().get("end_time").getAsString();
+
 
 				ArrayList<String> exclude = new ArrayList<String>();
 				// Get the excluded
-				JsonArray jExclude = item.getAsJsonObject().get("es").getAsJsonArray();
+				JsonArray jExclude = item.getAsJsonObject().get("exclude").getAsJsonArray();
 				for (JsonElement subitem : jExclude) {
 					exclude.add(subitem.getAsString());
 				}
 
-				this.insert(reason, status, supergroup, start, end, submitted, exclude);
+				this.insert(start, end, exclude);
 			}
 
 		} catch (FileNotFoundException ex) {

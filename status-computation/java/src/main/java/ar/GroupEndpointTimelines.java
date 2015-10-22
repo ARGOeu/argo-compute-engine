@@ -263,10 +263,10 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 
 		try {
 
-			if (this.recMgr.shouldRecompute(supergroup, groupname, this.targetDate)) {
+			if (this.recMgr.shouldRecompute(groupname, this.targetDate)) {
 
-				String startRec = this.recMgr.getStart(supergroup);
-				String endRec = this.recMgr.getEnd(supergroup);
+				String startRec = this.recMgr.getStart(groupname);
+				String endRec = this.recMgr.getEnd(groupname);
 
 				totalSite.aggregation.fill(this.opsMgr.getDefaultUnknownInt(), startRec, endRec, this.targetDate);
 			}

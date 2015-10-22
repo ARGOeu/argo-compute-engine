@@ -31,22 +31,22 @@ public class RecomputationsTest {
 		Recomputations recMgr = new Recomputations();
 		recMgr.loadJson(jsonFile);
 
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-01-AUTH", "2013-12-09"), true);
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-01-AUTH", "2013-12-10"), true);
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-01-AUTH", "2013-12-08"), true);
+		assertEquals(recMgr.shouldRecompute("GR-01-AUTH", "2013-12-09"), true);
+		assertEquals(recMgr.shouldRecompute("GR-01-AUTH", "2013-12-10"), true);
+		assertEquals(recMgr.shouldRecompute("GR-01-AUTH", "2013-12-08"), true);
 		// should return false because date is out of recomputation period
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-01-AUTH", "2013-12-07"), false);
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-01-AUTH", "2013-12-11"), false);
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-01-AUTH", "2013-08-02"), false);
+		assertEquals(recMgr.shouldRecompute("GR-01-AUTH", "2013-12-07"), false);
+		assertEquals(recMgr.shouldRecompute("GR-01-AUTH", "2013-12-11"), false);
+		assertEquals(recMgr.shouldRecompute("GR-01-AUTH", "2013-08-02"), false);
 		// should return false because site is out of exclude list
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-04-IASA", "2013-12-09"), false);
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-04-IASA", "2013-12-10"), false);
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-04-IASA", "2013-12-08"), false);
+		assertEquals(recMgr.shouldRecompute("GR-04-IASA", "2013-12-09"), false);
+		assertEquals(recMgr.shouldRecompute("GR-04-IASA", "2013-12-10"), false);
+		assertEquals(recMgr.shouldRecompute("GR-04-IASA", "2013-12-08"), false);
 		// should return false because NGI doesn't belong in the recomputation
 		// request
-		assertEquals(recMgr.shouldRecompute("NGI_UK", "SITEA", "2013-12-09"), false);
-		assertEquals(recMgr.shouldRecompute("NGI_DE", "SITEB", "2013-12-10"), false);
-		assertEquals(recMgr.shouldRecompute("NGI_FRANCE", "SITEC", "2013-12-08"), false);
+		assertEquals(recMgr.shouldRecompute("SITEA", "2013-12-09"), false);
+		assertEquals(recMgr.shouldRecompute("SITEB", "2013-12-10"), false);
+		assertEquals(recMgr.shouldRecompute("SITEC", "2013-12-08"), false);
 
 	}
 
