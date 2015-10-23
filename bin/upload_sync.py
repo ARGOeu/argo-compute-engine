@@ -106,7 +106,7 @@ def main(args=None):
     run_cmd(cmd_call_downtimes, log)
 
     # Call script to retrieve a json file of recomputations for the specific date/tenant from mongodb
-    cmd_mongo_recomputations = [os.path.join(argo_exec,'mongo_recompute.py'),'-d',args.date,'-t',args.tenant]
+    cmd_mongo_recomputations = [os.path.join(argo_exec, 'mongo_recompute.py'), '-d', args.date, '-t', args.tenant, '-j', args.job]
     log.info("Retrieving relevant recomputation requests...")
     run_cmd(cmd_mongo_recomputations, log)
 

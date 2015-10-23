@@ -27,7 +27,7 @@ def do_recompute(argo_exec, date, tenant, job, log):
     run_cmd(cmd_job_ar, log)
 
 
-def loop_recompute(argo_exec, date_range, tenant, job_set, log):
+def loop_recompute(argo_exec, date_range, tenant, job, log):
     """
     For a specific time period, loop and execute recomputations for each day
 
@@ -39,8 +39,7 @@ def loop_recompute(argo_exec, date_range, tenant, job_set, log):
     """
     for dt in date_range:
         date_arg = get_date_str(dt)
-        for job in job_set:
-            do_recompute(argo_exec, date_arg, tenant, job, log)
+        do_recompute(argo_exec, date_arg, tenant, job, log)
 
 
 def get_mongo_collection(mongo_host, mongo_port, db, collection, log):
@@ -77,11 +76,6 @@ def get_recomputation(collection, rec_id, log):
     :returns: result in json format
     """
 
-    # Check the id
-    if ObjectId.is_valid(rec_id) is False:
-        log.error("Invalid Object Id")
-        raise ValueError("Invalid Object Id used")
-
     # run the query
     result = collection.find_one({'id': rec_id})
 
@@ -114,13 +108,10 @@ def update_status(collection, rec_id, status, timestamp, log):
     :param timestamp: date and time to stamp the event
     :param log: logger object reference
     """
-    # Check the id
-    if ObjectId.is_valid(rec_id) is False:
-        log.error("Invalid Object Id")
-        raise ValueError("Invalid Object Id used")
 
     # Update status and history
     collection.update({'id': rec_id}, {'$set': {"status": status,"timestamp": timestamp} })
+
 
 def recompute(recalculation_id=None, tenant=None):
     """
@@ -141,12 +132,12 @@ def recompute(recalculation_id=None, tenant=None):
 
     # Check recomputation
     col = get_mongo_collection(
-        cfg.mongo_host, cfg.mongo_port, cfg.get_mongo_database("ar"), "recalculations", log)
+        cfg.mongo_host, cfg.mongo_port, cfg.get_mongo_database("ar"), "recomputations", log)
     recomputation = get_recomputation(col, recalculation_id, log)
     dates = get_time_period(recomputation)
 
     update_status(col, recalculation_id, "running", datetime.now(), log)
-    loop_recompute(argo_exec, dates, tenant, cfg.jobs[tenant], log)
+    loop_recompute(argo_exec, dates, tenant, recomputation["report"], log)
     update_status(col, recalculation_id, "done", datetime.now(), log)
 
 

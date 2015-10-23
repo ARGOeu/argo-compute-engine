@@ -3,10 +3,12 @@ import mock
 from mock import MagicMock
 from poller_ar import run_recomputation
 from bson.objectid import ObjectId
+import os
+import inspect
 
-class AnyStringWith(str):
-    def __eq__(self, other):
-        return self in other
+script_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+
+
 
 @mock.patch('poller_ar.subprocess.Popen')
 def test_run_recomputation(mock_popen):
@@ -14,15 +16,14 @@ def test_run_recomputation(mock_popen):
     Check that the recomputation function looks for a single pending
     request and submits it to be recomputed
     """
-    pen_recalc, col = MagicMock(), MagicMock()
-    pen_recalc.__getitem__.return_value = ObjectId('5559ed3306f6233c190bc851')
-    col.find_one.return_value = pen_recalc
+    col = MagicMock()
+    col.find_one.return_value = {"id": "5559ed3306f6233c190bc851", "report": "critical"}
     run_recomputation(col, "FOO_tenant", 1, 1, 3)
     col.find_one.assert_called_with({'status': 'pending'})
 
     # Assert that the actual sys call is called with the correct arguments
     mock_popen.assert_called_with(
-        [AnyStringWith('recompute.py'), '-i', '5559ed3306f6233c190bc851', '-t', 'FOO_tenant'])
+        [script_path+"/recompute.py", '-i', '5559ed3306f6233c190bc851', '-t', 'FOO_tenant', '-j', 'critical'])
 
 
 @mock.patch('poller_ar.subprocess.Popen')

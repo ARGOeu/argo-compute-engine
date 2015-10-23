@@ -2,6 +2,7 @@
 
 import sys
 from ConfigParser import SafeConfigParser
+from utils import ArgoConfiguration
 import subprocess
 import os
 import inspect
@@ -15,42 +16,13 @@ from argolog import init_log
 script_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 
-def get_poller_config(fn_ar_cfg="/etc/ar-compute-engine.conf", logging_config='logging',
-                      default_config='default'):
-    """
-    Initialize the logger and retrieve the settings for the poller
-    :param fn_ar_cfg: file from which to retrieve configuration
-    :param logging_config: logging section of the configuration
-    :param default_config: default section of the configuration
-    :return: logger instance, mongo hostname, mongo port and threshold of running
-             recomputations in a tuple
-    """
-    # Read Configuration file
-    ar_config = SafeConfigParser()
-    ar_config.read(fn_ar_cfg)
-
-    # Initialize logging
-    log_mode = ar_config.get(logging_config, 'log_mode')
-    log_file = ar_config.get(logging_config, 'log_file') if log_mode == 'file' else None
-    log_level = ar_config.get(logging_config, 'log_level')
-    log = init_log(log_mode, log_file, log_level, 'argo.poller')
-
-    # Get mongo configurations
-    mongo_host = ar_config.get(default_config, 'mongo_host')
-    mongo_port = ar_config.get(default_config, 'mongo_port')
-
-    threshold = int(ar_config.get(default_config, 'recomp_threshold'))
-    log.info("Recomputation threshold: %s", threshold)
-    return log, mongo_host, mongo_port, threshold
-
-
-def get_mongo_collection(mongo_host, mongo_port):
+def get_mongo_collection(mongo_host, mongo_port, mongo_db):
     """
     :return: pymongo collection object of the recalculations collection
     """
     client = MongoClient(mongo_host, int(mongo_port))
-    db = client["AR"]
-    col = db["recalculations"]
+    db = client[mongo_db]
+    col = db["recomputations"]
     return col
 
 
@@ -81,11 +53,12 @@ def run_recomputation(col, tenant, num_running, num_pending, threshold):
 
     pen_recalc = col.find_one({"status": "pending"})
     pen_recalc_id = str(pen_recalc["id"])
+    pen_recalc_r = str(pen_recalc["report"])
 
     # Status update allready implemented in recompute
     # Call recompute execution script
     recompute_script = script_path + "/recompute.py"
-    cmd_exec = [recompute_script, "-i", pen_recalc_id, "-t", tenant]
+    cmd_exec = [recompute_script, "-i", pen_recalc_id, "-t", tenant, "-j", pen_recalc_r]
     # Kickstart executor and continue own execution
     subprocess.Popen(cmd_exec)
 
@@ -97,10 +70,22 @@ def main(tenant=None):
     :param tenant:
     :return:
     """
-    log, mongo_host, mongo_port, threshold = get_poller_config()
-    col = get_mongo_collection(mongo_host=mongo_host, mongo_port=mongo_port)
+    # default paths
+    fn_ar_cfg = "/etc/ar-compute-engine.conf"
+    argo_exec = "/usr/libexec/ar-compute/bin"
+    arcomp_conf = "/etc/ar-compute"
+    # Init configuration
+    cfg = ArgoConfiguration(fn_ar_cfg)
+    cfg.load_tenant_db_conf(os.path.join(arcomp_conf, args.tenant + "_db_conf.json"))
+    threshold = cfg.threshold
+
+    # Init logging
+    log = init_log(cfg.log_mode, cfg.log_file, cfg.log_level, 'argo.recompute')
+    db_name = cfg.get_mongo_database("ar")
+
+    col = get_mongo_collection(cfg.mongo_host, cfg.mongo_port, db_name)
     num_pen, num_run = get_pending_and_running(col)
-    log.info("Running recalculations: %s (threshold: %s)", num_run, threshold)
+    log.info("Running recomputations: %s (threshold: %s)", num_run, threshold)
     try:
         run_recomputation(col, tenant, num_run, num_pen, threshold)
         log.info("Below threshold recomputation sent for execution")
