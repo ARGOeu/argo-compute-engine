@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -24,97 +25,66 @@ public class Recomputations {
 
 	private static final Logger LOG = Logger.getLogger(Recomputations.class.getName());
 
-	public ArrayList<RecompItem> list;
-
-	private class RecompItem {
-		String start; // Start timestamp
-		String end; // Start timestamp
-		ArrayList<String> exclude; // Exclude list
-
-		public RecompItem() {
-			// Initializations
-
-			this.start = "";
-			this.end = "";
-			this.exclude = new ArrayList<String>();
-		}
-
-		public RecompItem( String start, String end, ArrayList<String> exclude) {
-
-			this.start = start;
-			this.end = end;
-
-			this.exclude = exclude;
-		}
-	}
-
+	public Map<String,ArrayList<Map<String,String>>> groups;
+	
+	
 	public Recomputations() {
-		this.list = new ArrayList<RecompItem>();
+		this.groups = new HashMap<String,ArrayList<Map<String,String>>>();
 	}
 
-	// Clear all the recalc data
+	// Clear all the recomputation data
 	public void clear() {
-		this.list = new ArrayList<RecompItem>();
+		this.groups = new HashMap<String,ArrayList<Map<String,String>>>();
+	}
+	
+	// Insert new recomputation data for a specific endpoint group
+	public void insert(String group, String start, String end) {
+		
+		Map<String,String>temp = new HashMap<String,String>();
+		temp.put("start", start);
+		temp.put("end",end);
+		
+		if (this.groups.containsKey(group) == false){
+			this.groups.put(group, new ArrayList<Map<String,String>>());
+		} 
+		
+		this.groups.get(group).add(temp);
+		
 	}
 
-	public void insert(String start, String end, ArrayList<String> exclude) {
-		this.list.add(new RecompItem(start, end, exclude));
+	// Check if group is excluded in recomputations
+	public boolean isExcluded (String group){
+		return this.groups.containsKey(group);
+	}
+	
+	// Check if a recomputation period is valid for target date
+	public boolean validPeriod(String target, String start, String end) throws ParseException {
+
+		SimpleDateFormat dmy = new SimpleDateFormat("yyyy-MM-dd");
+		Date tDate = dmy.parse(target);
+		Date sDate = dmy.parse(start);
+		Date eDate = dmy.parse(end);
+
+		return (tDate.compareTo(sDate) >= 0 && tDate.compareTo(eDate) <= 0);
+
 	}
 
-	public int count() {
-		return this.list.size();
-	}
-
-	public boolean shouldRecompute(String groupname, String targetDate) throws ParseException {
-
-		for (RecompItem item : this.list) {
-			// supergroup found
-
-			// loop through all excluded sites
-			for (String subitem : item.exclude) {
-				// if site exists in the exclude list
-				if (groupname.equalsIgnoreCase(subitem)) {
-
-					// check if the dates alingn
-					SimpleDateFormat dmy = new SimpleDateFormat("yyyy-MM-dd");
-					Date sDate = dmy.parse(item.start);
-					Date eDate = dmy.parse(item.end);
-					Date tDate = dmy.parse(targetDate);
-
-					return (tDate.compareTo(sDate) >= 0 && tDate.compareTo(eDate) <= 0);
-
+	public ArrayList<Map<String,String>> getPeriods(String group,String targetDate) throws ParseException {
+		ArrayList<Map<String,String>> periods = new ArrayList<Map<String,String>>();
+		
+		if (this.groups.containsKey(group)){
+			for (Map<String,String> period : this.groups.get(group)){
+				if (this.validPeriod(targetDate, period.get("start"), period.get("end"))){
+					periods.add(period);
 				}
 			}
-
+			
 		}
-
-		// Site doesn't belong in recomputation exclude list
-		return false;
+		
+		return periods;
 	}
 
-	public String getStart(String excluded) {
-		for (RecompItem item : this.list) {
-			for (String exItem : item.exclude) {
-				if (exItem.equals(excluded)) {
-					return item.start;
-				}
-			}
-		}
-
-		return null;
-	}
-
-	public String getEnd(String excluded) {
-		for (RecompItem item : this.list) {
-			for (String exItem : item.exclude) {
-				if (exItem.equals(excluded)) {
-					return item.end;
-				}
-			}
-		}
-
-		return null;
-	}
+	
 
 	public void loadJson(File jsonFile) throws IOException {
 
@@ -132,15 +102,12 @@ public class Recomputations {
 				String start = item.getAsJsonObject().get("start_time").getAsString();
 				String end = item.getAsJsonObject().get("end_time").getAsString();
 
-
-				ArrayList<String> exclude = new ArrayList<String>();
 				// Get the excluded
 				JsonArray jExclude = item.getAsJsonObject().get("exclude").getAsJsonArray();
 				for (JsonElement subitem : jExclude) {
-					exclude.add(subitem.getAsString());
+					this.insert(subitem.getAsString(),start,end);
 				}
 
-				this.insert(start, end, exclude);
 			}
 
 		} catch (FileNotFoundException ex) {
