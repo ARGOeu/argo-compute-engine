@@ -59,8 +59,8 @@ def get_pending_and_running(col):
     :param col: pymongo collection object
     :return: number of pending requests and running recalculation requests
     """
-    num_pen = col.find({"s": "pending"}).count()
-    num_run = col.find({"s": "running"}).count()
+    num_pen = col.find({"status": "pending"}).count()
+    num_run = col.find({"status": "running"}).count()
     return num_pen, num_run
 
 
@@ -79,8 +79,8 @@ def run_recomputation(col, tenant, num_running, num_pending, threshold):
     elif num_running >= threshold:
         raise ValueError("Over threshold; no recomputation will be executed.")
 
-    pen_recalc = col.find_one({"s": "pending"})
-    pen_recalc_id = str(pen_recalc["_id"])
+    pen_recalc = col.find_one({"status": "pending"})
+    pen_recalc_id = str(pen_recalc["id"])
 
     # Status update allready implemented in recompute
     # Call recompute execution script

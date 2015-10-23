@@ -19,7 +19,7 @@ def write_output(results, tenant, date_under, arsync_lib):
     :param results: recomputation results in json format
     :param tenant: the name of the tenant (used in filename)
     :param date_under: target date formatted with underscores (used in filename)
-    :param arsync_lib: path to the arsync root directory  
+    :param arsync_lib: path to the arsync root directory
     """
     # create a temporary recalculation file in the ar-sync folder
     rec_name = "recomputations_" + tenant + "_" + date_under + ".json"
@@ -54,20 +54,21 @@ def get_mongo_collection(mongo_host, mongo_port, db, collection, log):
     return col
 
 
-def get_mongo_results(collection, date):
+def get_mongo_results(collection, date, report):
     """
     Returns recomputation results for a specific date by querying MongoDB Datastore
 
     :param collection: target datastore collection containing recomputations
     :param date: specific date to query
+    :param report: specify target report
     :returns: json object containing results
     """
     # Init results list
     results = []
     # prepare the query to find requests that include the target date
-    query = "'%s' >= this.st.split('T')[0] && '%s' <= this.et.split('T')[0]" % (date, date)
+    query = "'%s' >= this.start_time.split('T')[0] && '%s' <= this.end_time.split('T')[0]" % (date, date)
     # run the query
-    for item in collection.find({"$where": query}, {"_id": 0}):
+    for item in collection.find({"report":report,"$where": query}, {"_id": 0}):
         results.append(item)
 
     return results
@@ -76,25 +77,26 @@ def get_mongo_results(collection, date):
 def main(args=None):
     """
     Script to retrieve relevant recomputations requests for a specific date
-    
+
     :param args: Command line arguments
     """
 
     # default paths
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
-    
+    arcomp_conf = "/etc/ar-compute"
 
     # Init configuration
     cfg = ArgoConfiguration(fn_ar_cfg)
-    db_name = "AR"
-    col_recomputations = "recalculations"
+    cfg.load_tenant_db_conf(os.path.join(arcomp_conf, args.tenant + "_db_conf.json"))
+    db_name = cfg.get_mongo_database("ar")
+    col_recomputations = "recomputations"
 
     # Init logging
     log = init_log(cfg.log_mode, cfg.log_file, cfg.log_level, 'argo.mongo_recompute')
 
     # Get mongo collection
     col = get_mongo_collection(cfg.mongo_host, cfg.mongo_port, db_name, col_recomputations, log)
-    results = get_mongo_results(col, args.date)
+    results = get_mongo_results(col, args.date, args.job)
     log.info("Date: %s, relevant recomputations found: %s", args.date, len(results))
 
     # Write results to file
@@ -110,6 +112,8 @@ if __name__ == "__main__":
         "-d", "--date", help="date", dest="date", metavar="DATE", required="TRUE")
     arg_parser.add_argument(
         "-t", "--tenant", help="tenant owner ", dest="tenant", metavar="STRING", required="TRUE")
+    arg_parser.add_argument(
+        "-j", "--job", help="job ", dest="job", metavar="STRING", required="TRUE")
     # Parse the command line arguments accordingly and introduce them to
     # main...
     sys.exit(main(arg_parser.parse_args()))

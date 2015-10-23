@@ -8,22 +8,24 @@ from datetime import datetime
 
 FOO_RECOMPUTATION_STR = r"""
 {
-    "es" : [
+    "excluded" : [
         "WCSS"
     ],
-    "et" : "2015-03-15T23:00:00Z",
-    "n" : "NGI_PL",
-    "r" : "2nd recomputation test 3rd key",
-    "s" : "pending",
-    "st" : "2015-03-10T12:00:00Z",
-    "t" : "2015-04-01 14:58:40"
+    "end_time" : "2015-03-15T23:00:00Z",
+    "reason" : "2nd recomputation test 3rd key",
+    "status" : "pending",
+    "start_time" : "2015-03-10T12:00:00Z",
+    "timestamp" : "2015-04-01 14:58:40",
+    "id":"SOME_UUID",
+    "requester_name":"TestName",
+    "requester_email":"starwars@starwars.gr"
 }
 """
 
 
 @mock.patch('recompute.run_cmd')
 def test_do_recompute(mock_run_cmd):
-    
+
     log = logging.getLogger()
 
     ar_exec = "/usr/libexec/ar-compute/bin"
@@ -81,7 +83,7 @@ def test_get_recomputation():
     results = recompute.get_recomputation(mock_collection, "551bdd701c8a97e78635a911", log)
 
     # Assert with a valid Object Id
-    mock_collection.find_one.assert_called_with({'_id': ObjectId('551bdd701c8a97e78635a911')})
+    mock_collection.find_one.assert_called_with({'id': '551bdd701c8a97e78635a911'})
     assert results == expected_recomputation
 
     # Assert with invalid ObjectId and raised exception
@@ -105,8 +107,8 @@ def test_update_status():
     timestamp = datetime.now()
     recompute.update_status(mock_collection, "551bdd701c8a97e78635a911", "FOO", timestamp, log)
 
-    query_id = {'_id': ObjectId('551bdd701c8a97e78635a911')}
-    query_update = {'$set': {'s': 'FOO'}, '$push': {'history': {'status': 'FOO', 'ts': timestamp}}}
+    query_id = {'id': '551bdd701c8a97e78635a911'}
+    query_update = {'$set': {'status': 'FOO','timestamp':timestamp}}
 
     # Assert with a valid Object Id
     mock_collection.update.assert_called_with(query_id, query_update)

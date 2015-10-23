@@ -19,7 +19,7 @@ def do_recompute(argo_exec, date, tenant, job, log):
     :param argo_exec: path to argo bin directory
     :param date: specific date for a/r job
     :param tenant: tenant name for a/r job
-    :param job: job name 
+    :param job: job name
     :param log: logger reference
     """
     log.info("Recomputing: for tenant: %s and job: %s and date: %s", tenant, job, date)
@@ -32,7 +32,7 @@ def loop_recompute(argo_exec, date_range, tenant, job_set, log):
     For a specific time period, loop and execute recomputations for each day
 
     :param argo_exec: path to argo bin directory
-    :param date_range: list with all available dates included in the period 
+    :param date_range: list with all available dates included in the period
     :param tenant: tenant name
     :param job_set: list of tenant's available jobs
     :param log: logger reference
@@ -83,7 +83,7 @@ def get_recomputation(collection, rec_id, log):
         raise ValueError("Invalid Object Id used")
 
     # run the query
-    result = collection.find_one({'_id': ObjectId(rec_id)})
+    result = collection.find_one({'id': rec_id})
 
     if result is None:
         log.error("Could not find specified Recomputation")
@@ -99,8 +99,8 @@ def get_time_period(recomputation):
     :param recomputation: target datastore collection containing recomputations
     :returns: list with all the dates included in the time period
     """
-    start_date_str = recomputation["st"].split('T')[0]
-    end_date_str = recomputation["et"].split('T')[0]
+    start_date_str = recomputation["start_time"].split('T')[0]
+    end_date_str = recomputation["end_time"].split('T')[0]
     return get_date_range(start_date_str, end_date_str)
 
 
@@ -120,30 +120,28 @@ def update_status(collection, rec_id, status, timestamp, log):
         raise ValueError("Invalid Object Id used")
 
     # Update status and history
-    collection.update({'_id': ObjectId(rec_id)}, {
-        '$set': {"s": status}, '$push': {"history": {"status": status, "ts": timestamp}}})
-
+    collection.update({'id': rec_id}, {'$set': {"status": status,"timestamp": timestamp} })
 
 def recompute(recalculation_id=None, tenant=None):
     """
     Script to execute recomputation
-    
+
     :param recalculation_id: The id of the job to be recomputed
     :param tenant: tenants name
     """
     # default paths
     fn_ar_cfg = "/etc/ar-compute-engine.conf"
     argo_exec = "/usr/libexec/ar-compute/bin"
-
+    arcomp_conf = "/etc/ar-compute"
     # Init configuration
     cfg = ArgoConfiguration(fn_ar_cfg)
-
+    cfg.load_tenant_db_conf(os.path.join(arcomp_conf, args.tenant + "_db_conf.json"))
     # Init logging
     log = init_log(cfg.log_mode, cfg.log_file, cfg.log_level, 'argo.recompute')
 
     # Check recomputation
     col = get_mongo_collection(
-        cfg.mongo_host, cfg.mongo_port, "AR", "recalculations", log)
+        cfg.mongo_host, cfg.mongo_port, cfg.get_mongo_database("ar"), "recalculations", log)
     recomputation = get_recomputation(col, recalculation_id, log)
     dates = get_time_period(recomputation)
 
