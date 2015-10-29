@@ -41,7 +41,8 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 
 	private boolean initialized;
 
-	public MetricTimelines(String fnOps, String targetDate, String fsUsed, String sPeriod, String sInterval) throws IOException {
+	public MetricTimelines(String fnOps, String targetDate, String fsUsed, String sPeriod, String sInterval)
+			throws IOException {
 		// set first the filenames
 		this.fnOps = fnOps;
 		this.fsUsed = fsUsed;
@@ -54,7 +55,7 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 		this.sInterval = Integer.parseInt(sInterval);
 
 		// set the Structures
-		this.dtl = new DTimeline(this.sPeriod,this.sInterval);
+		this.dtl = new DTimeline(this.sPeriod, this.sInterval);
 		this.opsMgr = new OpsManager();
 
 		// set up factories
@@ -70,15 +71,13 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 		if (this.fsUsed.equalsIgnoreCase("cache")) {
 
 			this.opsMgr.loadJson(new File("./ops"));
-		}
-		else if (this.fsUsed.equalsIgnoreCase("local")) {
-	
+		} else if (this.fsUsed.equalsIgnoreCase("local")) {
+
 			this.opsMgr.loadJson(new File(this.fnOps));
 		}
-		
-		
+
 		this.initialized = true;
-		
+
 	}
 
 	public List<String> getCacheFiles() {
@@ -86,20 +85,19 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 		list.add(this.fnOps.concat("#ops"));
 		return list;
 	}
-	
+
 	@Override
 	public Tuple exec(Tuple input) {
 
 		// Check if cache files have been opened
-		if (this.initialized == false)
-		{
+		if (this.initialized == false) {
 			try {
 				this.init(); // If not open them
 			} catch (IOException e) {
 				LOG.error("Could not initialize sync structures");
-				throw new RuntimeException("pig Eval Init Error");
+				LOG.error(e);
+				throw new IllegalStateException();
 			}
-
 
 		}
 		// Clear timeline
@@ -114,24 +112,27 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 		DefaultDataBag bag;
 		try {
 			// /Grab endpoint info
-			service = (String)input.get(0);
-			hostname = (String)input.get(1);
-			metric = (String)input.get(2);
+			service = (String) input.get(0);
+			hostname = (String) input.get(1);
+			metric = (String) input.get(2);
 			// Get timeline info
 			bag = (DefaultDataBag) input.get(3);
 		} catch (ClassCastException e) {
 			LOG.error("Failed to cast input to approriate type");
 			LOG.error("Bad tuple input:" + input.toString());
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		} catch (IndexOutOfBoundsException e) {
 			LOG.error("Malformed tuple schema");
 			LOG.error("Bad tuple input:" + input.toString());
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		} catch (ExecException e) {
 			LOG.error("Execution error");
-			throw new RuntimeException("pig Eval bad input");
+			LOG.error(e);
+			throw new IllegalArgumentException();
 		}
-		
+
 		// Iterate the whole timeline
 		Iterator<Tuple> itBag = bag.iterator();
 
@@ -142,19 +143,22 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 			String status;
 			try {
 				// Get timeline item info
-				ts = (String)curItem.get(0);
-				status = (String)curItem.get(1);
+				ts = (String) curItem.get(0);
+				status = (String) curItem.get(1);
 			} catch (ClassCastException e) {
 				LOG.error("Failed to cast input to approriate type");
 				LOG.error("Bad tuple input:" + curItem.toString());
-				throw new RuntimeException("pig Eval bad input");
+				LOG.error(e);
+				throw new IllegalArgumentException();
 			} catch (IndexOutOfBoundsException e) {
 				LOG.error("Malformed tuple schema");
 				LOG.error("Bad tuple input:" + curItem.toString());
-				throw new RuntimeException("pig Eval bad input");
+				LOG.error(e);
+				throw new IllegalArgumentException();
 			} catch (ExecException e) {
-	    		LOG.error ("Execution error");
-	    		throw new RuntimeException("bad bag item input");
+				LOG.error("Execution error");
+				LOG.error(e);
+				throw new IllegalArgumentException();
 			}
 			if (!(ts.substring(0, ts.indexOf("T")).equals(this.targetDate))) {
 				this.dtl.setStartState(this.opsMgr.getIntStatus(status));
@@ -166,12 +170,12 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 				this.dtl.insert(ts, opsMgr.getIntStatus(status));
 
 			} catch (ParseException e) {
-				e.printStackTrace();
+				LOG.error(e);
 			}
 
 		}
 
-		this.dtl.finalize(this.opsMgr.getDefaultMissingInt());
+		this.dtl.settle(this.opsMgr.getDefaultMissingInt());
 
 		// Create output Tuple
 		Tuple output = tupFactory.newTuple();
@@ -202,17 +206,13 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 	@Override
 	public Schema outputSchema(Schema input) {
 
-		Schema.FieldSchema service = new Schema.FieldSchema("service",
-				DataType.CHARARRAY);
-		Schema.FieldSchema hostname = new Schema.FieldSchema("hostname",
-				DataType.CHARARRAY);
-		Schema.FieldSchema metric = new Schema.FieldSchema("metric",
-				DataType.CHARARRAY);
+		Schema.FieldSchema service = new Schema.FieldSchema("service", DataType.CHARARRAY);
+		Schema.FieldSchema hostname = new Schema.FieldSchema("hostname", DataType.CHARARRAY);
+		Schema.FieldSchema metric = new Schema.FieldSchema("metric", DataType.CHARARRAY);
 
 		// Schema.FieldSchema slot = new Schema.FieldSchema("slot",
 		// DataType.INTEGER);
-		Schema.FieldSchema statusInt = new Schema.FieldSchema("status",
-				DataType.INTEGER);
+		Schema.FieldSchema statusInt = new Schema.FieldSchema("status", DataType.INTEGER);
 
 		Schema metricTl = new Schema();
 		Schema timeline = new Schema();
@@ -228,16 +228,16 @@ public class MetricTimelines extends EvalFunc<Tuple> {
 		try {
 			tl = new Schema.FieldSchema("timeline", timeline, DataType.BAG);
 		} catch (FrontendException ex) {
+			LOG.error(ex);
 
 		}
 
 		metricTl.add(tl);
 
 		try {
-			return new Schema(new Schema.FieldSchema("endpoint", metricTl,
-					DataType.TUPLE));
+			return new Schema(new Schema.FieldSchema("endpoint", metricTl, DataType.TUPLE));
 		} catch (FrontendException ex) {
-
+			LOG.error(ex);
 		}
 
 		return null;

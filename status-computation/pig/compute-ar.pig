@@ -63,8 +63,8 @@ endpoint_groups = FOREACH (GROUP service_flavors BY (groupname)) {
 
 service_ar = FOREACH service_flavors GENERATE FLATTEN(f_ServiceAR(groupname,service,timeline));
 endpoint_groups_ar = FOREACH endpoint_groups GENERATE FLATTEN(f_EndpointGroupAR(groupname,timeline)) as (groupname,availability,reliability,up_f,unknown_f,down_f);
-service_data = FOREACH service_ar GENERATE FLATTEN(f_ServiceDATA(service,groupname,availability,reliability,up_f,unknown_f,down_f)) AS ($s_map);
-endpoint_groups_data = FOREACH endpoint_groups_ar GENERATE FLATTEN(f_egroupDATA(groupname,availability,reliability,up_f,unknown_f,down_f)) AS ($e_map); 
+service_data = FOREACH service_ar GENERATE FLATTEN(f_ServiceDATA(service,groupname,availability,reliability,up_f,unknown_f,down_f)) AS (report,date,name,supergroup,availability,reliability,up,down,unknown);
+endpoint_groups_data = FOREACH endpoint_groups_ar GENERATE FLATTEN(f_egroupDATA(groupname,availability,reliability,up_f,unknown_f,down_f)) AS (report,date,name,supergroup,weight,availability,reliability,up,down,unknown); 
 
 STORE service_data INTO '$mongo_service' USING com.mongodb.hadoop.pig.MongoInsertStorage();
 STORE endpoint_groups_data INTO '$mongo_egroup' USING com.mongodb.hadoop.pig.MongoInsertStorage();

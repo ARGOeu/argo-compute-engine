@@ -1,2 +1,9 @@
 language: java
-script: cd status-computation/java && mvn test
+
+before_install:  
+ - sudo pip install pytest 
+ - sudo pip install mock
+ - sudo pip install pymongo
+script: 
+ - cd status-computation/java && mvn test
+ - cd ../../bin && py.test
