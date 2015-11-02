@@ -16,6 +16,7 @@ import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
+import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import sync.AvailabilityProfiles;
@@ -238,6 +239,13 @@ public class ServiceMap extends EvalFunc<Tuple> {
 		serviceData.add(sDown);
 
 
+		try {
+			return new Schema(new Schema.FieldSchema("service_data", serviceData, DataType.TUPLE));
+		} catch (FrontendException ex) {
+			LOG.error(ex);
+
+		}
+		
 		return serviceData;
 
 	}

@@ -8,9 +8,13 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import ops.OpsManagerTest;
 
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -31,23 +35,51 @@ public class RecomputationsTest {
 		Recomputations recMgr = new Recomputations();
 		recMgr.loadJson(jsonFile);
 
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-01-AUTH", "2013-12-09"), true);
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-01-AUTH", "2013-12-10"), true);
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-01-AUTH", "2013-12-08"), true);
-		// should return false because date is out of recomputation period
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-01-AUTH", "2013-12-07"), false);
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-01-AUTH", "2013-12-11"), false);
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-01-AUTH", "2013-08-02"), false);
-		// should return false because site is out of exclude list
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-04-IASA", "2013-12-09"), false);
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-04-IASA", "2013-12-10"), false);
-		assertEquals(recMgr.shouldRecompute("NGI_GRNET", "GR-04-IASA", "2013-12-08"), false);
-		// should return false because NGI doesn't belong in the recomputation
-		// request
-		assertEquals(recMgr.shouldRecompute("NGI_UK", "SITEA", "2013-12-09"), false);
-		assertEquals(recMgr.shouldRecompute("NGI_DE", "SITEB", "2013-12-10"), false);
-		assertEquals(recMgr.shouldRecompute("NGI_FRANCE", "SITEC", "2013-12-08"), false);
+		assertEquals(recMgr.isExcluded("GR-01-AUTH"), true);
+		assertEquals(recMgr.isExcluded("HG-03-AUTH"), true);
+		assertEquals(recMgr.isExcluded("GR-04-IASA"), false);
 
+		// Check period functionality
+		ArrayList<Map<String,String>> gr01list = new ArrayList<Map<String,String>>();
+		ArrayList<Map<String,String>> siteAlist = new ArrayList<Map<String,String>>();
+		ArrayList<Map<String,String>> siteBlist = new ArrayList<Map<String,String>>();
+		ArrayList<Map<String,String>> siteClist = new ArrayList<Map<String,String>>();
+		
+		Map<String,String> gr01map = new HashMap<String,String>();
+		
+		Map<String,String> siteA1map = new HashMap<String, String>();
+		Map<String,String> siteA2map = new HashMap<String, String>();
+		
+		
+		Map<String,String> siteBmap = new HashMap<String,String>();
+		Map<String,String> siteCmap = new HashMap<String,String>();
+	
+		// Check period functionality
+		
+		gr01map.put("start", "2013-12-08T12:03:44Z");
+		gr01map.put("end", "2013-12-10T12:03:44Z");
+		
+		siteA1map.put("start", "2013-12-08T12:03:44Z");
+		siteA1map.put("end", "2013-12-08T13:03:44Z");
+		
+		siteA2map.put("start", "2013-12-08T16:03:44Z");
+		siteA2map.put("end", "2013-12-08T18:03:44Z");
+		
+		siteBmap.put("start", "2013-12-08T12:03:44Z");
+		siteBmap.put("end", "2013-12-08T13:03:44Z");
+		
+		siteCmap.put("start", "2013-12-08T16:03:44Z");
+		siteCmap.put("end", "2013-12-08T18:03:44Z");
+		
+		gr01list.add(gr01map);
+	    siteAlist.add(siteA1map);
+	    siteAlist.add(siteA2map);
+	    siteBlist.add(siteBmap);
+	    siteClist.add(siteCmap);
+	    
+	    Assert.assertEquals(recMgr.getPeriods("GR-01-AUTH", "2013-12-08"),gr01list);
+	    Assert.assertEquals(recMgr.getPeriods("SITE-A", "2013-12-08"),siteAlist);
+	    Assert.assertEquals(recMgr.getPeriods("SITE-B", "2013-12-08"),siteBlist);
 	}
 
 }

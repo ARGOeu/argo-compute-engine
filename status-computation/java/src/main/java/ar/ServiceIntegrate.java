@@ -17,6 +17,7 @@ import org.apache.pig.data.DataType;
 import org.apache.pig.data.DefaultDataBag;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
+import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import sync.AvailabilityProfiles;
@@ -172,7 +173,16 @@ public class ServiceIntegrate extends EvalFunc<Tuple> {
 		serviceAR.add(unknownFraction);
 		serviceAR.add(downFraction);
 
+		try {
+			return new Schema(new Schema.FieldSchema("service_ar", serviceAR, DataType.TUPLE));
+		} catch (FrontendException ex) {
+			LOG.error(ex);
+
+		}
+		
 		return serviceAR;
+		
+		
 
 	}
 

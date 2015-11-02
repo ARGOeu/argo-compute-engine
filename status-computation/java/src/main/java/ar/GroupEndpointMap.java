@@ -243,6 +243,13 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 		groupEndpointData.add(sUp);
 		groupEndpointData.add(sDown);
 		groupEndpointData.add(sUnknown);
+		
+		try {
+			return new Schema(new Schema.FieldSchema("endpoint_group_data", groupEndpointData, DataType.TUPLE));
+		} catch (FrontendException ex) {
+			LOG.error(ex);
+
+		}
 
 		return groupEndpointData;
 	}

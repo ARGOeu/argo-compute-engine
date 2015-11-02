@@ -19,9 +19,9 @@ def test_get_collection(mock_client):
 def test_get_results():
     mock_collection = mock.MagicMock()
     mock_collection.find.return_value = ["result1", "result2"]
-    results = mongo_recompute.get_mongo_results(mock_collection, "2015-02-05")
-    query_range = {
-        '$where': "'2015-02-05' >= this.st.split('T')[0] && '2015-02-05' <= this.et.split('T')[0]"}
+    results = mongo_recompute.get_mongo_results(mock_collection, "2015-02-05","critical")
+    query_range = {"report":"critical",
+        '$where': "'2015-02-05' >= this.start_time.split('T')[0] && '2015-02-05' <= this.end_time.split('T')[0]"}
     query_projection = {'_id': 0}
 
     mock_collection.find.assert_called_with(query_range, query_projection)
@@ -29,9 +29,9 @@ def test_get_results():
 
 
 def test_write_output(tmpdir):
-    """ 
+    """
     tmpdir creates a directory unique to this test's invocation
-    and returns a LocalPath object with the ability to write 
+    and returns a LocalPath object with the ability to write
     files with data during tests. tmpdir is used here to write
     temporarily output to a file
     """

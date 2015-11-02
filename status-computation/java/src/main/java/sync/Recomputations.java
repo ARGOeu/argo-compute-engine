@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -24,105 +25,66 @@ public class Recomputations {
 
 	private static final Logger LOG = Logger.getLogger(Recomputations.class.getName());
 
-	public ArrayList<RecompItem> list;
-
-	private class RecompItem {
-		String reason; // Recalculation reason
-		String status; // Recalculation status
-		String supergroup; // Name of supergroup that adheres to recalculation
-		String start; // Start timestamp
-		String end; // Start timestamp
-		String submitted;
-		ArrayList<String> exclude; // Exclude list
-
-		public RecompItem() {
-			// Initializations
-			this.reason = "";
-			this.status = "";
-			this.supergroup = "";
-			this.start = "";
-			this.end = "";
-			this.submitted = "";
-			this.exclude = new ArrayList<String>();
-		}
-
-		public RecompItem(String reason, String status, String supergroup, String start, String end, String submitted,
-				ArrayList<String> exclude) {
-			this.reason = reason;
-			this.status = status;
-			this.supergroup = supergroup;
-			this.start = start;
-			this.end = end;
-			this.submitted = submitted;
-			this.exclude = exclude;
-		}
-	}
-
+	public Map<String,ArrayList<Map<String,String>>> groups;
+	
+	
 	public Recomputations() {
-		this.list = new ArrayList<RecompItem>();
+		this.groups = new HashMap<String,ArrayList<Map<String,String>>>();
 	}
 
-	// Clear all the recalc data
+	// Clear all the recomputation data
 	public void clear() {
-		this.list = new ArrayList<RecompItem>();
+		this.groups = new HashMap<String,ArrayList<Map<String,String>>>();
+	}
+	
+	// Insert new recomputation data for a specific endpoint group
+	public void insert(String group, String start, String end) {
+		
+		Map<String,String>temp = new HashMap<String,String>();
+		temp.put("start", start);
+		temp.put("end",end);
+		
+		if (this.groups.containsKey(group) == false){
+			this.groups.put(group, new ArrayList<Map<String,String>>());
+		} 
+		
+		this.groups.get(group).add(temp);
+		
 	}
 
-	public void insert(String reason, String status, String supergroup, String start, String end, String submitted,
-			ArrayList<String> exclude) {
-		this.list.add(new RecompItem(reason, status, supergroup, start, end, submitted, exclude));
+	// Check if group is excluded in recomputations
+	public boolean isExcluded (String group){
+		return this.groups.containsKey(group);
+	}
+	
+	// Check if a recomputation period is valid for target date
+	public boolean validPeriod(String target, String start, String end) throws ParseException {
+
+		SimpleDateFormat dmy = new SimpleDateFormat("yyyy-MM-dd");
+		Date tDate = dmy.parse(target);
+		Date sDate = dmy.parse(start);
+		Date eDate = dmy.parse(end);
+
+		return (tDate.compareTo(sDate) >= 0 && tDate.compareTo(eDate) <= 0);
+
 	}
 
-	public int count() {
-		return this.list.size();
-	}
-
-	public boolean shouldRecompute(String supergroup, String groupname, String targetDate) throws ParseException {
-
-		for (RecompItem item : this.list) {
-			// supergroup found
-			if (item.supergroup.equalsIgnoreCase(supergroup)) {
-
-				// loop through all excluded sites
-				for (String subitem : item.exclude) {
-					// if site exists in the exclude list
-					if (groupname.equalsIgnoreCase(subitem)) {
-
-						// check if the dates alingn
-						SimpleDateFormat dmy = new SimpleDateFormat("yyyy-MM-dd");
-						Date sDate = dmy.parse(item.start);
-						Date eDate = dmy.parse(item.end);
-						Date tDate = dmy.parse(targetDate);
-
-						return (tDate.compareTo(sDate) >= 0 && tDate.compareTo(eDate) <= 0);
-
-					}
+	public ArrayList<Map<String,String>> getPeriods(String group,String targetDate) throws ParseException {
+		ArrayList<Map<String,String>> periods = new ArrayList<Map<String,String>>();
+		
+		if (this.groups.containsKey(group)){
+			for (Map<String,String> period : this.groups.get(group)){
+				if (this.validPeriod(targetDate, period.get("start"), period.get("end"))){
+					periods.add(period);
 				}
 			}
+			
 		}
-
-		// Site doesn't belong in recomputation exclude list
-		return false;
+		
+		return periods;
 	}
 
-	public String getStart(String supergroup) {
-		for (RecompItem item : this.list) {
-			if (item.supergroup.equalsIgnoreCase(supergroup)) {
-				return item.start;
-			}
-		}
-
-		return null;
-	}
-
-	public String getEnd(String supergroup) {
-		for (RecompItem item : this.list) {
-			if (item.supergroup.equalsIgnoreCase(supergroup)) {
-				return item.end;
-			}
-		}
-
-		return null;
-	}
+	
 
 	public void loadJson(File jsonFile) throws IOException {
 
@@ -137,21 +99,15 @@ public class Recomputations {
 			JsonArray jRootObj = jRootElement.getAsJsonArray();
 
 			for (JsonElement item : jRootObj) {
-				String reason = item.getAsJsonObject().get("r").getAsString();
-				String status = item.getAsJsonObject().get("s").getAsString();
-				String start = item.getAsJsonObject().get("st").getAsString();
-				String end = item.getAsJsonObject().get("et").getAsString();
-				String submitted = item.getAsJsonObject().get("t").getAsString();
-				String supergroup = item.getAsJsonObject().get("n").getAsString();
+				String start = item.getAsJsonObject().get("start_time").getAsString();
+				String end = item.getAsJsonObject().get("end_time").getAsString();
 
-				ArrayList<String> exclude = new ArrayList<String>();
 				// Get the excluded
-				JsonArray jExclude = item.getAsJsonObject().get("es").getAsJsonArray();
+				JsonArray jExclude = item.getAsJsonObject().get("exclude").getAsJsonArray();
 				for (JsonElement subitem : jExclude) {
-					exclude.add(subitem.getAsString());
+					this.insert(subitem.getAsString(),start,end);
 				}
 
-				this.insert(reason, status, supergroup, start, end, submitted, exclude);
 			}
 
 		} catch (FileNotFoundException ex) {
