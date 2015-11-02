@@ -35,6 +35,7 @@ public class ConfigManagerTest {
 		assertEquals("SITES", cfgMgr.egroup);
 		assertEquals("NGI", cfgMgr.ggroup);
 		assertEquals("hepspec", cfgMgr.weight);
+		assertEquals("c800846f-8478-4af8-85d1-a3f12fe4c18f",cfgMgr.id);
 
 		// Assert compound fields
 		assertEquals("Production", cfgMgr.ggroupTags.get("infrastructure"));

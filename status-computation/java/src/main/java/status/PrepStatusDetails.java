@@ -161,7 +161,7 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 
 	
 		// add stuff to the output
-		output.append(this.cfgMgr.report); // Add report name
+		output.append(this.cfgMgr.id); // Add report id
 		output.append(egroupName);
 		output.append(monitoringHost);
 		output.append(service);		   

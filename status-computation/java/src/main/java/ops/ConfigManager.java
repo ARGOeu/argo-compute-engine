@@ -23,6 +23,7 @@ public class ConfigManager {
 
 	private static final Logger LOG = Logger.getLogger(ConfigManager.class.getName());
 
+	public String id; // report uuid reference
 	public String tenant;
 	public String report;
 	public String egroup; // endpoint group
@@ -37,6 +38,7 @@ public class ConfigManager {
 	public ConfigManager() {
 		this.tenant = null;
 		this.report = null;
+		this.id = null;
 		this.egroup = null;
 		this.ggroup = null;
 		this.weight = null;
@@ -47,6 +49,7 @@ public class ConfigManager {
 	}
 
 	public void clear() {
+		this.id=null;
 		this.tenant = null;
 		this.report = null;
 		this.egroup = null;
@@ -78,6 +81,7 @@ public class ConfigManager {
 			JsonElement jElement = jsonParser.parse(br);
 			JsonObject jObj = jElement.getAsJsonObject();
 			// Get the simple fields
+			this.id = jObj.getAsJsonPrimitive("id").getAsString();
 			this.tenant = jObj.getAsJsonPrimitive("tenant").getAsString();
 			this.report = jObj.getAsJsonPrimitive("job").getAsString();
 			this.egroup = jObj.getAsJsonPrimitive("egroup").getAsString();
