@@ -11,7 +11,6 @@ Requires: python-argparse
 Requires: python-pymongo
 Requires: hive
 Requires: hbase
-Requires: hcatalog
 Requires: pig
 Requires: pig-udf-datafu
 Requires: java-1.7.0-openjdk
