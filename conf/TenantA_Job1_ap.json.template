@@ -1,0 +1,25 @@
+{
+  "name": "aprofile1",
+  "namespace": "test",
+  "metric_profile": "metric_profile1",
+  "metric_ops":"AND",
+  "group_type": "DATACENTERS",
+  "operation":"AND",
+  "groups": {
+    "compute": {
+      "services":{
+        "compute-service-1":"OR",
+        "compute-service-2":"OR",
+        "compute-service-3":"OR"
+        },
+       "operation":"OR"
+    },
+    "storage": {
+      "services":{
+        "storage-service-1":"OR",
+        "storage-service-2":"OR"
+        },
+       "operation":"OR"
+    }
+  } 
+}
