@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
 Version: 1.6.5
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -43,8 +43,8 @@ install --mode 644 status-computation/lib/*.sh                  %{buildroot}/usr
 install --mode 644 status-computation/lib/*.py                  %{buildroot}/usr/libexec/ar-compute/lib/
 install --mode 755 bin/*.py                                     %{buildroot}/usr/libexec/ar-compute/bin/
 install --mode 644 status-computation/java/target/MyUDF-1.0.jar %{buildroot}/usr/libexec/ar-compute/MyUDF.jar
-install --mode 644 conf/ar-compute-engine.conf                  %{buildroot}/etc/
-install --mode 644 conf/*.json                                  %{buildroot}/etc/ar-compute
+install --mode 644 conf/ar-compute-engine.conf.template         %{buildroot}/etc/
+install --mode 644 conf/*.json.template                         %{buildroot}/etc/ar-compute
 
 %clean
 cd status-computation/java
@@ -60,10 +60,12 @@ mvn clean
 %attr(0755,root,root) /usr/libexec/ar-compute/MyUDF.jar
 %attr(0750,root,root) /var/lib/ar-compute
 %attr(0750,root,root) /var/log/ar-compute
-%attr(0644,root,root) /etc/ar-compute-engine.conf
-%attr(0644,root,root) /etc/ar-compute/*.json
+%attr(0644,root,root) /etc/ar-compute-engine.conf.template
+%attr(0644,root,root) /etc/ar-compute/*.json.template
 
 %changelog
+* Thu Nov 12 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-3%{?dist}
+- ARGO-273 Replace conf files with generic configuration templates
 * Tue Nov 3 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-2%{?dist}
 - ARGO-245 Upgrade devel to CDH 5.x - Update spec requirement to java-1.7.0-openjdk
 * Thu Oct 29 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-1%{?dist}
