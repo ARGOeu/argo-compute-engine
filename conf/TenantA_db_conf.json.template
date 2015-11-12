@@ -2,17 +2,17 @@
   "db_conf": [
     {
       "store": "ar",
-      "server": "192.168.0.99",
+      "server": "127.0.0.1",
       "port": 27017,
-      "database": "argo_EGI",
+      "database": "argo_TenantA",
       "username": "",
       "password": ""
     },
     {
       "store": "status",
-      "server": "192.168.0.99",
+      "server": "127.0.0.1",
       "port": 27017,
-      "database": "argo_EGI",
+      "database": "argo_TenantA",
       "username": "",
       "password": ""
     }
