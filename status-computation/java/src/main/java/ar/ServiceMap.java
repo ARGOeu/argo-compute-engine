@@ -172,7 +172,7 @@ public class ServiceMap extends EvalFunc<Tuple> {
 		String fullAvProfile = avNamespace + "-" + avProfile;
 		// Add the previous info before adding the tags
 		
-		output.append(cfgMgr.report);       // 0 - report name
+		output.append(cfgMgr.id);       // 0 - report id
 		output.append(dateInt); 			// 1 - date
 		output.append(service); 			// 2 - name
 		output.append(egroupName); 			// 3 - supergroup 

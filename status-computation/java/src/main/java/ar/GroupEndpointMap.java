@@ -174,7 +174,7 @@ public class GroupEndpointMap extends EvalFunc<Tuple> {
 		String ggroupName = this.ggMgr.getGroup(ggroupType, egroupName);
 
 		// Add the previous info before adding the tags
-		output.append(cfgMgr.report);			// 0 - reportName
+		output.append(cfgMgr.id);				// 0 - report id
 		output.append(dateInt); 				// 1 - date
 		output.append(egroupName); 				// 2 - name
 		output.append(ggroupName); 				// 3 - supergroup 
