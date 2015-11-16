@@ -205,23 +205,23 @@ public class ServiceMap extends EvalFunc<Tuple> {
 		Schema serviceData = new Schema();
 
 		// Define first fields
-		Schema.FieldSchema sReport = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "report"),
+		Schema.FieldSchema sReport = new Schema.FieldSchema("report",
 				DataType.CHARARRAY);
-		Schema.FieldSchema sDateInt = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "date"),
+		Schema.FieldSchema sDateInt = new Schema.FieldSchema("date",
 				DataType.INTEGER);
-		Schema.FieldSchema sName = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "name"),
+		Schema.FieldSchema sName = new Schema.FieldSchema("name",
 				DataType.CHARARRAY);
-		Schema.FieldSchema sSuperGroup = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "supergroup"),
+		Schema.FieldSchema sSuperGroup = new Schema.FieldSchema("supergroup",
 				DataType.CHARARRAY);
 		
 		// Define the ar results fields
-		Schema.FieldSchema sAvailability = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "availability"),
+		Schema.FieldSchema sAvailability = new Schema.FieldSchema("availability",
 				DataType.DOUBLE);
-		Schema.FieldSchema sReliability = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "reliability"),
+		Schema.FieldSchema sReliability = new Schema.FieldSchema("reliability",
 				DataType.DOUBLE);
-		Schema.FieldSchema sUp = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "up"), DataType.DOUBLE);
-		Schema.FieldSchema sDown = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "down"), DataType.DOUBLE);
-		Schema.FieldSchema sUnknown = new Schema.FieldSchema(this.localCfgMgr.getMapped("ar", "unknown"),
+		Schema.FieldSchema sUp = new Schema.FieldSchema("up", DataType.DOUBLE);
+		Schema.FieldSchema sDown = new Schema.FieldSchema("down", DataType.DOUBLE);
+		Schema.FieldSchema sUnknown = new Schema.FieldSchema("unknown",
 				DataType.DOUBLE);
 		
 		// NOTE: tags and tag schema will be handled properly in a later PR

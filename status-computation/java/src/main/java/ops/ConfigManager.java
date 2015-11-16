@@ -33,7 +33,7 @@ public class ConfigManager {
 	public TreeMap<String, String> egroupTags;
 	public TreeMap<String, String> ggroupTags;
 	public TreeMap<String, String> mdataTags;
-	public HashMap<String, HashMap<String, String>> datastore_map;
+	
 
 	public ConfigManager() {
 		this.tenant = null;
@@ -45,7 +45,7 @@ public class ConfigManager {
 		this.egroupTags = new TreeMap<String, String>();
 		this.ggroupTags = new TreeMap<String, String>();
 		this.mdataTags = new TreeMap<String, String>();
-		this.datastore_map = new HashMap<String, HashMap<String, String>>();
+		
 	}
 
 	public void clear() {
@@ -58,16 +58,10 @@ public class ConfigManager {
 		this.egroupTags.clear();
 		this.ggroupTags.clear();
 		this.mdataTags.clear();
-		this.datastore_map.clear();
+		
 	}
 
-	public String getMapped(String category, String value) {
-		if (this.datastore_map.containsKey(category)) {
-			return this.datastore_map.get(category).get(value);
-		}
-
-		return null;
-	}
+	
 
 	public void loadJson(File jsonFile) throws IOException {
 		// Clear data
@@ -106,17 +100,7 @@ public class ConfigManager {
 
 				this.mdataTags.put(item.getKey(), item.getValue().getAsString());
 			}
-
-			// Get super compound field
-			for (Entry<String, JsonElement> item : jDataMap.entrySet()) {
-				String itemKey = item.getKey();
-				this.datastore_map.put(itemKey, new HashMap<String, String>());
-
-				JsonObject jSubObj = item.getValue().getAsJsonObject();
-				for (Entry<String, JsonElement> subitem : jSubObj.entrySet()) {
-					this.datastore_map.get(itemKey).put(subitem.getKey(), subitem.getValue().getAsString());
-				}
-			}
+			
 
 		} catch (FileNotFoundException ex) {
 			LOG.error("Could not open file:" + jsonFile.getName());
