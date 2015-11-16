@@ -52,13 +52,6 @@ public class ConfigManagerTest {
 		assertEquals("ops", cfgMgr.mdataTags.get("vo_fqan"));
 		assertEquals("any", cfgMgr.mdataTags.get("roc"));
 
-		assertEquals("r", cfgMgr.getMapped("ar", "reliability"));
-		assertEquals("dt", cfgMgr.getMapped("ar", "date"));
-		assertEquals("ap", cfgMgr.getMapped("ar", "av_profile"));
-		assertEquals("p", cfgMgr.getMapped("ar", "metric_profile"));
-		assertEquals("s", cfgMgr.getMapped("ar", "group"));
-		assertEquals("n", cfgMgr.getMapped("ar", "supergroup"));
-		assertEquals("hsp", cfgMgr.getMapped("ar", "weight"));
 
 	}
 
