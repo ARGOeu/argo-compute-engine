@@ -63,13 +63,13 @@ This utility is used in order to delete availability and reliability data from t
 
 - `-d --date {YYYY-MM-DD}` the date (day) for which to delete the availability and reliability data (Required)
 - `-t --tenant {STRING}` the name of the tenant. Case sensitive. (Required)
-- `-r --report {STRING}` the name of the report that results belong to. Case sensitive (Required)
+- `-r --report {STRING}` the id (uuid format) of the report that results belong to. Case sensitive (Required)
 
 <a id="status"></a>
 
 ### mongo_clean_status.py
 
-This utility can be used in order to delete the status detail data from the datastore, for a specified tenant,report and date. 
+This utility can be used in order to delete the status detail data from the datastore, for a specified tenant,report and date.
 
 #### Full path
 ```
@@ -79,4 +79,4 @@ This utility can be used in order to delete the status detail data from the data
 
 - `-d --date {YYYY-MM-DD}` the date for which to delete the status detail data from the datastore (Required)
 - `-t --tenant {STRING}` the name of the tenant. Case sensitive. (Required)
-- `-r --report {STRING}` the name of the report that results belong to. Case sensitive (Required)
+- `-r --report {STRING}` the id (uuid format) of the  report that results belong to. Case sensitive (Required)
