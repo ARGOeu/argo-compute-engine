@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
 Version: 1.6.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -65,6 +65,8 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
+* Mon Nov 23 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-2%{?dist}
+- ARGO-238 Change UDF output schema to be compatible with CDH5
 * Thu Oct 29 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-1%{?dist}
 - ARGO-207 minor bug fix related to how mongo_clean_status is called from within job_status_detail python wrapper
 - ARGO-211 Use ListArray assertions instead of plain asserts when dealing with arraylists.
