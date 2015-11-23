@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
 Version: 1.6.5
-Release: 3%{?dist}
+Release: 2%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -64,6 +64,8 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json.template
 
 %changelog
+* Mon Nov 23 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-2%{?dist}
+- ARGO-238 Change UDF output schema to be compatible with CDH5
 * Thu Nov 12 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-3%{?dist}
 - ARGO-273 Replace conf files with generic configuration templates
 * Tue Nov 3 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-2%{?dist}
