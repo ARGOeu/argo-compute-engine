@@ -1,6 +1,6 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.6.4
+Version: 1.6.5
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
@@ -65,6 +65,21 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
+* Thu Oct 29 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-1%{?dist}
+- ARGO-207 minor bug fix related to how mongo_clean_status is called from within job_status_detail python wrapper
+- ARGO-211 Use ListArray assertions instead of plain asserts when dealing with arraylists.
+Add extra junit dependencies
+- ARGO-211 Add report field also. Change Pig script to handle newly exposed fields
+- ARGO-212 Reintroduce continuous timelines
+- ARGO-212 Implement more robust continuous timeline
+- ARGO-212 Change v. in joda time dependency
+- ARGO-212 Prepare pig data flow for endpoint aggr
+- ARGO-212 fix newlines at end of files
+- ARGO-201 Add multitenant info to cli doc
+- ARGO-201 Remove deprecated datastore mapping parameters. No longer needed in multitenant env
+- ARGO-215 Change UDF output schema to be compatible with pig 12 onwards(CDH 5.x)
+- ARGO-247 Update recomputation profile definition
+- ARGO-247 support multiple periods of recomputation for the same endpoint group
 * Fri Aug 7 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.4-1%{?dist}
 - ARGO-146 Implement multi-tenancy required changes for the CE
 * Tue Jul 21 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-7%{?dist}
