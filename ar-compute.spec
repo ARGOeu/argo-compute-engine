@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
 Version: 1.6.5
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -11,10 +11,9 @@ Requires: python-argparse
 Requires: python-pymongo
 Requires: hive
 Requires: hbase
-Requires: hcatalog
 Requires: pig
 Requires: pig-udf-datafu
-Requires: java-1.6.0-openjdk
+Requires: java-1.7.0-openjdk
 
 %description
 Installs the core A/R Compute Engine
@@ -65,6 +64,8 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json
 
 %changelog
+* Tue Nov 24 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-3%{?dist}
+- ARGO-245 Upgrade devel to CDH 5.x - Update spec requirement to java-1.7.0-openjdk
 * Mon Nov 23 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-2%{?dist}
 - ARGO-238 Change UDF output schema to be compatible with CDH5
 * Thu Oct 29 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-1%{?dist}
