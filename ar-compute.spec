@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
 Version: 1.6.5
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -19,11 +19,11 @@ Requires: java-1.7.0-openjdk
 Installs the core A/R Compute Engine
 
 %prep
-%setup 
+%setup
 cd status-computation/java
 mvn package
 
-%install 
+%install
 %{__rm} -rf %{buildroot}
 install --directory %{buildroot}/usr/libexec/ar-compute
 install --directory %{buildroot}/usr/libexec/ar-compute/pig
@@ -64,6 +64,8 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json.template
 
 %changelog
+* Thu Dec 10 Christos Kanellopoulos <skanct@gmail.com> - 1.6.5-4%{?dist}
+- Add support for cobertura coverage reports
 * Tue Nov 24 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-3%{?dist}
 - ARGO-245 Upgrade devel to CDH 5.x - Update spec requirement to java-1.7.0-openjdk
 * Mon Nov 23 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-2%{?dist}
@@ -97,7 +99,7 @@ Add extra junit dependencies
 - Removed one threshold check
 - Fix issue with non Json parsable datetime object
 * Wed Jun 16 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.2-4%{?dist}
-- Fix in parameter passed onto pig ar script 
+- Fix in parameter passed onto pig ar script
 * Wed Jun 4 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-3%{?dist}
 - ARGO-129 Bugfix: Fix reference to connector path
 * Wed Jun 3 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-2%{?dist}
@@ -123,7 +125,7 @@ Add extra junit dependencies
 * Thu Mar 26 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.1-1%{?dist}
 - Renameing of standalone folder to bin
 * Mon Mar 02 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-6%{?dist}
-- Fix typo in ar-compute-engine.conf 
+- Fix typo in ar-compute-engine.conf
 * Fri Feb 27 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-5%{?dist}
 - Fix config filenames. Add More Verbosity
 - Correct Cloudmon job name in global config
