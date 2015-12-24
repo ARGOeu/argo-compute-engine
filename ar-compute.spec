@@ -21,7 +21,7 @@ Installs the core A/R Compute Engine
 %prep
 %setup 
 cd status-computation/java
-mvn package
+mvn package -Dmaven.test.skip
 
 %install 
 %{__rm} -rf %{buildroot}
