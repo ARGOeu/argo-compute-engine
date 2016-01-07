@@ -157,11 +157,13 @@ public class PickEndpoints extends FilterFunc {
 			return false;
 
 		// Filter By endpoint group if belongs to supergroup
-		String groupname = egMgr.getGroup(this.cfgMgr.egroup, hostname, service);
-		if (ggMgr.checkSubGroup(groupname) == false)
-			return false;
+		ArrayList<String> groupnames = egMgr.getGroup(this.cfgMgr.egroup, hostname, service);
+		for (String groupname : groupnames){
+			if (ggMgr.checkSubGroup(groupname) == true)
+				return true;
+		}
 
-		return true;
+		return false;
 
 	}
 
