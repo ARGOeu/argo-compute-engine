@@ -77,15 +77,17 @@ public class EndpointGroups {
 		return false;
 	}
 
-	public String getGroup(String type, String hostname, String service) {
-
+	public ArrayList<String> getGroup(String type, String hostname, String service) {
+		
+		ArrayList<String> results = new ArrayList<String>();
+		
 		for (EndpointItem item : fList) {
 			if (item.type.equals(type) && item.hostname.equals(hostname) && item.service.equals(service)) {
-				return item.group;
+				results.add(item.group);
 			}
 		}
 
-		return null;
+		return results;
 	}
 
 	public HashMap<String, String> getGroupTags(String type, String hostname, String service) {
