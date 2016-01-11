@@ -75,7 +75,7 @@ In this section we declare the specific tenant used in the installation and the 
 |------|------|-------------|---------|
 |`tenants`| List | Comma separated list with the names of the available tenants. For eg: `tenants=tenantFoo,tenantBar`|`YES`|
 | `{tenant-name}_jobs`| List | For each tenant: a comma separated job list with the names of the available reports to be produced. Names are case-sensitive. Each tenant can have multiple report configurations. Each report configuration is defined by a set of  topologies, metric profiles, weights etc. For eg: `tenantFoo_jobs=Major,Minor,ExampleA,Critical`| `YES`|
-| `{tenant-name}_prefilter`| Path(String) | For each tenant: An optional attribute that specifies the path of a prefilter wrapper - if and only if the tenant requires it. For eg: `tenantFoo_prefilters=/path/to/the/prefilter/script`| `NO`|
+| `{tenant-name}_prefilter`| Path(String) | For each tenant: An optional attribute that specifies the path of a prefilter wrapper - if and only if the tenant requires it. For eg: `tenantFoo_prefilter=/path/to/the/prefilter/script`| `NO`|
 #### `[sampling]`
 
 | Name | Type | Description | Required|
