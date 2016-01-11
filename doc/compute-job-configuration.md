@@ -66,16 +66,16 @@ In this section we declare the specific logging options for the compute engine
    ```
    hadoop_log_root=SYSLOG,console
    ```
-   
-#### `[reports]`
+
+#### `[jobs]`
 
 In this section we declare the specific tenant used in the installation and the set of jobs available (as we described them above in the [_"Tenant and Report configuration"_](#tenant-and-report-configuration)).
 
 | Name | Type | Description | Required|
 |------|------|-------------|---------|
-|`tenant`| String | The name of the tenant. It must be unique within an installation.|`YES`|
-| `job_set`| List | A comma-separated list of the report configuration. Names are case-sensitive. For the same tenant multiple report configurations can be defined. Each report configurations is defined by a set of  topologies,metric profiles,weights,etc.| `YES`|
-
+|`tenants`| List | Comma separated list with the names of the available tenants. For eg: `tenants=tenantFoo,tenantBar`|`YES`|
+| `{tenant-name}_jobs`| List | For each tenant: a comma separated job list with the names of the available reports to be produced. Names are case-sensitive. Each tenant can have multiple report configurations. Each report configuration is defined by a set of  topologies, metric profiles, weights etc. For eg: `tenantFoo_jobs=Major,Minor,ExampleA,Critical`| `YES`|
+| `{tenant-name}_prefilter`| Path(String) | For each tenant: An optional attribute that specifies the path of a prefilter wrapper - if and only if the tenant requires it. For eg: `tenantFoo_prefilter=/path/to/the/prefilter/script`| `NO`|
 #### `[sampling]`
 
 | Name | Type | Description | Required|
@@ -195,7 +195,7 @@ The configuration file of the job contains mandatory and optional fields with ri
 
 In the above snippet we have declared the name of the tenant, the name of the job, the name of the specific availability profile used in the job. Also the type of endpoint grouping that will be used is declared here and the type of upper hierarchical grouping. Also if available here is declared the type of weight factor used for upper level A/R aggregations
 
-| Name | Description | 
+| Name | Description |
 |------|-------------|
 | `"tenant"` | This field is explicitly linked to the value of the tenant declaration of the global ar-compute-engine.conf file [link to description above](/#parameters-for-section-jobs) |
 | `"job"` | This field is explicitly linked to the name of a job declared in the job_set variable of the global ar-compute-engine.conf file [link to description above](#parameters-for-section-jobs) |
@@ -227,7 +227,7 @@ The availability profile is a json file used per specific job that describes the
 
 The information in the availability profile JSON file is automatically picked up by the compute-engine during computations.
 
-| Name | Type | Description | 
+| Name | Type | Description |
 |------|------|-------------|
 | `"name"` | string | The name of the availability profile |
 | `"namespace"` | string | The name of the namespace used by the profile |
