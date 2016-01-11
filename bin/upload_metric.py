@@ -48,10 +48,6 @@ def main(args=None):
         log.info("metric data will be uploaded to HDFS")
 
     # call prefilter if necessary for specified tenant
-    # FIXME: This conditional won't work if a prefilter wrapper is missing. 
-    # DETAILS: If a prefilter wrapper is not provided then the 
-    # local_prefilter variable will not be initialized. Note, however, that
-    # this variable is used below and outside of this conditional. 
     if ArConfig.has_option('jobs', args.tenant + '_prefilter'):
         prefilter_exec = ArConfig.get('jobs', args.tenant + '_prefilter')
         cmd_pref = [os.path.join(arsync_exec, prefilter_exec), '-d', args.date]
@@ -65,6 +61,17 @@ def main(args=None):
 
         log.info("Check if produced %s exists: %s",
                  local_prefilter, os.path.exists(local_prefilter))
+
+    # if prefilter not necessary, copy the orignal data file as a prefiltered result
+    # so as to be picked up and transfered to hdfs
+    else:
+        fn_mdata = 'argo-consumer_log_' + args.date + '.avro'
+        fn_prefilter = "prefilter_" + date_under + ".avro"
+        local_mdata = os.path.join('/var/lib','argo-'+args.tenant.lower()+'-consumer',fn_mdata)
+        local_prefilter = os.path.join(arsync_lib, args.tenant, fn_prefilter)
+        cmd_copy = ['cp', local_mdata , local_prefilter ]
+        run_cmd(cmd_copy,log)
+
 
     if ar_mode == 'cluster':
         # compose hdfs destination
