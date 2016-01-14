@@ -36,7 +36,7 @@ In order for the engine to be able to connect and submit jobs successfully in a 
 
 ## ARGO Compute Engine configuration files
 
-The main configuration file of the ARGO Compute Engine component is installed by default at `/etc/ar-compute-engine.conf`. In addition, a directory with supplementary secondary configuration files is created in `/etc/ar-compute/`
+The main configuration file of the ARGO Compute Engine component is installed by default at `/etc/ar-compute-engine.conf`. In addition, a directory with a supplementary secondary configuration files is created in `/etc/ar-compute/`
 
 <a id="compute-engine-conf"></a>
 
