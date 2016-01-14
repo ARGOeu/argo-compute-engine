@@ -9,9 +9,9 @@ description: This document describes the compute engine input data (metrics, top
 
 | Input Data |  Description | Shortcut |
 |------------|--------------|----------|
-|Metric Data | Metric data come in the form of avro files and contain timestamped status information about the hostname,service and specific checks (metrics) that are being monitored|[Description](#metric)|
-|Topology Files | Topology information is provided by two files: a) groups of endpoints, and b)groups of groups.|[Description](#topology)|
-|Metric Profiles | Every service type contains a number of metrics that are being checked from the monitoring mechanism.|[Description](#profiles)|
+|Metric data | Metric data come in the form of avro files and contain timestamped status information about the hostname,service and specific checks (metrics) that are being monitored|[Description](#metric)|
+|Topology files | Topology information is provided by two files: a) groups of endpoints, and b)groups of groups.|[Description](#topology)|
+|Metric profiles | Every service type contains a number of metrics that are being checked from the monitoring mechanism.|[Description](#profiles)|
 |Weights (factors) | Some group items have an associated weight information (factors) on how they contribute when are being aggregated on higher level groups. |[Description](#weights)|
 |Downtimes | Downtime information: the period (start_time –> end_time) in which a specific service endpoint was in scheduled downtime. |[Description](#downtimes)|
 
