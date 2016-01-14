@@ -17,7 +17,7 @@ description: This document describes the compute engine input data (metrics, top
 
 <a id="metric"></a>
 
-## Metric data
+## Metric Data
 
 The main engine's input is the metric data collected from the argo-consumer component. These files (according to the default configuration of ar-consumer component) reside to the `/var/lib/ar-consumer/` folder.
 
