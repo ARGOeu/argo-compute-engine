@@ -2,7 +2,7 @@
 title: Compute Engine documentation | ARGO
 page_title: Compute Engine Input
 font_title: 'fa fa-cog'
-description: This document describes the compute engine input data (metrics, topology, profiles, factors)
+description: This document describes the compute engine input data (metrics, topology, profiles, factors).
 ---
 
 ## Input Data
