@@ -11,6 +11,8 @@ mode=local
 prefilter_clean=true
 sync_clean=true
 
+recomp_threshold=1
+
 [logging]    
 log_mode=file
 log_file=/var/log/ar-compute.log
@@ -141,14 +143,14 @@ def test_load_configuration(tmpdir):
 
     assert cfg.mode == "local"
 
-    print cfg.tenant_db_conf
-
     assert cfg.tenant_db_conf == expected_tenant_db_conf
     assert cfg.get_mongo_uri("ar", "endpoint_groups") == mongo_uri_a
     assert cfg.get_mongo_uri("status", "status_metric") == mongo_uri_b
 
     assert cfg.get_mongo_database("ar") == "argo_EGI"
     assert cfg.get_mongo_database("status") == "argo_EGI"
+
+    assert cfg.threshold == 1
 
     assert cfg.get_mongo_port("ar") == 27017
     assert cfg.get_mongo_port("status") == 27017

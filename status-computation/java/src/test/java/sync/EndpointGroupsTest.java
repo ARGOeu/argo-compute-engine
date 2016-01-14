@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 
 import ops.ConfigManager;
 
@@ -39,7 +40,9 @@ public class EndpointGroupsTest {
 		assertTrue(ge.checkEndpoint("se.grid.tuke.sk", "SRMv2"));
 		assertTrue(ge.checkEndpoint("dpm.grid.atomki.hu", "SRMv2"));
 		// Test check Group retrieval
-		assertEquals(ge.getGroup("SITES", "gt3.pnpi.nw.ru", "CREAM-CE"), "ru-PNPI");
+		ArrayList<String> result1 = new ArrayList<String>();
+		result1.add("ru-PNPI");
+		assertEquals(ge.getGroup("SITES", "gt3.pnpi.nw.ru", "CREAM-CE"), result1);
 
 		// Test Tag Filtering (Wont filter out anything since input is already
 		// filtered)

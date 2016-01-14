@@ -23,6 +23,7 @@ public class ConfigManager {
 
 	private static final Logger LOG = Logger.getLogger(ConfigManager.class.getName());
 
+	public String id; // report uuid reference
 	public String tenant;
 	public String report;
 	public String egroup; // endpoint group
@@ -32,21 +33,23 @@ public class ConfigManager {
 	public TreeMap<String, String> egroupTags;
 	public TreeMap<String, String> ggroupTags;
 	public TreeMap<String, String> mdataTags;
-	public HashMap<String, HashMap<String, String>> datastore_map;
+	
 
 	public ConfigManager() {
 		this.tenant = null;
 		this.report = null;
+		this.id = null;
 		this.egroup = null;
 		this.ggroup = null;
 		this.weight = null;
 		this.egroupTags = new TreeMap<String, String>();
 		this.ggroupTags = new TreeMap<String, String>();
 		this.mdataTags = new TreeMap<String, String>();
-		this.datastore_map = new HashMap<String, HashMap<String, String>>();
+		
 	}
 
 	public void clear() {
+		this.id=null;
 		this.tenant = null;
 		this.report = null;
 		this.egroup = null;
@@ -55,16 +58,10 @@ public class ConfigManager {
 		this.egroupTags.clear();
 		this.ggroupTags.clear();
 		this.mdataTags.clear();
-		this.datastore_map.clear();
+		
 	}
 
-	public String getMapped(String category, String value) {
-		if (this.datastore_map.containsKey(category)) {
-			return this.datastore_map.get(category).get(value);
-		}
-
-		return null;
-	}
+	
 
 	public void loadJson(File jsonFile) throws IOException {
 		// Clear data
@@ -78,6 +75,7 @@ public class ConfigManager {
 			JsonElement jElement = jsonParser.parse(br);
 			JsonObject jObj = jElement.getAsJsonObject();
 			// Get the simple fields
+			this.id = jObj.getAsJsonPrimitive("id").getAsString();
 			this.tenant = jObj.getAsJsonPrimitive("tenant").getAsString();
 			this.report = jObj.getAsJsonPrimitive("job").getAsString();
 			this.egroup = jObj.getAsJsonPrimitive("egroup").getAsString();
@@ -102,17 +100,7 @@ public class ConfigManager {
 
 				this.mdataTags.put(item.getKey(), item.getValue().getAsString());
 			}
-
-			// Get super compound field
-			for (Entry<String, JsonElement> item : jDataMap.entrySet()) {
-				String itemKey = item.getKey();
-				this.datastore_map.put(itemKey, new HashMap<String, String>());
-
-				JsonObject jSubObj = item.getValue().getAsJsonObject();
-				for (Entry<String, JsonElement> subitem : jSubObj.entrySet()) {
-					this.datastore_map.get(itemKey).put(subitem.getKey(), subitem.getValue().getAsString());
-				}
-			}
+			
 
 		} catch (FileNotFoundException ex) {
 			LOG.error("Could not open file:" + jsonFile.getName());

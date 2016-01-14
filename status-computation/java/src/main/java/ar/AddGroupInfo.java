@@ -8,8 +8,11 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.backend.executionengine.ExecException;
+import org.apache.pig.data.BagFactory;
+import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
+import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import sync.EndpointGroups;
@@ -20,6 +23,9 @@ public class AddGroupInfo extends EvalFunc<Tuple> {
 	public String fnEndpointGroups;
 	public String fnGroupGroups;
 
+	private TupleFactory tupFactory;
+	private BagFactory bagFactory;
+	
 	public String type;
 
 	public EndpointGroups endpointMgr;
@@ -38,7 +44,10 @@ public class AddGroupInfo extends EvalFunc<Tuple> {
 		this.type = type; // type of group
 
 		this.endpointMgr = new EndpointGroups();
-		// this.groupMgr = new GroupsOfGroups();
+
+		// set up factories
+		this.tupFactory = TupleFactory.getInstance();
+		this.bagFactory = BagFactory.getInstance();
 	}
 
 	public void init() throws IOException {
@@ -95,8 +104,19 @@ public class AddGroupInfo extends EvalFunc<Tuple> {
 			LOG.error(e);
 			throw new IllegalArgumentException();
 		}
-
-		input.append(endpointMgr.getGroup(this.type, hostname, service));
+		
+		// Create Databag with available groups that this endopoint belongs to
+		ArrayList<String> groups = endpointMgr.getGroup(this.type, hostname, service);
+		// Create output Tuple
+		DataBag groupBag = bagFactory.newDefaultBag();
+		
+		for (String group : groups)
+		{
+			Tuple cur_tupl = tupFactory.newTuple();
+			cur_tupl.append(group);
+			groupBag.add(cur_tupl);
+		}
+		input.append(groupBag);
 
 		return input;
 
@@ -107,12 +127,12 @@ public class AddGroupInfo extends EvalFunc<Tuple> {
 
 		Schema.FieldSchema service = new Schema.FieldSchema("service", DataType.CHARARRAY);
 		Schema.FieldSchema hostname = new Schema.FieldSchema("hostname", DataType.CHARARRAY);
-		Schema.FieldSchema groupname = new Schema.FieldSchema("groupname", DataType.CHARARRAY);
 		// Schema.FieldSchema slot = new Schema.FieldSchema("slot",
 		// DataType.INTEGER);
 		Schema.FieldSchema statusInt = new Schema.FieldSchema("status", DataType.INTEGER);
 
 		Schema endpoint = new Schema();
+		Schema groups = new Schema();
 		Schema timeline = new Schema();
 
 		endpoint.add(service);
@@ -120,7 +140,7 @@ public class AddGroupInfo extends EvalFunc<Tuple> {
 
 		// timeline.add(slot);
 		timeline.add(statusInt);
-
+		
 		Schema.FieldSchema tl = null;
 		try {
 			tl = new Schema.FieldSchema("timeline", timeline, DataType.BAG);
@@ -129,7 +149,15 @@ public class AddGroupInfo extends EvalFunc<Tuple> {
 		}
 
 		endpoint.add(tl);
-		endpoint.add(groupname);
+		
+		Schema.FieldSchema grp = null;
+		try {
+			grp = new Schema.FieldSchema("groups", groups, DataType.BAG);
+		} catch (FrontendException ex) {
+			LOG.error(ex);
+		}
+		
+		endpoint.add(grp);
 
 		try {
 			return new Schema(new Schema.FieldSchema("endpoint", endpoint, DataType.TUPLE));

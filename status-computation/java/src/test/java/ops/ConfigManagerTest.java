@@ -35,6 +35,7 @@ public class ConfigManagerTest {
 		assertEquals("SITES", cfgMgr.egroup);
 		assertEquals("NGI", cfgMgr.ggroup);
 		assertEquals("hepspec", cfgMgr.weight);
+		assertEquals("c800846f-8478-4af8-85d1-a3f12fe4c18f",cfgMgr.id);
 
 		// Assert compound fields
 		assertEquals("Production", cfgMgr.ggroupTags.get("infrastructure"));
@@ -51,13 +52,6 @@ public class ConfigManagerTest {
 		assertEquals("ops", cfgMgr.mdataTags.get("vo_fqan"));
 		assertEquals("any", cfgMgr.mdataTags.get("roc"));
 
-		assertEquals("r", cfgMgr.getMapped("ar", "reliability"));
-		assertEquals("dt", cfgMgr.getMapped("ar", "date"));
-		assertEquals("ap", cfgMgr.getMapped("ar", "av_profile"));
-		assertEquals("p", cfgMgr.getMapped("ar", "metric_profile"));
-		assertEquals("s", cfgMgr.getMapped("ar", "group"));
-		assertEquals("n", cfgMgr.getMapped("ar", "supergroup"));
-		assertEquals("hsp", cfgMgr.getMapped("ar", "weight"));
 
 	}
 

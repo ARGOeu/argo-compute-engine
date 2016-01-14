@@ -1,0 +1,23 @@
+{
+  "id":"some_uuid_here",
+  "tenant":"TenantA",
+  "job":"JobA",
+  "egroup":"DATACENTERS",
+  "ggroup":"ZONES",
+  "weight":"factor",
+  "aprofile":"aprofile1",
+  "egroup_tags":{
+    "scope":"DATACENTERS",
+    "production":"Y",
+    "monitored":"Y"
+  },
+  "ggroup_tags":{
+    "scope":"ZONES",
+    "infrastructure":"Production",
+    "certification":"Certified"
+  },
+  "mdata_tags":{
+    "tag1":"value1",
+    "tag2":"value2",
+  }
+}

@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.6.4
-Release: 1%{?dist}
+Version: 1.6.5
+Release: 4%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -11,20 +11,19 @@ Requires: python-argparse
 Requires: python-pymongo
 Requires: hive
 Requires: hbase
-Requires: hcatalog
 Requires: pig
 Requires: pig-udf-datafu
-Requires: java-1.6.0-openjdk
+Requires: java-1.7.0-openjdk
 
 %description
 Installs the core A/R Compute Engine
 
 %prep
-%setup 
+%setup
 cd status-computation/java
 mvn package
 
-%install 
+%install
 %{__rm} -rf %{buildroot}
 install --directory %{buildroot}/usr/libexec/ar-compute
 install --directory %{buildroot}/usr/libexec/ar-compute/pig
@@ -44,8 +43,8 @@ install --mode 644 status-computation/lib/*.sh                  %{buildroot}/usr
 install --mode 644 status-computation/lib/*.py                  %{buildroot}/usr/libexec/ar-compute/lib/
 install --mode 755 bin/*.py                                     %{buildroot}/usr/libexec/ar-compute/bin/
 install --mode 644 status-computation/java/target/MyUDF-1.0.jar %{buildroot}/usr/libexec/ar-compute/MyUDF.jar
-install --mode 644 conf/ar-compute-engine.conf                  %{buildroot}/etc/
-install --mode 644 conf/*.json                                  %{buildroot}/etc/ar-compute
+install --mode 644 conf/ar-compute-engine.conf.template         %{buildroot}/etc/
+install --mode 644 conf/*.json.template                         %{buildroot}/etc/ar-compute
 
 %clean
 cd status-computation/java
@@ -61,10 +60,35 @@ mvn clean
 %attr(0755,root,root) /usr/libexec/ar-compute/MyUDF.jar
 %attr(0750,root,root) /var/lib/ar-compute
 %attr(0750,root,root) /var/log/ar-compute
-%attr(0644,root,root) /etc/ar-compute-engine.conf
-%attr(0644,root,root) /etc/ar-compute/*.json
+%attr(0644,root,root) /etc/ar-compute-engine.conf.template
+%attr(0644,root,root) /etc/ar-compute/*.json.template
 
 %changelog
+* Thu Dec 10 Christos Kanellopoulos <skanct@gmail.com> - 1.6.5-4%{?dist}
+- Add support for cobertura coverage reports
+* Tue Nov 24 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-3%{?dist}
+- ARGO-245 Upgrade devel to CDH 5.x - Update spec requirement to java-1.7.0-openjdk
+* Mon Nov 23 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-2%{?dist}
+- ARGO-238 Change UDF output schema to be compatible with CDH5
+* Thu Nov 12 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-3%{?dist}
+- ARGO-273 Replace conf files with generic configuration templates
+* Tue Nov 3 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-2%{?dist}
+- ARGO-245 Upgrade devel to CDH 5.x - Update spec requirement to java-1.7.0-openjdk
+* Thu Oct 29 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-1%{?dist}
+- ARGO-207 minor bug fix related to how mongo_clean_status is called from within job_status_detail python wrapper
+- ARGO-211 Use ListArray assertions instead of plain asserts when dealing with arraylists.
+Add extra junit dependencies
+- ARGO-211 Add report field also. Change Pig script to handle newly exposed fields
+- ARGO-212 Reintroduce continuous timelines
+- ARGO-212 Implement more robust continuous timeline
+- ARGO-212 Change v. in joda time dependency
+- ARGO-212 Prepare pig data flow for endpoint aggr
+- ARGO-212 fix newlines at end of files
+- ARGO-201 Add multitenant info to cli doc
+- ARGO-201 Remove deprecated datastore mapping parameters. No longer needed in multitenant env
+- ARGO-215 Change UDF output schema to be compatible with pig 12 onwards(CDH 5.x)
+- ARGO-247 Update recomputation profile definition
+- ARGO-247 support multiple periods of recomputation for the same endpoint group
 * Fri Aug 7 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.4-1%{?dist}
 - ARGO-146 Implement multi-tenancy required changes for the CE
 * Tue Jul 21 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-7%{?dist}
@@ -75,7 +99,7 @@ mvn clean
 - Removed one threshold check
 - Fix issue with non Json parsable datetime object
 * Wed Jun 16 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.2-4%{?dist}
-- Fix in parameter passed onto pig ar script 
+- Fix in parameter passed onto pig ar script
 * Wed Jun 4 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-3%{?dist}
 - ARGO-129 Bugfix: Fix reference to connector path
 * Wed Jun 3 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-2%{?dist}
@@ -101,7 +125,7 @@ mvn clean
 * Thu Mar 26 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.1-1%{?dist}
 - Renameing of standalone folder to bin
 * Mon Mar 02 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-6%{?dist}
-- Fix typo in ar-compute-engine.conf 
+- Fix typo in ar-compute-engine.conf
 * Fri Feb 27 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-5%{?dist}
 - Fix config filenames. Add More Verbosity
 - Correct Cloudmon job name in global config

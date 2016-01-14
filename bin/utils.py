@@ -30,6 +30,8 @@ class ArgoConfiguration(object):
     prefilter_clean = None
     # tenant ar store configuration
     tenant_db_conf = {}
+    # recomputation threshold
+    threshold = None
 
     def __init__(self, filename):
         self.load_config(filename)
@@ -80,6 +82,8 @@ class ArgoConfiguration(object):
         # Grab clean parameters
         self.prefilter_clean = ar_config.get('default', 'prefilter_clean')
         self.sync_clean = ar_config.get('default', 'sync_clean')
+
+        self.threshold = int(ar_config.get('default', 'recomp_threshold'))
 
     def load_tenant_db_conf(self, filename):
         """

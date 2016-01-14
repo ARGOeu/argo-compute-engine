@@ -37,13 +37,14 @@ mdata_clean = FILTER mdata_trim BY f_PickEndpoints(hostname,service,metric);
 mdata_full = UNION mdata_clean,p_ref;
 -- Group by hostname,metric to create timelines
 status_detail =	FOREACH  (GROUP mdata_full BY (monitoring_host,service,hostname,metric)) {
-	t = ORDER mdata_full BY timestamp ASC; 
+	t = ORDER mdata_full BY timestamp ASC;
 	GENERATE  FLATTEN( f_PrepStatus(group.monitoring_host, group.service, group.hostname, group.metric, t.(timestamp,status,summary,message)) );
 };
 
-status_unwrap = FOREACH status_detail GENERATE $0 as report, $1 as endpoint_group, $2 as monitoring_box, $3 as service, $4 as host, $5 as metric, FLATTEN($6) as (timestamp,status,summary,message,previous_state,previous_timestamp,date_integer,time_integer);
+status_final = FOREACH status_detail GENERATE $0, FLATTEN($1), $2, $3, $4, $5, FLATTEN($6);
+status_unwrap = FOREACH status_final GENERATE $0 as report, $1 as endpoint_group, $2 as monitoring_box, $3 as service, $4 as host, $5 as metric, $6 as timestamp, $7 as status, $8 as summary,$9 as message,$10 as previous_state,$11 as previous_timestamp,$12 as date_integer:int,$13 as time_integer:int;
 
--- Continue here 
+-- Continue here
 endpoint_aggr = FOREACH (GROUP status_unwrap BY(report,endpoint_group,service,host)) {
 	t = ORDER status_unwrap BY metric ASC, timestamp ASC;
 	GENERATE  FLATTEN(f_EndpointAggr(group.report, group.endpoint_group, group.service, group.host, t.(metric,timestamp,status,previous_state))) as (report,date_integer,endpoint_group,service,host,timeline);
@@ -51,13 +52,13 @@ endpoint_aggr = FOREACH (GROUP status_unwrap BY(report,endpoint_group,service,ho
 
 
 
-service_aggr = FOREACH (GROUP endpoint_aggr BY(report,date_integer,endpoint_group,service)) 
+service_aggr = FOREACH (GROUP endpoint_aggr BY(report,date_integer,endpoint_group,service))
 		GENERATE FLATTEN(f_ServiceAggr(group.report, group.date_integer, group.endpoint_group, group.service, endpoint_aggr.(host,timeline))) as (report, date_integer, endpoint_group, service, timeline);
 
 
 
 
-endpoint_group_aggr = FOREACH (GROUP service_aggr BY(report,date_integer,endpoint_group)) 
+endpoint_group_aggr = FOREACH (GROUP service_aggr BY(report,date_integer,endpoint_group))
 		GENERATE FLATTEN(f_GroupEndpointAggr(group.report, group.date_integer, group.endpoint_group, service_aggr.(service,timeline))) as (report, date_integer, endpoint_group, timeline);
 
 endpoint_data = FOREACH endpoint_aggr GENERATE $0 as report, $1 as date_integer, $2 as endpoint_group, $3 as service, $4 as host, FLATTEN($5) as (timestamp,status);
@@ -68,4 +69,3 @@ STORE status_unwrap INTO '$mongo_status_metrics' USING com.mongodb.hadoop.pig.Mo
 STORE endpoint_data INTO '$mongo_status_endpoints' USING com.mongodb.hadoop.pig.MongoInsertStorage();
 STORE service_data INTO '$mongo_status_services' USING com.mongodb.hadoop.pig.MongoInsertStorage();
 STORE endpoint_group_data INTO '$mongo_status_endpoint_groups' USING com.mongodb.hadoop.pig.MongoInsertStorage();
-

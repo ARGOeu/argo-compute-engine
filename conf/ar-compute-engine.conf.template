@@ -1,7 +1,7 @@
 [default]
 
 # mongo server ip location
-mongo_host=192.168.0.99
+mongo_host=localhost
 
 # mongo server port 
 mongo_port=27017
@@ -66,14 +66,14 @@ sync_path=/var/lib/ar-sync/
 # TenantA_prefilter=prefilter_exec (optional)
 #
 # Declare available tenants
-tenants=EGI
+tenants=TenantA
 
 # For a declared tenant declare it's jobs by using 
 # {Tenant_Name}_jobs conformance
-EGI_jobs=Critical,Cloudmon
+TenantA_jobs = Job_1
 
 # For a given tenant provide prefiltering wrapper (if needed)
-EGI_prefilter=prefilter-egi.py
+TenantA_prefilter=prefilter-tenantA.py
 
 [sampling]
 
