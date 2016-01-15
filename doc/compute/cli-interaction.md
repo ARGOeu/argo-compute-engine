@@ -1,16 +1,21 @@
-# ARGO Compute Engine CLI
+---
+title: Compute Engine documentation | ARGO
+page_title: Compute - Cli interaction
+font_title: 'fa fa-cog'
+description: This document describes the Executable Scripts for cli interaction with the compute engine
+---
 
 ## Executable Scripts for cli interaction with the compute engine
 
 In the folder `/usr/libexec/ar-compute/bin/` reside executable scripts that can be used for uploading metric data and sync data to the hadoop cluster (HDFS Filesystem).
 
-| Script | Description | Shortcut |
-|--------|-------------|----------|
+| Script | Description | Shortcut 
+|--------|-------------|----------
 |upload_metric.py |The specific script is used in order to upload daily metric data (relative to a tenant) to HDFS. | [Description](#metric) |
 |upload_sync.py |The specific script is used in order to upload daily sync data (relative to a tenant and a job) to HDFS. |[Description](#sync)|
 |mongo_clean_ar.py |The specific script is used if necessary to clean a/r data from the datastore regarding for specified tenant,report and date.  |[Description](#ar)|
 |mongo_clean_status.py |The specific script is used if necessary to clean status detail data from the datastore for specified tenant,report and date. | [Description](#status)|
--->
+
 
 <a id="metric"></a>
 
@@ -49,6 +54,7 @@ This utility is used in order to upload the daily sync data for a specified date
 
 
 <a id="ar"></a>
+
 ### mongo_clean_ar.py
 
 This utility is used in order to delete availability and reliability data from the datastore, for a specified tenant,report and date. It is called automatically before each A/R computation, but can be ran also manually. The script reports back the number of records and from which collections these records are removed.

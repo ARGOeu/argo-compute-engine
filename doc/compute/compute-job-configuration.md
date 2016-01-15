@@ -1,4 +1,9 @@
-# ARGO Compute Engine configuration
+---
+title: Compute Engine documentation | ARGO
+page_title: Compute engine job configurations
+font_title: 'fa fa-cog'
+description: This document describes the job configurations
+---
 
 ## Overview  
 
@@ -31,7 +36,7 @@ In order for the engine to be able to connect and submit jobs successfully in a 
 
 ## ARGO Compute Engine configuration files
 
-The main configuration file of the ARGO Compute Engine component is installed by default at `/etc/ar-compute-engine.conf`. In addition, a directory with supplementary secondary configuration files is created in `/etc/ar-compute/`
+The main configuration file of the ARGO Compute Engine component is installed by default at `/etc/ar-compute-engine.conf`. In addition, a directory with a supplementary secondary configuration files is created in `/etc/ar-compute/`
 
 <a id="compute-engine-conf"></a>
 
@@ -115,24 +120,20 @@ During computations many operations take place among service statuses which need
 
 The available status states produced by the Monitoring Engine(s) are expressed in the **"states"** list. For example below is the definition of the status states produced by Nagios compatible Monitoring Engines:
 
-```json
-"states": [
-    "OK",
-    "WARNING",
-    "UNKNOWN",
-    "MISSING",
-    "CRITICAL",
-    "DOWNTIME"
-]
-```
+	"states": [
+	    "OK",
+	    "WARNING",
+	    "UNKNOWN",
+	    "MISSING",
+	    "CRITICAL",
+	    "DOWNTIME"
+	]
 
 The ARGO Compute Engine requires the user to define a mapping for the default_down, default_missing and default_unknown. For example:
 
-```json
-"default_down": "DOWNTIME",
-"default_missing": "MISSING",
-"default_unknown": "UNKNOWN",
-```
+	"default_down": "DOWNTIME",
+	"default_missing": "MISSING",
+	"default_unknown": "UNKNOWN",
 
 > **Note: The importance of the default states**
 >
@@ -147,30 +148,24 @@ The ARGO Compute Engine requires the user to define a mapping for the default_do
 
 The available operations are declared in the operations list using truth tables as follows:
 
-```json
-"operations": {
-  "AND":[],
-  "OR":[]
-}
-```
+	"operations": {
+	  "AND":[],
+	  "OR":[]
+	}
 
 Each operation consists of a JSON array used to describe a _truth table_. An example of such a _truth table_ is presented below:
 
-```json
-"operations": {
-  "AND": [
-    { "A":"OK",       "B":"OK",       "X":"OK"       },
-    { "A":"OK",       "B":"WARNING",  "X":"WARNING"  },
-    { "A":"OK",       "B":"UNKNOWN",  "X":"UNKNOWN"  },
-  ]
-}
-```
+	"operations": {
+	  "AND": [
+	    { "A":"OK",       "B":"OK",       "X":"OK"       },
+	    { "A":"OK",       "B":"WARNING",  "X":"WARNING"  },
+	    { "A":"OK",       "B":"UNKNOWN",  "X":"UNKNOWN"  },
+	  ]
+	}
 
 Each element of the JSON array describes a row of the _truth table_ for example:
 
-```json
-{ "A":"OK", "B":"WARNING", "X":"WARNING"}
-```
+	{ "A":"OK", "B":"WARNING", "X":"WARNING"}
 
 declares that in an algorithmic AND operation between two status states of *OK* and *WARNING* the result is *WARNING*
 
@@ -184,14 +179,12 @@ A _Job Configuration_ file is a JSON file that contains specific information nee
 
 The configuration file of the job contains mandatory and optional fields with rich information describing the parameters of the specific job. Some important fields are:
 
-```json
-"tenant": "tenant_name"`
-"job": "job_name",
-"aprofile": "availability_profile_name",
-"egroup": "endpoint_group_type_name",
-"ggroup": "group_of_group_type_name",
-"weight": "weight_factor_type_name"
-```
+	"tenant": "tenant_name"`
+	"job": "job_name",
+	"aprofile": "availability_profile_name",
+	"egroup": "endpoint_group_type_name",
+	"ggroup": "group_of_group_type_name",
+	"weight": "weight_factor_type_name"
 
 In the above snippet we have declared the name of the tenant, the name of the job, the name of the specific availability profile used in the job. Also the type of endpoint grouping that will be used is declared here and the type of upper hierarchical grouping. Also if available here is declared the type of weight factor used for upper level A/R aggregations
 
@@ -209,13 +202,11 @@ In the configuration file are specified the specific tag values that will be use
 
 For example:
 
-```json
-"egroup_tags": {
-  "scope":"scope_type",
-  "production":"Y",
-  "monitored":"Y"
-}
-```
+	"egroup_tags": {
+	  "scope":"scope_type",
+	  "production":"Y",
+	  "monitored":"Y"
+	}
 
 In the egroup_tag list are declared values for available tag fields that will be encountered in the endpoint group topology sync file (produced by ar-sync components).These tag fields are explicitly linked to the description of the schema of the [group_endpoints.avro file](/guides/compute/compute-input/#groupendpointsavro)
 
@@ -238,25 +229,23 @@ The information in the availability profile JSON file is automatically picked up
 
 In the availability profile JSON file also are declared custom grouping of services to be used in the aggregation. The grouping of services are expressed in the JSON "groups" list see example below:
 
-```json
-"groups": {
-  "my_group_of_services_1": {
-    "services":{
-      "service_type_A":"OR",
-      "service_type_B":"OR"
-    },
-    "operation":"OR"
-  },
-  "my_group_of_services_2": {
-    "services":{
-      "service_type_C":"OR",
-      "service_type_D":"OR"
-    },
-    "operation":"OR"
-  },
-  "operation":"AND"
-}
-```
+	"groups": {
+	  "my_group_of_services_1": {
+	    "services":{
+	      "service_type_A":"OR",
+	      "service_type_B":"OR"
+	    },
+	    "operation":"OR"
+	  },
+	  "my_group_of_services_2": {
+	    "services":{
+	      "service_type_C":"OR",
+	      "service_type_D":"OR"
+	    },
+	    "operation":"OR"
+	  },
+	  "operation":"AND"
+	}
 
 In the above example the service types are grouped in two groups:
 
