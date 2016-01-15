@@ -10,23 +10,22 @@ description: This document describes the compute engine input data (metrics, top
 ## Input Data
 
 | Input Data |  Description | Shortcut |
-|------------|--------------|----------|
 |Metric data | Metric data come in the form of avro files and contain timestamped status information about the hostname,service and specific checks (metrics) that are being monitored|[Description](#metric)|
-|Topology files | Topology information is provided by two files: a) groups of endpoints, and b)groups of groups.|[Description](#topology)|
+|Topology files | Topology information is provided by two files: a) groups of endpoints, and b) groups of groups.|[Description](#topology)|
 |Metric profiles | Every service type contains a number of metrics that are being checked from the monitoring mechanism.|[Description](#profiles)|
 |Weights (factors) | Some group items have an associated weight information (factors) on how they contribute when are being aggregated on higher level groups. |[Description](#weights)|
 |Downtimes | Downtime information: the period (start_time –> end_time) in which a specific service endpoint was in scheduled downtime. |[Description](#downtimes)|
 
+
 <a id="metric"></a>
 
-## Metric Data
+## Metric data
 
 The main engine's input is the metric data collected from the argo-consumer component. These files (according to the default configuration of ar-consumer component) reside to the `/var/lib/ar-consumer/` folder.
 
 Metric data come in the form of avro files and contain timestamped status information about the hostname,service and specific checks (metrics) that are being monitored. A typical item of information in the metric data avro file contains the following fields:
 
 | Name | Description | Required|
-|------|-------------|---------|
 |`hostname`| The fqdn address of the host being monitored | `YES` |
 |`service` | The name of the specific service being monitored | `YES` |
 |`metric` | The name of the specific metric (check) of the service that is being monitored | `YES` |
@@ -51,10 +50,12 @@ The current **raw avro schema file** for the metric data is the following:
 	    { "name": "monitoring_host", "type": ["null", "string"]},
 	    { "name": "summary", "type": ["null", "string"]},
 	    { "name": "message", "type": ["null", "string"]},
-	    { "name": "tags", "type" : ["null", { "name" : "Tags",
+	    { "name": "tags", "type" : ["null", 
+	       { "name" : "Tags",
 	       "type" : "map",
 	       "values" : ["int", "string"]
-		}
+            }
+      
 	      ]
 	    }
 	  ]
@@ -66,15 +67,13 @@ The current **raw avro schema file** for the metric data is the following:
 
 This core metric data set is processed and transformed with additional information provided by the argo-connector components. Additional information includes topology, grouping of services, weight factors, lists relevant metrics to be considered, etc. This information is provided per-tenant/per-job in the following path
 
-```
-/var/lib/ar-sync/{tenant-name}/{job-name}
-```
+	/var/lib/ar-sync/{tenant-name}/{job-name}
+
 
 for example for `tenant-name=T1` and `job-name=JobA` the correct path with the sync files is as follows
 
-```
-/var/lib/ar-sync/T1/JobA
-```
+	/var/lib/ar-sync/T1/JobA
+
 
 Some sync files that concern the whole enviroment such as the downtime information are provided once in the root ar-sync folder `/var/lib/ar-sync/`
 
@@ -94,7 +93,6 @@ A service endpoint is considered by the engine the simplest item of topology. Se
 The file uses avro format and contains the following fields:
 
 | Name | Description | Required |
-|------|-------------|----------|
 |`group`|The name of the group (e.g. MY-SITE-A)|`YES`|
 |`type`| The type of the grouping (e.g. sites)|`YES`|
 |`hostname`| The hostname fqdn part info of the specific endpoint contained in the group|`YES`|
@@ -129,7 +127,6 @@ Service endpoint groups can be further grouped in higher-level entities such as 
 The file uses avro format and contains the following fields:
 
 | Name | Description | Required |
-|------|-------------|----------|
 |`profile` | Profile name |`YES`|
 | `group`| The name of the group (e.g. MY-SITE-A)|`YES`|
 | `type`| The type of the grouping (e.g. sites)|`YES`|
@@ -140,7 +137,6 @@ The file uses avro format and contains the following fields:
 Below is the full description of the avro specification:
 
 | Name | Description | Required |
-|------|-------------|----------|
 |`group`|The name of the group (e.g. MY-NATIONAL-GROUP)|`YES`|
 |`type`| The type of the grouping (e.g. national entities)|`YES`|
 |`subgroup`| The name of the lower level group contained (e.g. MY-SITE-A)|`YES`|
@@ -197,7 +193,6 @@ Every service type contains a number of metrics that are being checked from the 
 When wanting to look on the whole status information of the service for a given time it is possible to take into account any number of the metrics available (for e.g. the most critical ones) and compose a view of the service based on those specific metrics selected. This view is dictated by a profile, actually a metric profile which contains information about the service and which metrics are relevant. The metric profile is provided as an avro type file containing the following fields:
 
 | Name | Description | Required |
-|------|-------------|----------|
 |`profile`|Name of the profile|`YES`|
 |`service`| Name of the specific service|`YES`|
 |`metric`| Name of the metric to be taken into account|`YES`|
@@ -230,7 +225,6 @@ and the full avro specification:
 Some group items have an associated weight information (factors) on how they contribute when are being aggregated on higher level groups. For example hepspec weights for specific sites when they are aggregated on their contribution on national level groups. The weight information is provided in an avro file format containing the following fields:
 
 | Name | Description | Required |
-|------|-------------|----------|
 |`type`| Type of the weight (for e.g. hepspec)|`YES`|
 |`site`| Name of the specific site|`YES`|
 |`weight`| Number value of the weight|`YES`|
@@ -255,7 +249,6 @@ The full avro specification of the weight file:
 Downtime information: the period (start_time --> end_time) in which a specific service endpoint was in scheduled downtime. This information resided in the corresponding downtime avro file. The file has the following fields:
 
 |Name|Description|Required|
-|----|-----------|--------|
 |`hostname`| The hostname fqdn info part of the specific service endpoint|`YES`|
 |`service` | The service name info part of the specific service endpoint|`YES`|
 |`start_time` | WC3 date/time when the period begins |`YES`|

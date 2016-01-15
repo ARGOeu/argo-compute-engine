@@ -7,7 +7,7 @@ description: This document describes the Executable Scripts for cli interaction 
 
 ## Executable Scripts for cli interaction with the compute engine
 
-In the folder `/usr/libexec/ar-compute/bin/` reside executable scripts that can be used for uploading metric data and sync data to the hadoop cluster (HDFS Filesystem).
+In the folder `/usr/libexec/ar-compute/bin/` reside executable scripts that can be used for uploading metric data and sync data to the hadoop cluster (HDFS Filesystem). . 
 
 | Script | Description | Shortcut 
 |--------|-------------|----------
@@ -25,14 +25,14 @@ This utility is used in order to upload the daily metric data for a specified da
 
 #### Full path
 
-```
-/usr/libexec/ar-compute/bin/upload_metric.py
-```
+	/usr/libexec/ar-compute/bin/upload_metric.py
+
 
 #### Parameters
 
-- `-d --date {YYYY-MM-DD}` specifies the date of the metric data we want to upload (Required)
-- `-t --tenant {STRING}` a case-sensitive string specifying the name of the tenant (Required)
+|Name|Description|Required|
+|`-d --date {YYYY-MM-DD}` |specifies the date of the metric data we want to upload  (e.g. MY-SITE-A)|`YES`|
+|`-t --tenant {STRING}`| a case-sensitive string specifying the name of the tenant |`YES`|
 
 <a id="sync"></a>
 
@@ -42,15 +42,15 @@ This utility is used in order to upload the daily sync data for a specified date
 
 #### Full path
 
-```
-/usr/libexec/ar-compute/bin/upload_sync.py
-```
+	/usr/libexec/ar-compute/bin/upload_sync.py
+
 
 #### Parameters
 
-- `-d --date {YYYY-MM-DD}` the date of the daily sync data we want to upload (Required)
-- `-t --tenant {STRING}` the name of the tenant. Case sensitive. (Required)
-- `-j --job {STRING}` the name of the job. Case sensitive (Required)
+|Name|Description|Required|
+|`-d --date {YYYY-MM-DD}` | the date of the daily sync data we want to upload |`YES`|
+|`-t --tenant {STRING}`|  the name of the tenant. Case sensitive. |`YES`|
+|`-j --job {STRING}`|  the name of the job. Case sensitive |`YES`|
 
 
 <a id="ar"></a>
@@ -61,15 +61,15 @@ This utility is used in order to delete availability and reliability data from t
 
 #### Full path
 
-```
-/usr/libexec/ar-compute/bin/mongo_clean_ar.py
-```
+	/usr/libexec/ar-compute/bin/mongo_clean_ar.py
+
 
 #### Parameters
 
-- `-d --date {YYYY-MM-DD}` the date (day) for which to delete the availability and reliability data (Required)
-- `-t --tenant {STRING}` the name of the tenant. Case sensitive. (Required)
-- `-r --report {STRING}` the id (uuid format) of the report that results belong to. Case sensitive (Required)
+|Name|Description|Required|
+|`-d --date {YYYY-MM-DD}` | the date (day) for which to delete the availability and reliability data |`YES`|
+|`-t --tenant {STRING}`|  the name of the tenant. Case sensitive. |`YES`|
+|`-j --report {STRING}`|  the id (uuid format) of the report that results belong to. Case sensitive |`YES`|
 
 <a id="status"></a>
 
@@ -78,11 +78,13 @@ This utility is used in order to delete availability and reliability data from t
 This utility can be used in order to delete the status detail data from the datastore, for a specified tenant,report and date.
 
 #### Full path
-```
-/usr/libexec/ar-compute/bin/mongo_clean_status.py
-```
+
+	/usr/libexec/ar-compute/bin/mongo_clean_status.py
+
 #### Parameters
 
-- `-d --date {YYYY-MM-DD}` the date for which to delete the status detail data from the datastore (Required)
-- `-t --tenant {STRING}` the name of the tenant. Case sensitive. (Required)
-- `-r --report {STRING}` the id (uuid format) of the  report that results belong to. Case sensitive (Required)
+|Name|Description|Required|
+|`-d --date {YYYY-MM-DD}` | the date (day) for which to delete the availability and reliability data |`YES`|
+|`-t --tenant {STRING}`|  the name of the tenant. Case sensitive. |`YES`|
+|`-j --report {STRING}`|  the id (uuid format) of the report that results belong to. Case sensitive |`YES`|
+
