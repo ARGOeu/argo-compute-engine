@@ -58,5 +58,34 @@ public class CAggregatorTest {
         
 	}
 	
+	@Test
+	public void testSingleAggregation() throws ParseException, IOException, URISyntaxException  {
+		
+		// Prepare Resource File
+		URL resJsonFile = CAggregatorTest.class.getResource("/ops/EGI-algorithm.json");
+		File JsonFile = new File(resJsonFile.toURI());
+		// Instantiate class
+		OpsManager opsMgr = new OpsManager();
+		// Test loading file
+		opsMgr.loadJson(JsonFile);
+		
+        CAggregator agg = new CAggregator();
+         
+        agg.insert("hostFoo.lan","2015-05-01T00:00:00Z",opsMgr.getIntStatus("OK"));
+        agg.insert("hostFoo.lan","2015-05-01T09:00:00Z",opsMgr.getIntStatus("OK"));
+        agg.insert("hostFoo.lan","2015-05-01T12:00:00Z",opsMgr.getIntStatus("OK"));
+        agg.insert("hostFoo.lan","2015-05-01T22:00:00Z",opsMgr.getIntStatus("OK"));
+        
+     
+	
+        agg.aggregate(opsMgr, "AND");
+        
+        CTimeline expected = new CTimeline("2015-05-01T00:00:00Z");
+        expected.insert("2015-05-01T00:00:00Z",opsMgr.getIntStatus("OK"));
+    
+        assertEquals(expected.getSamples(),agg.getSamples());
+        
+	}
+	
 	
 }
