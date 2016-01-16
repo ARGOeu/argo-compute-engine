@@ -64,7 +64,7 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json.template
 
 %changelog
-* Thu Dec 10 Christos Kanellopoulos <skanct@gmail.com> - 1.6.5-4%{?dist}
+* Thu Dec 10 2015 Christos Kanellopoulos <skanct@gmail.com> - 1.6.5-4%{?dist}
 - Add support for cobertura coverage reports
 * Tue Nov 24 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-3%{?dist}
 - ARGO-245 Upgrade devel to CDH 5.x - Update spec requirement to java-1.7.0-openjdk
