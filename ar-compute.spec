@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.6.5
-Release: 4%{?dist}
+Version: 1.6.6
+Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -64,7 +64,12 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json.template
 
 %changelog
-* Thu Dec 10 2015 Christos Kanellopoulos <skanct@gmail.com> - 1.6.5-4%{?dist}
+* Mon Jan 18 2016 Christos Kanellopoulos <skanct@gmail.com> - 1.6.6-1%{?dist}
+- Improved documentation
+- Improved support of UUIDs
+- Improvements in the recomputation module
+- Requirement for a prefilter is now optional
+- Optimization of signle timelines
 - Add support for cobertura coverage reports
 * Tue Nov 24 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-3%{?dist}
 - ARGO-245 Upgrade devel to CDH 5.x - Update spec requirement to java-1.7.0-openjdk
