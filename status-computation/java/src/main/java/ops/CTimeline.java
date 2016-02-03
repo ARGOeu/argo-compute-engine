@@ -134,6 +134,8 @@ public class CTimeline {
 	public void aggregate(CTimeline second, OpsManager opsMgr, int op){
 		if (this.isEmpty()){
 			this.bulkInsert(second.getSamples());
+			// Optimize even when we have a single timeline for aggregation
+			this.optimize(); 
 			return;
 		}
 		

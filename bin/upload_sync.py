@@ -48,7 +48,8 @@ def main(args=None):
     ArConfig = SafeConfigParser()
     ArConfig.read(fn_ar_cfg)
 
-    # Get sync exec and path
+    # Get sync conf, exec and path
+    arsync_conf = ArConfig.get('connectors', 'sync_conf')
     arsync_exec = ArConfig.get('connectors', 'sync_exec')
     arsync_lib = ArConfig.get('connectors', 'sync_path')
 
@@ -100,13 +101,14 @@ def main(args=None):
 
     # Call downtimes latest info
     cmd_call_downtimes = [
-        os.path.join(arsync_exec, 'downtimes-gocdb-connector.py'), '-d', args.date]
+        os.path.join(arsync_exec, 'downtimes-gocdb-connector.py'), '-d', args.date,
+        '-c', os.path.join(arsync_conf, args.tenant.lower() + '-customer.conf')]
     log.info("Calling downtime sync connector to give us latest downtime info")
 
     run_cmd(cmd_call_downtimes, log)
 
     # Call script to retrieve a json file of recomputations for the specific date/tenant from mongodb
-    cmd_mongo_recomputations = [os.path.join(argo_exec,'mongo_recompute.py'),'-d',args.date,'-t',args.tenant]
+    cmd_mongo_recomputations = [os.path.join(argo_exec, 'mongo_recompute.py'), '-d', args.date, '-t', args.tenant, '-j', args.job]
     log.info("Retrieving relevant recomputation requests...")
     run_cmd(cmd_mongo_recomputations, log)
 

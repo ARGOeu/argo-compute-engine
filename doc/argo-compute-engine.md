@@ -1,4 +1,9 @@
-# ARGO Compute Engine documentation
+---
+title: Compute Engine documentation | ARGO
+page_title: Compute Engine Info
+font_title: 'fa fa-cog'
+description: The ARGO Compute Engine is responsible for computing the availability and reliability of services.
+---
 
 The ARGO Compute Engine is responsible for computing the availability and reliability of services using:
 
@@ -19,24 +24,21 @@ The ARGO Compute Engine allows the users to model their infrastructure by defini
 
 For example a user with an infrastructure on top of AWS using VPC can model the infrastructure in the following way:
 
-```
-- Global Group                  # Level 5
-  - Regional Group              # Level 4
-    - VPC                       # Level 3
-      - Availability Group      # Level 2
-        - Service Types         # Level 1
-          -  Service Endpoints  # Level 0
-```
+	- Global Group                  # Level 5
+	  - Regional Group              # Level 4
+	    - VPC                       # Level 3
+	      - Availability Group      # Level 2
+		- Service Types         # Level 1
+		  -  Service Endpoints  # Level 0
 
 Another example comes from the European Grid Infrastructure (EGI), in which the infrastructure model is the following:
 
-```
-- EGI # Level 4                       |  - VO # Level 2
-  - NGI # Level 3                     |    - Service Type # Level 1
-    - Site # Level 2                  |      - Service Endpoints # Level 0
-      - Service Types # Level 1       |
-        - Service Endpoints # Level 0 |
-```
+	- EGI # Level 4                       |  - VO # Level 2
+	  - NGI # Level 3                     |    - Service Type # Level 1
+	    - Site # Level 2                  |      - Service Endpoints # Level 0
+	      - Service Types # Level 1       |
+		- Service Endpoints # Level 0 |
+
 > _More information about [European Grid Infrastructure](http://www.egi.eu/infrastructure/), the [NGIs](http://www.egi.eu/community/ngis/) and the [VOs](http://www.egi.eu/community/vos/) can be found on the website of [EGI](http://www.egi.eu)_
 
 ### Status computations
@@ -51,15 +53,13 @@ The ARGO Compute Engine expects to receive a stream metric results produced by a
 
 An example metric result in is shown below:
 
-```json
-{
-  "timestamp": "2013-05-02T10:53:38Z",
-  "metric": "org.bdii.Freshness",
-  "service_type": "Site-BDII",
-  "hostname": "bdii.afroditi.hellasgrid.gr",
-  "status": "OK"
-}
-```
+	{
+	  "timestamp": "2013-05-02T10:53:38Z",
+	  "metric": "org.bdii.Freshness",
+	  "service_type": "Site-BDII",
+	  "hostname": "bdii.afroditi.hellasgrid.gr",
+	  "status": "OK"
+	}
 
 The ARGO Compute Engine receives this stream of metric results and creates a set of status timelines for each service endpoint and metric tuple. The ARGO Compute Engine computes the status of the _Service Endpoints_  based on the results from each defined _metric_ for the _Service Type_ of the _Service Endpoints_, which have been checked within a time frame that matches the frequency with which the probe is executed. The ARGO Compute Engine requires at least three states to be defined:
 

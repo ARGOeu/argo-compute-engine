@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import ops.ConfigManager;
 import ops.DAggregator;
@@ -255,20 +256,17 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 		// Final site aggregate
 		// Get appropriate operation from availability profile
 		totalSite.aggregate(this.apMgr.getTotalOp(aprofile), this.opsMgr);
-
-		// Check for Recalculations
-		String supergroupType = this.cfgMgr.ggroup;
-		String groupType = this.cfgMgr.egroup;
-		String supergroup = this.ggMgr.getGroup(supergroupType, groupname);
-
+	
 		try {
 
-			if (this.recMgr.shouldRecompute(supergroup, groupname, this.targetDate)) {
+			if (this.recMgr.isExcluded(groupname)) {
 
-				String startRec = this.recMgr.getStart(supergroup);
-				String endRec = this.recMgr.getEnd(supergroup);
-
-				totalSite.aggregation.fill(this.opsMgr.getDefaultUnknownInt(), startRec, endRec, this.targetDate);
+				ArrayList<Map<String,String>> periods = this.recMgr.getPeriods(groupname,this.targetDate);
+				
+				for (Map<String,String> period : periods){
+					totalSite.aggregation.fill(this.opsMgr.getDefaultUnknownInt(), period.get("start"), period.get("end"), this.targetDate);
+				}
+				
 			}
 
 		} catch (ParseException e) {

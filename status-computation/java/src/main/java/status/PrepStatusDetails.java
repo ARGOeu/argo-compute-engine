@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import ops.ConfigManager;
 
 import org.apache.pig.EvalFunc;
+import org.apache.pig.data.BagFactory;
 import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
@@ -44,7 +45,8 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 	public ConfigManager cfgMgr;
 
 	private TupleFactory tupFactory;
-
+	private BagFactory bagFactory;
+	
 	private boolean initialized;
 
 	private static final Logger LOG = Logger.getLogger(PrepStatusDetails.class.getName());
@@ -63,7 +65,8 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 		this.cfgMgr = new ConfigManager();
 
 		this.tupFactory = TupleFactory.getInstance();
-
+		this.bagFactory = BagFactory.getInstance();
+		
 		this.initialized = false;
 
 	}
@@ -157,12 +160,21 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 		
 		// Find endpoint group
 		String egroupType = this.cfgMgr.egroup;
-		String egroupName = this.egrpMgr.getGroup(egroupType, hostname, service);
-
+		ArrayList<String> groups = egrpMgr.getGroup(egroupType, hostname, service);
+		// Create output Tuple
+		DataBag groupBag = this.bagFactory.newDefaultBag();
+		
+		for (String group : groups)
+		{
+			Tuple cur_tupl = tupFactory.newTuple();
+			cur_tupl.append(group);
+			groupBag.add(cur_tupl);
+		}
+		
 	
 		// add stuff to the output
-		output.append(this.cfgMgr.report); // Add report name
-		output.append(egroupName);
+		output.append(this.cfgMgr.id); // Add report id
+		output.append(groupBag);
 		output.append(monitoringHost);
 		output.append(service);		   
 		output.append(hostname);
@@ -191,11 +203,21 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 		Schema.FieldSchema dateInt = new Schema.FieldSchema("date_integer", DataType.INTEGER);
 		Schema.FieldSchema timeInt = new Schema.FieldSchema("time_integer", DataType.INTEGER);
 
+		Schema.FieldSchema groupName = new Schema.FieldSchema("group_name", DataType.CHARARRAY);
+		
 		Schema statusMetric = new Schema();
 		Schema timeline = new Schema();
 
 		statusMetric.add(report);
-		statusMetric.add(endpointGroup);
+		
+		Schema.FieldSchema groups = null;
+		try {
+			groups = new Schema.FieldSchema("groups", timeline, DataType.BAG);
+		} catch (FrontendException ex) {
+			LOG.error(ex);
+		}
+		
+		statusMetric.add(groups);
 		statusMetric.add(monitoringBox);
 		statusMetric.add(serviceType);
 		statusMetric.add(hostname);

@@ -1,7 +1,7 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.6.5
-Release: 3%{?dist}
+Version: 1.6.6
+Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -19,11 +19,11 @@ Requires: java-1.7.0-openjdk
 Installs the core A/R Compute Engine
 
 %prep
-%setup 
+%setup
 cd status-computation/java
-mvn package
+mvn package -Dmaven.test.skip
 
-%install 
+%install
 %{__rm} -rf %{buildroot}
 install --directory %{buildroot}/usr/libexec/ar-compute
 install --directory %{buildroot}/usr/libexec/ar-compute/pig
@@ -43,8 +43,8 @@ install --mode 644 status-computation/lib/*.sh                  %{buildroot}/usr
 install --mode 644 status-computation/lib/*.py                  %{buildroot}/usr/libexec/ar-compute/lib/
 install --mode 755 bin/*.py                                     %{buildroot}/usr/libexec/ar-compute/bin/
 install --mode 644 status-computation/java/target/MyUDF-1.0.jar %{buildroot}/usr/libexec/ar-compute/MyUDF.jar
-install --mode 644 conf/ar-compute-engine.conf                  %{buildroot}/etc/
-install --mode 644 conf/*.json                                  %{buildroot}/etc/ar-compute
+install --mode 644 conf/ar-compute-engine.conf.template         %{buildroot}/etc/
+install --mode 644 conf/*.json.template                         %{buildroot}/etc/ar-compute
 
 %clean
 cd status-computation/java
@@ -60,14 +60,27 @@ mvn clean
 %attr(0755,root,root) /usr/libexec/ar-compute/MyUDF.jar
 %attr(0750,root,root) /var/lib/ar-compute
 %attr(0750,root,root) /var/log/ar-compute
-%attr(0644,root,root) /etc/ar-compute-engine.conf
-%attr(0644,root,root) /etc/ar-compute/*.json
+%attr(0644,root,root) /etc/ar-compute-engine.conf.template
+%attr(0644,root,root) /etc/ar-compute/*.json.template
 
 %changelog
+* Wed Feb 3 2016 Christos Kanellopoulos <skanct@gmail.com> - 1.6.6-1%{?dist}
+- Improved documentation
+- Improved support of UUIDs
+- Improvements in the recomputation module
+- Requirement for a prefilter is now optional
+- Optimization of signle timelines
+- Improved support of downtimes in a multi-tenant environment
+* Thu Dec 10 2015 Christos Kanellopoulos <skanct@gmail.com> - 1.6.5-4%{?dist}
+- Add support for cobertura coverage reports
 * Tue Nov 24 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-3%{?dist}
 - ARGO-245 Upgrade devel to CDH 5.x - Update spec requirement to java-1.7.0-openjdk
 * Mon Nov 23 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-2%{?dist}
 - ARGO-238 Change UDF output schema to be compatible with CDH5
+* Thu Nov 12 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-3%{?dist}
+- ARGO-273 Replace conf files with generic configuration templates
+* Tue Nov 3 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-2%{?dist}
+- ARGO-245 Upgrade devel to CDH 5.x - Update spec requirement to java-1.7.0-openjdk
 * Thu Oct 29 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.5-1%{?dist}
 - ARGO-207 minor bug fix related to how mongo_clean_status is called from within job_status_detail python wrapper
 - ARGO-211 Use ListArray assertions instead of plain asserts when dealing with arraylists.
@@ -93,7 +106,7 @@ Add extra junit dependencies
 - Removed one threshold check
 - Fix issue with non Json parsable datetime object
 * Wed Jun 16 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.2-4%{?dist}
-- Fix in parameter passed onto pig ar script 
+- Fix in parameter passed onto pig ar script
 * Wed Jun 4 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-3%{?dist}
 - ARGO-129 Bugfix: Fix reference to connector path
 * Wed Jun 3 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-2%{?dist}
@@ -119,7 +132,7 @@ Add extra junit dependencies
 * Thu Mar 26 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.1-1%{?dist}
 - Renameing of standalone folder to bin
 * Mon Mar 02 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-6%{?dist}
-- Fix typo in ar-compute-engine.conf 
+- Fix typo in ar-compute-engine.conf
 * Fri Feb 27 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.0-5%{?dist}
 - Fix config filenames. Add More Verbosity
 - Correct Cloudmon job name in global config

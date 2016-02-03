@@ -1,5 +1,6 @@
 {
   "tenant":"EGI",
+  "id":"c800846f-8478-4af8-85d1-a3f12fe4c18f",
   "job":"Critical",
   "egroup":"SITES",
   "ggroup":"NGI",
@@ -19,54 +20,5 @@
     "vo":"ops",
     "vo_fqan":"ops",
     "roc":"any"
-  },
-  "datastore_maps":{
-    "ggroups":{
-      "scope":"sc",
-      "infrastructure":"i",
-      "certification":"cs"
-    },
-    "egroups":{
-      "production":"pr",
-      "monitored":"m",
-      "scope":"ss"
-    },
-    "ar":{
-      "date":"dt",
-      "metric_profile":"p",
-      "av_profile":"ap",
-      "availability":"a",
-      "reliability":"r",
-      "up_f":"up",
-      "unknown_f":"u",
-      "down_f":"d",
-      "group":"s",
-      "supergroup":"n",
-      "service":"sf",
-      "weight":"hsp"
-    },
-    "status":{
-      "date":"di",
-      "time":"ti",
-      "timestamp":"ts",
-      "status":"s",
-      "group":"site",
-      "supergroup":"roc",
-      "production":"pr",
-      "monitored":"m",
-      "vo":"vo",
-      "vo_fqan":"vo_f",
-      "prev_status":"ps",
-      "prev_timestamp":"pts",
-      "message":"msg",
-      "summary":"sum",
-      "hostname":"h",
-      "metric":"m",
-      "profile":"p",
-      "service":"srv",
-      "roc":"roc",
-      "altg":"vo",
-      "altg2":"vo_f"
-    }
   }
 }

@@ -1,9 +1,20 @@
-language: java
+# Set-up a python centric enviroment in order to easily choose py version:2.6
+# bonus: Java 7 and mvn also included
+language: python
+# Target py version 2.6
+python:
+  - "2.6"
 
-before_install:  
- - sudo pip install pytest 
- - sudo pip install mock
- - sudo pip install pymongo
-script: 
+install:
+ - pip install pymongo
+ - pip install coverage
+
+script:
+# Gather coverage data on python src
+ - coverage run --source=./bin/ -m py.test
+# Generate coverage.xml report
+ - coverage xml
+# Run python unittests again and generate junit style xml report
+ - py.test ./bin/ --junitxml=./bin/junit.xml
+# Run unittests and generate reports on java src
  - cd status-computation/java && mvn test
- - cd ../../bin && py.test
