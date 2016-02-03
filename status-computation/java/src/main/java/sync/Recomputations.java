@@ -168,6 +168,19 @@ public class Recomputations {
 						this.insertMon(monHost, monStart, monEnd);
 					}
 				}
+				
+				// Get the Monitoring Engines
+				
+				if (item.getAsJsonObject().get("exclude_monitoring_source") != null) {
+					JsonArray jMon = item.getAsJsonObject().get("exclude_monitoring_source").getAsJsonArray();
+					for (JsonElement subitem: jMon){
+						
+						String monHost = subitem.getAsJsonObject().get("host").getAsString();
+						String monStart = subitem.getAsJsonObject().get("start_time").getAsString();
+						String monEnd = subitem.getAsJsonObject().get("end_time").getAsString();
+						this.insertMon(monHost, monStart, monEnd);
+					}
+				}
 
 			}
 
