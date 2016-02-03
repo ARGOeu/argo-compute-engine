@@ -3,7 +3,6 @@ package sync;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -12,7 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import ops.OpsManagerTest;
+
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -34,6 +33,7 @@ public class RecomputationsTest {
 
 		Recomputations recMgr = new Recomputations();
 		recMgr.loadJson(jsonFile);
+		
 
 		assertEquals(recMgr.isExcluded("GR-01-AUTH"), true);
 		assertEquals(recMgr.isExcluded("HG-03-AUTH"), true);
@@ -49,6 +49,7 @@ public class RecomputationsTest {
 		
 		Map<String,String> siteA1map = new HashMap<String, String>();
 		Map<String,String> siteA2map = new HashMap<String, String>();
+		
 		
 		
 		Map<String,String> siteBmap = new HashMap<String,String>();
@@ -80,6 +81,23 @@ public class RecomputationsTest {
 	    Assert.assertEquals(recMgr.getPeriods("GR-01-AUTH", "2013-12-08"),gr01list);
 	    Assert.assertEquals(recMgr.getPeriods("SITE-A", "2013-12-08"),siteAlist);
 	    Assert.assertEquals(recMgr.getPeriods("SITE-B", "2013-12-08"),siteBlist);
+	    
+	    // check monitoring exclusions
+	    Assert.assertEquals(false,recMgr.isMonExcluded("monA", "2013-12-08T11:03:43Z"));
+	    Assert.assertEquals(false,recMgr.isMonExcluded("monA", "2013-12-08T11:03:44Z"));
+	    Assert.assertEquals(true,recMgr.isMonExcluded("monA", "2013-12-08T12:06:44Z"));
+	    Assert.assertEquals(true,recMgr.isMonExcluded("monA", "2013-12-08T14:05:44Z"));
+	    Assert.assertEquals(true,recMgr.isMonExcluded("monA", "2013-12-08T15:02:44Z"));
+	    Assert.assertEquals(false,recMgr.isMonExcluded("monA", "2013-12-08T15:03:45Z"));
+	    
+	    // check monitoring exclusions
+	    Assert.assertEquals(false,recMgr.isMonExcluded("monB", "2013-12-08T11:03:43Z"));
+	    Assert.assertEquals(false,recMgr.isMonExcluded("monB", "2013-12-08T11:03:44Z"));
+	    Assert.assertEquals(false,recMgr.isMonExcluded("monB", "2013-12-08T12:06:44Z"));
+	    Assert.assertEquals(false,recMgr.isMonExcluded("monB", "2013-12-08T14:05:44Z"));
+	    Assert.assertEquals(false,recMgr.isMonExcluded("monB", "2013-12-08T15:02:44Z"));
+	    Assert.assertEquals(false,recMgr.isMonExcluded("monB", "2013-12-08T15:03:45Z"));
+	    
 	}
 
 }

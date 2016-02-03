@@ -13,7 +13,7 @@ REGISTER /usr/libexec/ar-compute/lib/gson-2.2.4.jar
 
 REGISTER /usr/libexec/ar-compute/MyUDF.jar
 
-DEFINE f_PickEndpoints ar.PickEndpoints('$egs','$mps','$aps','$ggs','$cfg', '$flt' , '$mode');
+DEFINE f_PickEndpoints ar.PickEndpoints('$rec','$egs','$mps','$aps','$ggs','$cfg', '$flt' , '$mode');
 DEFINE f_PrepStatus  status.PrepStatusDetails('$ggs','$egs','$cfg','$dt','$mode');
 DEFINE f_EndpointAggr status.EndpointStatus('$ops', '$aps', '$mps', '$dt','$mode');
 DEFINE f_ServiceAggr status.ServiceStatus('$ops', '$aps', '$mps', '$dt','$mode');
@@ -21,10 +21,11 @@ DEFINE f_GroupEndpointAggr status.GroupEndpointStatus('$ops', '$aps', '$mps', '$
 
 p_mdata = LOAD '$p_mdata' using org.apache.pig.piggybank.storage.avro.AvroStorage();
 p_mdata_trim = FOREACH p_mdata GENERATE monitoring_host,service,hostname,metric,timestamp,status,summary,message;
-p_mdata_clean = FILTER p_mdata_trim BY f_PickEndpoints(hostname,service,metric);
+p_mdata_clean = FILTER p_mdata_trim BY f_PickEndpoints(hostname,service,metric,monitoring_host,timestamp);
+
 
 --- Produce the latest previous statuses as references
-p_ref = FOREACH (GROUP p_mdata_clean BY (monitoring_host,service,hostname,metric)) {
+p_ref = FOREACH (GROUP p_mdata_clean BY (service,hostname,metric)) {
 	timeline = ORDER p_mdata_clean by timestamp DESC;
 	big_t = limit timeline 1;
 	GENERATE FLATTEN(big_t) as (monitoring_host,service,hostname,metric,timestamp,status,summary,message);
@@ -32,17 +33,25 @@ p_ref = FOREACH (GROUP p_mdata_clean BY (monitoring_host,service,hostname,metric
 
 mdata = LOAD '$mdata' using org.apache.pig.piggybank.storage.avro.AvroStorage();
 mdata_trim = FOREACH mdata GENERATE  monitoring_host,service,hostname,metric,timestamp,status,summary,message;
-mdata_clean = FILTER mdata_trim BY f_PickEndpoints(hostname,service,metric);
+mdata_clean = FILTER mdata_trim BY f_PickEndpoints(hostname,service,metric,monitoring_host,timestamp);
+
 
 mdata_full = UNION mdata_clean,p_ref;
+
+
+
 -- Group by hostname,metric to create timelines
-status_detail =	FOREACH  (GROUP mdata_full BY (monitoring_host,service,hostname,metric)) {
+status_detail =	FOREACH  (GROUP mdata_full BY (service,hostname,metric)) {
 	t = ORDER mdata_full BY timestamp ASC;
-	GENERATE  FLATTEN( f_PrepStatus(group.monitoring_host, group.service, group.hostname, group.metric, t.(timestamp,status,summary,message)) );
+	GENERATE  FLATTEN( f_PrepStatus(group.service, group.hostname, group.metric, t.(timestamp,status,summary,message,monitoring_host)) );
 };
 
-status_final = FOREACH status_detail GENERATE $0, FLATTEN($1), $2, $3, $4, $5, FLATTEN($6);
-status_unwrap = FOREACH status_final GENERATE $0 as report, $1 as endpoint_group, $2 as monitoring_box, $3 as service, $4 as host, $5 as metric, $6 as timestamp, $7 as status, $8 as summary,$9 as message,$10 as previous_state,$11 as previous_timestamp,$12 as date_integer:int,$13 as time_integer:int;
+status_final = FOREACH status_detail GENERATE $0, FLATTEN($1), $2, $3, $4, FLATTEN($5);
+
+
+status_unwrap = FOREACH status_final GENERATE $0 as report, $1 as endpoint_group, $2 as service, $3 as host, $4 as metric,  $5 as timestamp, $6 as status, $7 as summary,$8 as message,$10 as previous_state,$11 as previous_timestamp,$12 as date_integer:int,$13 as time_integer:int;
+
+
 
 -- Continue here
 endpoint_aggr = FOREACH (GROUP status_unwrap BY(report,endpoint_group,service,host)) {

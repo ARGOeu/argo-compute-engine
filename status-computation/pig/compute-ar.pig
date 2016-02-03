@@ -13,7 +13,7 @@ REGISTER /usr/libexec/ar-compute/lib/gson-2.2.4.jar
 
 REGISTER /usr/libexec/ar-compute/MyUDF.jar
 
-DEFINE f_PickEndpoints ar.PickEndpoints('$egs','$mps','$aps','$ggs','$cfg', '$flt' , '$mode');
+DEFINE f_PickEndpoints ar.PickEndpoints('$rec','$egs','$mps','$aps','$ggs','$cfg', '$flt' , '$mode');
 DEFINE f_EndpointTl ar.EndpointTimelines('$ops','$dts', '$aps', '$mps', '$dt','$mode','$s_period','$s_interval');
 DEFINE f_MetricTl ar.MetricTimelines('$ops','$dt','$mode','$s_period','$s_interval');
 DEFINE f_AddGroupInfo ar.AddGroupInfo('$egs','$ggs','$name_eg','$mode');
@@ -26,12 +26,15 @@ DEFINE f_ServiceDATA ar.ServiceMap('$cfg', '$aps', '$ggs', '$egs', '$dt', '$mode
 
 --- Get One Day Before metric data in ordet to get past status references
 p_mdata = LOAD '$p_mdata' using org.apache.pig.piggybank.storage.avro.AvroStorage();
-p_mdata_trim = FOREACH p_mdata GENERATE  service, hostname, metric, timestamp, status;
-p_mdata_clean = FILTER p_mdata_trim BY f_PickEndpoints(hostname,service,metric);
+p_mdata_trim = FOREACH p_mdata GENERATE  monitoring_host, service, hostname, metric, timestamp, status;
+p_mdata_clean = FILTER p_mdata_trim BY f_PickEndpoints(hostname,service,metric,monitoring_host,timestamp);
+p_mdata_clean_trim = FOREACH p_mdata_clean GENERATE service,hostname,metric,timestamp,status;
+
+
 
 --- Produce the latest previous statuses as references
-p_ref = FOREACH (GROUP p_mdata_clean BY (service,hostname,metric)) {
-	timeline = ORDER p_mdata_clean by timestamp DESC;
+p_ref = FOREACH (GROUP p_mdata_clean_trim BY (service,hostname,metric)) {
+	timeline = ORDER p_mdata_clean_trim by timestamp DESC;
 	big_t = limit timeline 1;
 	GENERATE FLATTEN(big_t) as (service,hostname,metric,timestamp,status);
 };
@@ -39,11 +42,14 @@ p_ref = FOREACH (GROUP p_mdata_clean BY (service,hostname,metric)) {
 
 --- Get Target Day metric data
 mdata= LOAD '$mdata' using org.apache.pig.piggybank.storage.avro.AvroStorage();
-mdata_trim = FOREACH mdata GENERATE  service, hostname, metric, timestamp, status;
-mdata_clean = FILTER mdata_trim BY f_PickEndpoints(hostname,service,metric);
+mdata_trim = FOREACH mdata GENERATE  monitoring_host, service, hostname, metric, timestamp, status;
+mdata_clean = FILTER mdata_trim BY f_PickEndpoints(hostname,service,metric,monitoring_host,timestamp);
+mdata_clean_trim = FOREACH mdata_clean GENERATE service,hostname,metric,timestamp,status;
+
+
 
 --- Union previous mdata with current
-mdata_full = UNION mdata_clean,p_ref;
+mdata_full = UNION mdata_clean_trim,p_ref;
 
 
 endpoints =	FOREACH  (GROUP mdata_full BY (service,hostname)) {
