@@ -51,6 +51,7 @@ hadoop_log_root=INFO,console
 
 [connectors]
 
+sync_conf=/etc/argo-egi-connectors/
 sync_exec=/usr/libexec/ar-sync/
 sync_path=/var/lib/ar-sync/
 
