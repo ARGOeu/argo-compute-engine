@@ -106,12 +106,11 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 			return null;
 
 		// parse input
-		String monitoringHost = (String) input.get(0);
-		String service = (String) input.get(1);
-		String hostname = (String) input.get(2);
-		String metric = (String) input.get(3);
+		String service = (String) input.get(0);
+		String hostname = (String) input.get(1);
+		String metric = (String) input.get(2);
 
-		DefaultDataBag timeline = (DefaultDataBag) input.get(4);
+		DefaultDataBag timeline = (DefaultDataBag) input.get(3);
 		Iterator<Tuple> myit = timeline.iterator();
 		Tuple item;
 
@@ -123,7 +122,8 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 
 		for (int i = 0; i < timeline.size(); i++) {
 			item = myit.next();
-
+			
+		
 			String curTsDate = (String) item.get(0);
 			String curTsDay = curTsDate.substring(0, curTsDate.indexOf("T"));
 
@@ -153,6 +153,8 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 			prevState = (String) item.get(1);
 			prevTs = (String) item.get(0);
 
+			
+			
 			if (curTsDay.equals(this.targetDate)) {
 				outBag.add(item);
 			}
@@ -175,7 +177,6 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 		// add stuff to the output
 		output.append(this.cfgMgr.id); // Add report id
 		output.append(groupBag);
-		output.append(monitoringHost);
 		output.append(service);		   
 		output.append(hostname);
 		output.append(metric);
@@ -189,48 +190,58 @@ public class PrepStatusDetails extends EvalFunc<Tuple> {
 	public Schema outputSchema(Schema input) {
 		Schema.FieldSchema report = new Schema.FieldSchema("report",DataType.CHARARRAY);
 		Schema.FieldSchema endpointGroup = new Schema.FieldSchema("endpoint_group", DataType.CHARARRAY); 
-		Schema.FieldSchema monitoringBox = new Schema.FieldSchema("monitoring_box", DataType.CHARARRAY);
+		
 		Schema.FieldSchema hostname = new Schema.FieldSchema("hostname", DataType.CHARARRAY);
 		Schema.FieldSchema serviceType = new Schema.FieldSchema("service", DataType.CHARARRAY);
 		Schema.FieldSchema metric = new Schema.FieldSchema("metric", DataType.CHARARRAY);
+		
 		
 		Schema.FieldSchema timestamp = new Schema.FieldSchema("timestamp", DataType.CHARARRAY);
 		Schema.FieldSchema status = new Schema.FieldSchema("status", DataType.CHARARRAY);
 		Schema.FieldSchema summary = new Schema.FieldSchema("summary", DataType.CHARARRAY);
 		Schema.FieldSchema message = new Schema.FieldSchema("message", DataType.CHARARRAY);
+		Schema.FieldSchema monitoringBox = new Schema.FieldSchema("monitoring_box", DataType.CHARARRAY);
 		Schema.FieldSchema prevState = new Schema.FieldSchema("previous_state", DataType.CHARARRAY);
 		Schema.FieldSchema prevTs = new Schema.FieldSchema("previous_timestamp", DataType.CHARARRAY);
 		Schema.FieldSchema dateInt = new Schema.FieldSchema("date_integer", DataType.INTEGER);
 		Schema.FieldSchema timeInt = new Schema.FieldSchema("time_integer", DataType.INTEGER);
+		
+		
 
 		Schema.FieldSchema groupName = new Schema.FieldSchema("group_name", DataType.CHARARRAY);
 		
 		Schema statusMetric = new Schema();
 		Schema timeline = new Schema();
+		Schema groupsEnd = new Schema();
 
 		statusMetric.add(report);
 		
 		Schema.FieldSchema groups = null;
 		try {
-			groups = new Schema.FieldSchema("groups", timeline, DataType.BAG);
+			groups = new Schema.FieldSchema("groups",groupsEnd, DataType.BAG);
 		} catch (FrontendException ex) {
 			LOG.error(ex);
 		}
 		
+		groupsEnd.add(groupName);
+		
 		statusMetric.add(groups);
-		statusMetric.add(monitoringBox);
 		statusMetric.add(serviceType);
 		statusMetric.add(hostname);
 		statusMetric.add(metric);
 
+		
+		
 		timeline.add(timestamp);
 		timeline.add(status);
 		timeline.add(summary);
 		timeline.add(message);
+		timeline.add(monitoringBox);
 		timeline.add(prevState);
 		timeline.add(prevTs);
 		timeline.add(dateInt);
 		timeline.add(timeInt);
+		
 
 		Schema.FieldSchema timelines = null;
 		try {

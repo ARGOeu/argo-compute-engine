@@ -94,7 +94,7 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 
 	}
 
-	public void init() throws IOException {
+	public void init() throws IOException, ParseException {
 		if (this.fsUsed.equalsIgnoreCase("cache")) {
 			this.opsMgr.loadJson(new File("./ops"));
 			this.apMgr.loadJson(new File("./aps"));
@@ -133,6 +133,10 @@ public class GroupEndpointTimelines extends EvalFunc<Tuple> {
 				this.init(); // If not open them
 			} catch (IOException e) {
 				LOG.error("Could not initialize sync structures");
+				LOG.error(e);
+				throw new IllegalStateException();
+			} catch (ParseException e) {
+				LOG.error("Could not initialize sync structures due to Parse Date Error");
 				LOG.error(e);
 				throw new IllegalStateException();
 			}
