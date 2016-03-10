@@ -39,7 +39,6 @@ mdata_clean = FILTER mdata_trim BY f_PickEndpoints(hostname,service,metric,monit
 mdata_full = UNION mdata_clean,p_ref;
 
 
-
 -- Group by hostname,metric to create timelines
 status_detail =	FOREACH  (GROUP mdata_full BY (service,hostname,metric)) {
 	t = ORDER mdata_full BY timestamp ASC;

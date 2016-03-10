@@ -28,6 +28,10 @@ DEFINE f_ServiceDATA ar.ServiceMap('$cfg', '$aps', '$ggs', '$egs', '$dt', '$mode
 p_mdata = LOAD '$p_mdata' using org.apache.pig.piggybank.storage.avro.AvroStorage();
 p_mdata_trim = FOREACH p_mdata GENERATE  monitoring_host, service, hostname, metric, timestamp, status;
 p_mdata_clean = FILTER p_mdata_trim BY f_PickEndpoints(hostname,service,metric,monitoring_host,timestamp);
+<<<<<<< 69d3bfe09b3dacb791c2e41ff9e24b31c4f21132
+=======
+describe p_mdata_clean;
+>>>>>>> ARGO-337 Handle Metric Data generated from different monitoring engines
 p_mdata_clean_trim = FOREACH p_mdata_clean GENERATE service,hostname,metric,timestamp,status;
 
 
