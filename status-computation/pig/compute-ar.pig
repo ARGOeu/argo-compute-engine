@@ -23,12 +23,28 @@ DEFINE f_EndpointGroupAR ar.GroupEndpointIntegrate('$ops', '$aps', '$mode');
 DEFINE f_ServiceAR ar.ServiceIntegrate('$ops', '$aps', '$mode');
 DEFINE f_egroupDATA ar.GroupEndpointMap('$cfg', '$aps', '$weight', '$ggs', '$egs', '$dt', '$mode', '$localCfg');
 DEFINE f_ServiceDATA ar.ServiceMap('$cfg', '$aps', '$ggs', '$egs', '$dt', '$mode', '$localCfg');
+DEFINE f_Unwind ar.UnwindServiceMetrics('$mps','$mode');
+DEFINE f_Missing ar.FillMissing('$dt','$cfg','$mode');
+
+--- Read the topology file
+t_data = LOAD '$egs' using org.apache.pig.piggybank.storage.avro.AvroStorage();
+t_data_trim = distinct t_data;
+t_fill_a = FOREACH t_data_trim generate FLATTEN(f_Unwind(service,hostname));
+t_fill_clean = FILTER t_fill_a by ($0 is not null);
+t_fill = FOREACH t_fill_clean generate $0 as service, $1 as hostname, FLATTEN($2) as metric;
+
+
+
 
 --- Get One Day Before metric data in ordet to get past status references
+
+
+
 p_mdata = LOAD '$p_mdata' using org.apache.pig.piggybank.storage.avro.AvroStorage();
 p_mdata_trim = FOREACH p_mdata GENERATE  monitoring_host, service, hostname, metric, timestamp, status;
 p_mdata_clean = FILTER p_mdata_trim BY f_PickEndpoints(hostname,service,metric,monitoring_host,timestamp);
 p_mdata_clean_trim = FOREACH p_mdata_clean GENERATE service,hostname,metric,timestamp,status;
+
 
 
 
@@ -51,9 +67,23 @@ mdata_clean_trim = FOREACH mdata_clean GENERATE service,hostname,metric,timestam
 --- Union previous mdata with current
 mdata_full = UNION mdata_clean_trim,p_ref;
 
+mdata_topo = FOREACH mdata_full GENERATE service,hostname,metric;
+mdata_topo_trim = DISTINCT mdata_topo;
 
-endpoints =	FOREACH  (GROUP mdata_full BY (service,hostname)) {
-	GENERATE FLATTEN(f_EndpointTl(group.service, group.hostname, mdata_full.(metric,timestamp,status)));
+
+
+unwind_mdata = cogroup t_fill by *, mdata_topo_trim by *;
+unwind_minus = filter unwind_mdata by IsEmpty(mdata_topo_trim);
+missing_items = foreach unwind_minus generate flatten(t_fill);
+
+missing = foreach missing_items generate FLATTEN(f_Missing(service,hostname,metric));
+missing_final = foreach missing generate $2 as service, $3 as hostname, $4 as metric, $5 as timestamp, $6 as status;
+
+mdata_final = UNION mdata_full, missing_final;
+
+
+endpoints =	FOREACH  (GROUP mdata_final BY (service,hostname)) {
+	GENERATE FLATTEN(f_EndpointTl(group.service, group.hostname, mdata_final.(metric,timestamp,status)));
 };
 
 -- Add Group info (SITES)
