@@ -53,12 +53,11 @@ def run_recomputation(col, tenant, num_running, num_pending, threshold):
 
     pen_recalc = col.find_one({"status": "pending"})
     pen_recalc_id = str(pen_recalc["id"])
-    pen_recalc_r = str(pen_recalc["report"])
 
     # Status update allready implemented in recompute
     # Call recompute execution script
     recompute_script = script_path + "/recompute.py"
-    cmd_exec = [recompute_script, "-i", pen_recalc_id, "-t", tenant, "-j", pen_recalc_r]
+    cmd_exec = [recompute_script, "-i", pen_recalc_id, "-t", tenant]
     # Kickstart executor and continue own execution
     subprocess.Popen(cmd_exec)
 
