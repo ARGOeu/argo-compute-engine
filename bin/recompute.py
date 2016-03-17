@@ -110,7 +110,7 @@ def update_status(collection, rec_id, status, timestamp, log):
     """
 
     # Update status and history
-    collection.update({'id': rec_id}, {'$set': {"status": status,"timestamp": timestamp} })
+    collection.update_one({'id': rec_id}, {'$set': {"status": status,"timestamp": timestamp.strftime("%Y-%m-%d %H:%M:%S")} })
 
 
 def recompute(recalculation_id=None, tenant=None):
