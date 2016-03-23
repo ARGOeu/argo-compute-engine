@@ -13,18 +13,28 @@ REGISTER /usr/libexec/ar-compute/lib/gson-2.2.4.jar
 
 REGISTER /usr/libexec/ar-compute/MyUDF.jar
 
-DEFINE f_PickEndpoints ar.PickEndpoints('$egs','$mps','$aps','$ggs','$cfg', '$flt' , '$mode');
+DEFINE f_PickEndpoints ar.PickEndpoints('$rec','$egs','$mps','$aps','$ggs','$cfg', '$flt' , '$mode');
 DEFINE f_PrepStatus  status.PrepStatusDetails('$ggs','$egs','$cfg','$dt','$mode');
 DEFINE f_EndpointAggr status.EndpointStatus('$ops', '$aps', '$mps', '$dt','$mode');
 DEFINE f_ServiceAggr status.ServiceStatus('$ops', '$aps', '$mps', '$dt','$mode');
 DEFINE f_GroupEndpointAggr status.GroupEndpointStatus('$ops', '$aps', '$mps', '$dt','$mode');
+DEFINE f_Unwind ar.UnwindServiceMetrics('$mps','$mode');
+DEFINE f_Missing ar.FillMissing('$dt','$cfg','$mode');
+
+--- Read the topology file
+t_data = LOAD '$egs' using org.apache.pig.piggybank.storage.avro.AvroStorage();
+t_data_trim = distinct t_data;
+t_fill_a = FOREACH t_data_trim generate FLATTEN(f_Unwind(service,hostname));
+t_fill_clean = FILTER t_fill_a by ($0 is not null);
+t_fill = FOREACH t_fill_clean generate $0 as service, $1 as hostname, FLATTEN($2) as metric;
 
 p_mdata = LOAD '$p_mdata' using org.apache.pig.piggybank.storage.avro.AvroStorage();
 p_mdata_trim = FOREACH p_mdata GENERATE monitoring_host,service,hostname,metric,timestamp,status,summary,message;
-p_mdata_clean = FILTER p_mdata_trim BY f_PickEndpoints(hostname,service,metric);
+p_mdata_clean = FILTER p_mdata_trim BY f_PickEndpoints(hostname,service,metric,monitoring_host,timestamp);
+
 
 --- Produce the latest previous statuses as references
-p_ref = FOREACH (GROUP p_mdata_clean BY (monitoring_host,service,hostname,metric)) {
+p_ref = FOREACH (GROUP p_mdata_clean BY (service,hostname,metric)) {
 	timeline = ORDER p_mdata_clean by timestamp DESC;
 	big_t = limit timeline 1;
 	GENERATE FLATTEN(big_t) as (monitoring_host,service,hostname,metric,timestamp,status,summary,message);
@@ -32,17 +42,39 @@ p_ref = FOREACH (GROUP p_mdata_clean BY (monitoring_host,service,hostname,metric
 
 mdata = LOAD '$mdata' using org.apache.pig.piggybank.storage.avro.AvroStorage();
 mdata_trim = FOREACH mdata GENERATE  monitoring_host,service,hostname,metric,timestamp,status,summary,message;
-mdata_clean = FILTER mdata_trim BY f_PickEndpoints(hostname,service,metric);
+mdata_clean = FILTER mdata_trim BY f_PickEndpoints(hostname,service,metric,monitoring_host,timestamp);
+
 
 mdata_full = UNION mdata_clean,p_ref;
+
+mdata_topo = FOREACH mdata_full GENERATE service,hostname,metric;
+mdata_topo_trim = DISTINCT mdata_topo;
+
+
+
+unwind_mdata = cogroup t_fill by *, mdata_topo_trim by *;
+unwind_minus = filter unwind_mdata by IsEmpty(mdata_topo_trim);
+missing_items = foreach unwind_minus generate flatten(t_fill);
+
+missing = foreach missing_items generate FLATTEN(f_Missing(service,hostname,metric));
+missing_final = foreach missing generate $1 as monitoring_host, $2 as service, $3 as hostname, $4 as metric, $5 as timestamp, $6 as status, $8 as summary, $7 as message;
+
+
+mdata_final = UNION mdata_full, missing_final;
+
+
 -- Group by hostname,metric to create timelines
-status_detail =	FOREACH  (GROUP mdata_full BY (monitoring_host,service,hostname,metric)) {
-	t = ORDER mdata_full BY timestamp ASC;
-	GENERATE  FLATTEN( f_PrepStatus(group.monitoring_host, group.service, group.hostname, group.metric, t.(timestamp,status,summary,message)) );
+status_detail =	FOREACH  (GROUP mdata_final BY (service,hostname,metric)) {
+	t = ORDER mdata_final BY timestamp ASC;
+	GENERATE  FLATTEN( f_PrepStatus(group.service, group.hostname, group.metric, t.(timestamp,status,summary,message,monitoring_host)) );
 };
 
-status_final = FOREACH status_detail GENERATE $0, FLATTEN($1), $2, $3, $4, $5, FLATTEN($6);
-status_unwrap = FOREACH status_final GENERATE $0 as report, $1 as endpoint_group, $2 as monitoring_box, $3 as service, $4 as host, $5 as metric, $6 as timestamp, $7 as status, $8 as summary,$9 as message,$10 as previous_state,$11 as previous_timestamp,$12 as date_integer:int,$13 as time_integer:int;
+status_final = FOREACH status_detail GENERATE $0, FLATTEN($1), $2, $3, $4, FLATTEN($5);
+
+
+status_unwrap = FOREACH status_final GENERATE $0 as report, $1 as endpoint_group, $2 as service, $3 as host, $4 as metric,  $5 as timestamp, $6 as status, $7 as summary,$8 as message,$10 as previous_state,$11 as previous_timestamp,$12 as date_integer:int,$13 as time_integer:int;
+
+
 
 -- Continue here
 endpoint_aggr = FOREACH (GROUP status_unwrap BY(report,endpoint_group,service,host)) {

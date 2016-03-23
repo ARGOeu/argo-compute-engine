@@ -101,8 +101,8 @@ def test_update_status():
     recompute.update_status(mock_collection, "551bdd701c8a97e78635a911", "FOO", timestamp, log)
 
     query_id = {'id': '551bdd701c8a97e78635a911'}
-    query_update = {'$set': {'status': 'FOO','timestamp':timestamp}}
+    query_update = {'$set': {'status': 'FOO','timestamp':timestamp.strftime("%Y-%m-%d %H:%M:%S")}}
 
-    mock_collection.update.assert_called_with(query_id, query_update)
+    mock_collection.update_one.assert_called_with(query_id, query_update)
 
    
