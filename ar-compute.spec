@@ -1,6 +1,6 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.6.6
+Version: 1.6.7
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
@@ -64,6 +64,10 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json.template
 
 %changelog
+* Wed Mar 23 2016 Themis Zamani <themiszamani@gmail.com> - 1.6.7-1%{?dist}
+- ARGO-366 - Documentation Updates
+- ARGO-350 - Add Flume Decode Interceptor
+- ARGO-337 - Compute Engine supports results from multiple monitoring engines for the same endpoints
 * Wed Feb 3 2016 Christos Kanellopoulos <skanct@gmail.com> - 1.6.6-1%{?dist}
 - Improved documentation
 - Improved support of UUIDs
