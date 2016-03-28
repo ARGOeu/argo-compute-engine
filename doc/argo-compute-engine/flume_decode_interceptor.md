@@ -41,9 +41,9 @@ The Decode Interceptor project is hosted in the directory `/flume/decode_interce
 
 To build the jar file use the following commands:
 
-	`cd /flume/decode_interceptor`
-	`mvn clean`
-	`mvn package`
+	cd /flume/decode_interceptor
+	mvn clean
+	mvn package
 
 The build process produces the following file:
 
@@ -53,8 +53,8 @@ _(where x,y,z are integers used for versioning)_
 
 To only test the interceptor, just issue
 
-	`cd /flume/decode_interceptor`
-	`mvn test`
+	cd /flume/decode_interceptor
+	mvn test
 
 
 ## How to deploy the Decode Interceptor at flume node
