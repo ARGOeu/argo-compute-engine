@@ -1,6 +1,6 @@
 ---
 title: Compute Engine documentation | ARGO
-page_title: Compute Engine Ingestion - Flume Decode Interceptor
+page_title: Compute Engine Ingestion | Flume Decode Interceptor
 font_title: 'fa fa-cog'
 description: Using a custom flume interceptor while ingesting data from kafka to hdfs
 ---
