@@ -1,9 +1,11 @@
 ---
 title: Compute Engine documentation | ARGO
-page_title: Compute Engine Ingestion: Flume Decode Interceptor
+page_title: Compute Engine Ingestion - Flume Decode Interceptor
 font_title: 'fa fa-cog'
 description: Using a custom flume interceptor while ingesting data from kafka to hdfs
 ---
+
+## Description
 
 When using the ARGO Messaging API for ingestion in-front of the compute engine, a broker network is needed for the relay of messages and an ingestion mechanism for storing the data on HDFS. The ingestion mechanism used is the flume service.
 
