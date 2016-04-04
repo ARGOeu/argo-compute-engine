@@ -22,8 +22,8 @@ mode=cluster
 serialization=none
 
 # declare if prefilter data must be cleaned after upload to hdfs
-prefilter_clean=true
-sync_clean=true
+prefilter_clean=false
+sync_clean=false
 
 # Provide maximum number of recomputations that can run in parallel.
 recomp_threshold=1
