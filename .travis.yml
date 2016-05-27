@@ -18,4 +18,4 @@ script:
  - py.test ./bin/ --junitxml=./bin/junit.xml
 # Run unittests and generate reports on java src
  - cd status-computation/java && mvn test
- - cd ../../flume/decode_interceptor/ && mvn test
+ - cd ../../ingestion/flume/decode_interceptor/ && mvn test

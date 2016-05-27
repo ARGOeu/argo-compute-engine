@@ -35,6 +35,9 @@ interceptor on the KAFKA source. Interceptors give the ability to flume to drop 
 
 For the ingestion part of the Compute Engine a custom flume Decode Interceptor was developed as a small maven project.
 
+## Interceptor and event headers
+Interceptor parses the original JSON message looking for the "attributes" dictionary. For each defined attribute the interceptor reads it's key/value pair and exposes it as a flume event header. The flume header gets an "argo_" prefix in order to maintain discernibility from other flume environment headers that the event might carry. Also the interceptor supplies the event with a special header = 'flume.avro.schema.url' which will be used further down the line by the AvroEventSerializer when storing the event to HDFS.
+
 ## How to test the Decode Interceptor
 
 The Decode Interceptor project is hosted in the directory `/flume/decode_interceptor` of the argo-compute-engine repo.
@@ -72,3 +75,7 @@ _Contents of flume configuration file:_
 
 	flume1.sources.kafka-source-1.interceptors = DecodeInterceptor
 	flume1.sources.kafka-source-1.interceptors.DecodeInterceptor.type=argo.DecodeInterceptor$Builder
+	flume1.sources.kafka-source-1.interceptors.DecoreInterceptor.schemaURL=hdfs://path/to/available/schemas
+
+The `schemaURL` parameter defines a hdfs url pointing to an available HDFS location that contains AVRO avsc schema files used
+in encoding supported ingestion data.
