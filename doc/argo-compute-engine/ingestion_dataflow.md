@@ -68,6 +68,10 @@ For each tenant Apache Flume should have a kafka source configured to the corres
 Flume dataflow store the metric data in the following hdfs destination:
 `/argo/{TENANT}/metric_data/date={date_timestamp}`
 
+Flume dataflow store the sync data in the following hdfs destination pattern:
+`/argo/{TENANT}/{type}/report={report_name}/date={date_timestamp}`
+where `{type}` is the type of sync data (weights,downtimes,endpoint_groups,group_groups,metric_profiles)
+
 Files are also accessible by hive if corresponding tables are created and set to those locations. Folder `./ingestion/hive/` includes scripts for creation of hive tables that query data on ingestion HDFS directories.
 
 Avro schema's used should be stored in an accessible hdfs destination such as '/argo/schemas/'
