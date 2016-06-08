@@ -29,7 +29,6 @@ flume1.sinks.hdfs-sink-1.hdfs.path = /user/root/argo/{tenant_name}/date=%{argo_d
 flume1.sinks.hdfs-sink-1.hdfs.rollCount=0
 flume1.sinks.hdfs-sink-1.hdfs.rollSize=0
 flume1.sinks.hdfs-sink-1.hdfs.rollInterval=1800
-#flume1.sinks.hdfs-sink-1.serializer = avro_event
 flume1.sinks.hdfs-sink-1.serializer = org.apache.flume.serialization.AvroEventSerializer$Builder
 
 

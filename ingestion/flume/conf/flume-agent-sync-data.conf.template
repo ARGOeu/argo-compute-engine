@@ -1,0 +1,39 @@
+# Sources, channels, and sinks are defined per
+# agent name, in this case flume1.
+flume2.sources  = kafka-source-2
+flume2.channels = hdfs-channel-2
+flume2.sinks    = hdfs-sink-2
+
+# For each source, channel, and sink, set
+# standard properties.
+flume2.sources.kafka-source-2.type = org.apache.flume.source.kafka.KafkaSource
+flume2.sources.kafka-source-2.zookeeperConnect = {zookeeper_ip}
+flume2.sources.kafka-source-2.topic = {tenant_name}.sync_data
+flume2.sources.kafka-source-2.batchSize = 100
+flume2.sources.kafka-source-2.channels = hdfs-channel-2
+flume2.sources.kafka-source-2.interceptors = DecodeInterceptor
+flume2.sources.kafka-source-2.interceptors.DecodeInterceptor.type=argo.flume.interceptor.DecodeInterceptor$Builder
+flume2.sources.kafka-source-2.interceptors.DecodeInterceptor.schemaURL={path_to_hdfs_schemas_folder}
+
+
+flume2.channels.hdfs-channel-2.type   = memory
+flume2.sinks.hdfs-sink-2.channel = hdfs-channel-1
+flume2.sinks.hdfs-sink-2.type = hdfs
+flume2.sinks.hdfs-sink-2.hdfs.writeFormat = Text
+flume2.sinks.hdfs-sink-2.hdfs.fileType = DataStream
+flume2.sinks.hdfs-sink-2.hdfs.filePrefix = prefilter-%{argo_type}-%{argo_date}
+flume2.sinks.hdfs-sink-2.hdfs.fileSuffix = .avro
+flume2.sinks.hdfs-sink-2.hdfs.useLocalTimeStamp = true
+flume2.sinks.hdfs-sink-2.hdfs.proxyUser = root
+flume2.sinks.hdfs-sink-2.hdfs.path = /user/root/argo/{tenant_name}/report={report_name}/date=%{argo_date}
+flume2.sinks.hdfs-sink-2.hdfs.rollCount=0
+flume2.sinks.hdfs-sink-2.hdfs.rollSize=0
+flume1.sinks.hdfs-sink-2.hdfs.rollInterval=1800
+flume2.sinks.hdfs-sink-2.serializer = org.apache.flume.serialization.AvroEventSerializer$Builder
+
+
+# Other properties are specific to each type of
+# source, channel, or sink. In this case, we
+# specify the capacity of the memory channel.
+flume2.channels.hdfs-channel-2.capacity = 10000
+flume2.channels.hdfs-channel-2.transactionCapacity = 1000
