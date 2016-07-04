@@ -1,13 +1,7 @@
 {
-      "attributes": [
-        {
-          "key": "date",
-          "value": "2015-06-02"
-        },
-        {
-          "key": "reason",
-          "value": "test"
-        }
-      ],
-   "data": "dGhpcyBoYXMgdG8gYmUgZGVjb2RlZA=="
+  "attributes": {
+    "type": "metric_data",
+    "partition_date": "2016-06-01"
+  },
+  "data": "dGhpcyBoYXMgdG8gYmUgZGVjb2RlZA=="
 }

@@ -44,8 +44,8 @@ public class DecodeInterceptorTest {
 		Map<String,String>headers = output.getHeaders();
 		// Assert they are equal
 		Assert.assertEquals(expectedMsg, outputMsg);
-		Assert.assertEquals("2015-06-02", headers.get("argo_date"));
-		Assert.assertEquals("test", headers.get("argo_reason"));
+		Assert.assertEquals("metric_data", headers.get("argo_type"));
+		Assert.assertEquals("2016-06-01", headers.get("argo_partition_date"));
 
 	}
 }
