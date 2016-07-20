@@ -49,6 +49,9 @@ log_level=DEBUG
 # SYSLOG appender in the following line
 hadoop_log_root=INFO,console
 
+[consumers]
+consumers_root=/var/lib
+
 [connectors]
 
 sync_conf=/etc/argo-egi-connectors/

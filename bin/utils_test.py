@@ -4,7 +4,7 @@ from utils import *
 
 TEST_CONF_CONTENTS = r"""
 [default]
-mongo_host=127.0.0.1 
+mongo_host=127.0.0.1
 mongo_port=27017
 mode=local
 
@@ -13,7 +13,7 @@ sync_clean=true
 
 recomp_threshold=1
 
-[logging]    
+[logging]
 log_mode=file
 log_file=/var/log/ar-compute.log
 log_level=debug
@@ -22,6 +22,9 @@ log_level=debug
 tenants=TenantA,TenantB
 TenantA_jobs=JobA,JobB
 TenantB_jobs=JobC,JobD
+
+[consumers]
+consumers_root=/var/lib
 
 [connectors]
 sync_exec=/usr/libexec/argo-egi-connectors
@@ -140,6 +143,7 @@ def test_load_configuration(tmpdir):
 
     assert cfg.sync_exec == "/usr/libexec/argo-egi-connectors"
     assert cfg.sync_path == "/var/lib/argo-connectors"
+    assert cfg.consumers_root == "/var/lib"
 
     assert cfg.mode == "local"
 
