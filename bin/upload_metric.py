@@ -21,6 +21,7 @@ def main(args=None):
     # Get sync exec and path
     arsync_exec = ArConfig.get('connectors', 'sync_exec')
     arsync_lib = ArConfig.get('connectors', 'sync_path')
+    consumers_root = ArConfig.get('consumers','consumers_root')
 
     # Get mode from config file
     ar_mode = ArConfig.get('default', 'mode')
@@ -67,7 +68,7 @@ def main(args=None):
     else:
         fn_mdata = 'argo-consumer_log_' + args.date + '.avro'
         fn_prefilter = "prefilter_" + date_under + ".avro"
-        local_mdata = os.path.join('/var/lib','argo-'+args.tenant.lower()+'-consumer',fn_mdata)
+        local_mdata = os.path.join(consumers_root,'argo-'+args.tenant.lower()+'-consumer',fn_mdata)
         local_prefilter = os.path.join(arsync_lib, args.tenant, fn_prefilter)
         cmd_copy = ['cp', local_mdata , local_prefilter ]
         run_cmd(cmd_copy,log)

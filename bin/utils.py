@@ -20,6 +20,8 @@ class ArgoConfiguration(object):
     # connector parameters
     sync_exec = None
     sync_path = None
+    # consumers parmeters
+    consumers_root = None
     # ce run mode
     mode = None
     # sampling
@@ -71,6 +73,7 @@ class ArgoConfiguration(object):
         # Grab connector sync path
         self.sync_exec = ar_config.get('connectors', 'sync_exec')
         self.sync_path = ar_config.get('connectors', 'sync_path')
+        self.consumers_root = ar_config.get('consumers','consumers_root')
 
         # Grab run mode
         self.mode = ar_config.get('default', 'mode')
