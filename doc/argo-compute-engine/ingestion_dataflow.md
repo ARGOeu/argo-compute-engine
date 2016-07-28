@@ -28,26 +28,16 @@ For e.g. for sending metric data for tenant TA a request should be made to `/v1/
 Then the client should publish the corresponding message in encoded AVRO format and further encoded to base64.
 Should also supply two message attributes:
 - `type` : type of payload (metric_data,weight,downtime etc)
-- `date` : partition date (daily) in the format: `YYYY-MM-DD`
+- `partition_date` : partition date (daily) in the format: `YYYY-MM-DD`
 
 An example of an encoded message for metric_data ingestion would be the following:
-`
-{
-   "attributes": [
-      {
-         "key": "date",
-         "value": "2015-10-06"
-      },
-      {
-         "key": "type",
-         "value": "metric_data"
-      }
-   ],
-   "data": "CONTENTS_OF_BASE64_ENCODED_STRING_OF_AVRO_BINARY_REPRESENTATION",
-
-}
-
-`
+`{
+  "attributes": {
+    "type": "downtimes",
+    "partition_date": "2015-11-01"
+  },
+  "data": "CONTENTS_OF_BASE64_ENCODED_STRING_OF_AVRO_BINARY_REPRESENTATION"
+}`
 
 ## KAFKA Broker infrastructure
 
@@ -66,10 +56,10 @@ For each tenant Apache Flume should have a kafka source configured to the corres
 ## HDFS destinations
 
 Flume dataflow store the metric data in the following hdfs destination:
-`/argo/{TENANT}/metric_data/date={date_timestamp}`
+`/argo/{TENANT}/metric_data/date={partition_date}`
 
 Flume dataflow store the sync data in the following hdfs destination pattern:
-`/argo/{TENANT}/{type}/report={report_name}/date={date_timestamp}`
+`/argo/{TENANT}/{type}/report={report_name}/date={partition_date}`
 where `{type}` is the type of sync data (weights,downtimes,endpoint_groups,group_groups,metric_profiles)
 
 Files are also accessible by hive if corresponding tables are created and set to those locations. Folder `./ingestion/hive/` includes scripts for creation of hive tables that query data on ingestion HDFS directories.

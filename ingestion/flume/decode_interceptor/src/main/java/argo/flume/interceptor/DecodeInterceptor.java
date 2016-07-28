@@ -1,8 +1,10 @@
 package argo.flume.interceptor;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.flume.Context;
@@ -87,15 +89,12 @@ public class DecodeInterceptor implements Interceptor {
 			// parse the json field "data" and read it as string
 			// this is the base64 string payload
 			String data = jRoot.getAsJsonObject().get("data").getAsString();
-			JsonArray attr = jRoot.getAsJsonObject().get("attributes").getAsJsonArray();
+			JsonObject attr = jRoot.getAsJsonObject().get("attributes").getAsJsonObject();
 			
-			// Iterate through message attributes and append each attribute as an event header
-			// Use argo_ prefix for headers created by argo msg attributes
-			for (int i =0; i < attr.size(); i++) {
-				JsonObject item = attr.get(i).getAsJsonObject();
-				String key = item.get("key").getAsString();
-				String value = item.get("value").getAsString();
-				headers.put("argo_"+ key, value);
+			// Iterate through all keys of the attributes object
+			Set<Map.Entry<String, JsonElement>> entrySet = attr.entrySet();
+			for (Map.Entry<String,JsonElement> entry : entrySet){
+				headers.put("argo_"+ entry.getKey(),entry.getValue().getAsString());
 			}
 			
 			// add the schema reference header

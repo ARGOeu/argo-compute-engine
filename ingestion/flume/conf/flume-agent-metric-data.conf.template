@@ -21,11 +21,11 @@ flume1.sinks.hdfs-sink-1.channel = hdfs-channel-1
 flume1.sinks.hdfs-sink-1.type = hdfs
 flume1.sinks.hdfs-sink-1.hdfs.writeFormat = Text
 flume1.sinks.hdfs-sink-1.hdfs.fileType = DataStream
-flume1.sinks.hdfs-sink-1.hdfs.filePrefix = prefilter-%{argo_type}-%{argo_date}
+flume1.sinks.hdfs-sink-1.hdfs.filePrefix = %{argo_type}-%{argo_partition_date}
 flume1.sinks.hdfs-sink-1.hdfs.fileSuffix = .avro
 flume1.sinks.hdfs-sink-1.hdfs.useLocalTimeStamp = true
 flume1.sinks.hdfs-sink-1.hdfs.proxyUser = root
-flume1.sinks.hdfs-sink-1.hdfs.path = /user/root/argo/{tenant_name}/date=%{argo_date}
+flume1.sinks.hdfs-sink-1.hdfs.path = /user/root/argo/{tenant_name}/date=%{argo_partition_date}
 flume1.sinks.hdfs-sink-1.hdfs.rollCount=0
 flume1.sinks.hdfs-sink-1.hdfs.rollSize=0
 flume1.sinks.hdfs-sink-1.hdfs.rollInterval=1800
