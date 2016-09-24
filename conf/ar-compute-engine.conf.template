@@ -22,8 +22,8 @@ mode=cluster
 serialization=none
 
 # declare if prefilter data must be cleaned after upload to hdfs
-prefilter_clean=true
-sync_clean=true
+prefilter_clean=false
+sync_clean=false
 
 # Provide maximum number of recomputations that can run in parallel.
 recomp_threshold=1
@@ -48,6 +48,9 @@ log_level=DEBUG
 # change console to SYSLOG, or just add 
 # SYSLOG appender in the following line
 hadoop_log_root=INFO,console
+
+[consumers]
+consumers_root=/var/lib
 
 [connectors]
 

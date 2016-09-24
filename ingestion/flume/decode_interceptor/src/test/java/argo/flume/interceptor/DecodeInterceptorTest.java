@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Map;
 
 public class DecodeInterceptorTest {
 
@@ -40,9 +41,11 @@ public class DecodeInterceptorTest {
 		String expectedMsg = "this has to be decoded";
 		// This is the output message body
 		String outputMsg = new String(output.getBody());
-
+		Map<String,String>headers = output.getHeaders();
 		// Assert they are equal
 		Assert.assertEquals(expectedMsg, outputMsg);
+		Assert.assertEquals("metric_data", headers.get("argo_type"));
+		Assert.assertEquals("2016-06-01", headers.get("argo_partition_date"));
 
 	}
 }
