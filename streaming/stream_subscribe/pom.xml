@@ -1,23 +1,24 @@
-<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor
-	license agreements. See the NOTICE file distributed with this work for additional
-	information regarding copyright ownership. The ASF licenses this file to
-	you under the Apache License, Version 2.0 (the "License"); you may not use
-	this file except in compliance with the License. You may obtain a copy of
-	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
-	by applicable law or agreed to in writing, software distributed under the
-	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
-	OF ANY KIND, either express or implied. See the License for the specific
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor 
+	license agreements. See the NOTICE file distributed with this work for additional 
+	information regarding copyright ownership. The ASF licenses this file to 
+	you under the Apache License, Version 2.0 (the "License"); you may not use 
+	this file except in compliance with the License. You may obtain a copy of 
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required 
+	by applicable law or agreed to in writing, software distributed under the 
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
+	OF ANY KIND, either express or implied. See the License for the specific 
 	language governing permissions and limitations under the License. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>argo-streaming-hdfs</groupId>
-	<artifactId>argo-streaming-hdfs</artifactId>
+	<groupId>argo-streaming-subscribe</groupId>
+	<artifactId>argo-streaming-subscribe</artifactId>
 	<version>0.1</version>
 	<packaging>jar</packaging>
 
-	<name>ARGO Streaming job to HDFS</name>
+	<name>ARGO Streaming job using subscriber</name>
+
 
 
 	<properties>
@@ -26,6 +27,12 @@
 	</properties>
 
 	<repositories>
+
+		<repository>
+			<id>cloudera</id>
+			<url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+		</repository>
+
 		<repository>
 			<id>apache.snapshots</id>
 			<name>Apache Development Snapshot Repository</name>
@@ -39,17 +46,16 @@
 		</repository>
 	</repositories>
 
-
-	<!-- Execute "mvn clean package -Pbuild-jar" to build a jar file out of
-		this project! How to use the Flink Quickstart pom: a) Adding new dependencies:
-		You can add dependencies to the list below. Please check if the maven-shade-plugin
-		below is filtering out your dependency and remove the exclude from there.
-		b) Build a jar for running on the cluster: There are two options for creating
-		a jar from this project b.1) "mvn clean package" -> this will create a fat
-		jar which contains all dependencies necessary for running the jar created
-		by this pom in a cluster. The "maven-shade-plugin" excludes everything that
-		is provided on a running Flink cluster. b.2) "mvn clean package -Pbuild-jar"
-		-> This will also create a fat-jar, but with much nicer dependency exclusion
+	<!-- Execute "mvn clean package -Pbuild-jar" to build a jar file out of 
+		this project! How to use the Flink Quickstart pom: a) Adding new dependencies: 
+		You can add dependencies to the list below. Please check if the maven-shade-plugin 
+		below is filtering out your dependency and remove the exclude from there. 
+		b) Build a jar for running on the cluster: There are two options for creating 
+		a jar from this project b.1) "mvn clean package" -> this will create a fat 
+		jar which contains all dependencies necessary for running the jar created 
+		by this pom in a cluster. The "maven-shade-plugin" excludes everything that 
+		is provided on a running Flink cluster. b.2) "mvn clean package -Pbuild-jar" 
+		-> This will also create a fat-jar, but with much nicer dependency exclusion 
 		handling. This approach is preferred and leads to much cleaner jar files. -->
 
 	<dependencies>
@@ -81,7 +87,7 @@
 		<dependency>
 			<groupId>org.apache.flink</groupId>
 			<artifactId>flink-connector-kafka-0.9_2.10</artifactId>
-				<version>${flink.version}</version>
+			<version>${flink.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
@@ -93,7 +99,25 @@
 			<artifactId>gson</artifactId>
 			<version>2.7</version>
 		</dependency>
-				<!-- https://mvnrepository.com/artifact/org.apache.hbase/hbase-client -->
+		<!-- https://mvnrepository.com/artifact/org.apache.hbase/hbase-client -->
+		<dependency>
+			<groupId>org.apache.hbase</groupId>
+			<artifactId>hbase-client</artifactId>
+			<version>1.2.0-cdh5.7.4</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>fluent-hc</artifactId>
+			<version>4.5.2</version>
+		</dependency>
+
+
 
 
 	</dependencies>
@@ -173,9 +197,9 @@
 
 	<build>
 		<plugins>
-			<!-- We use the maven-shade plugin to create a fat jar that contains all
-				dependencies except flink and it's transitive dependencies. The resulting
-				fat-jar can be executed on a cluster. Change the value of Program-Class if
+			<!-- We use the maven-shade plugin to create a fat jar that contains all 
+				dependencies except flink and it's transitive dependencies. The resulting 
+				fat-jar can be executed on a cluster. Change the value of Program-Class if 
 				your program entry point changes. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -191,8 +215,7 @@
 						<configuration>
 							<artifactSet>
 								<excludes>
-									<!-- This list contains all dependencies of flink-dist Everything
-
+									<!-- This list contains all dependencies of flink-dist Everything 
 										else will be packaged into the fat-jar -->
 									<exclude>org.apache.flink:flink-annotations</exclude>
 									<exclude>org.apache.flink:flink-shaded-hadoop1</exclude>
@@ -208,8 +231,9 @@
 									<exclude>org.apache.flink:flink-examples-batch_2.10</exclude>
 									<exclude>org.apache.flink:flink-examples-streaming_2.10</exclude>
 									<exclude>org.apache.flink:flink-streaming-java_2.10</exclude>
-				<!-- Also exclude very big transitive dependencies of Flink WARNING:
-										You have to remove these excludes if your code relies on other versions of
+
+									<!-- Also exclude very big transitive dependencies of Flink WARNING: 
+										You have to remove these excludes if your code relies on other versions of 
 										these dependencies. -->
 									<exclude>org.scala-lang:scala-library</exclude>
 									<exclude>org.scala-lang:scala-compiler</exclude>
@@ -271,7 +295,7 @@
 									</excludes>
 								</filter>
 								<filter>
-									<!-- Do not copy the signatures in the META-INF folder. Otherwise,
+									<!-- Do not copy the signatures in the META-INF folder. Otherwise, 
 										this might cause SecurityExceptions when using the JAR. -->
 									<artifact>*:*</artifact>
 									<excludes>
@@ -285,7 +309,7 @@
 								<!-- add Main-Class to manifest file -->
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>argoflink.ArgoStreamHDFS</mainClass>
+									<mainClass>argoflink.ArgoStreamSubscribe</mainClass>
 								</transformer>
 							</transformers>
 							<createDependencyReducedPom>false</createDependencyReducedPom>
@@ -324,13 +348,4 @@
 			</configuration> </plugin> </plugins> </pluginManagement> -->
 
 	</build>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.apache.flink</groupId>
-				<artifactId>flink-connector-kafka-0.9_2.10</artifactId>
-				<version>${flink.version}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 </project>
