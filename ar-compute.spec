@@ -1,6 +1,6 @@
 Name: ar-compute
 Summary: A/R Comp Engine core scripts
-Version: 1.6.8
+Version: 1.6.9
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
@@ -64,6 +64,9 @@ mvn clean
 %attr(0644,root,root) /etc/ar-compute/*.json.template
 
 %changelog
+* Mon Dec 12 2016 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.9-1%{?dist}
+- ARGO-611 - Add omitted endpoint_group field in update status_metrics
+- ARGO-581 - Use Update when storing results in mongo
 * Sat Sep 24 2016 Themis Zamani <themiszamani@gmail.com> - 1.6.8-1%{?dist}
 - 3 New features and 1  fix
 * Wed Mar 23 2016 Themis Zamani <themiszamani@gmail.com> - 1.6.7-1%{?dist}

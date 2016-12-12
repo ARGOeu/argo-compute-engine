@@ -115,9 +115,6 @@ def main(args=None):
     cmd_pig.append('-f')
     cmd_pig.append(pig_script_path + 'compute-ar.pig')
 
-    # Command to clean a/r data from mongo
-    cmd_clean_mongo_ar = [os.path.join(
-        stdl_exec, "mongo_clean_ar.py"), '-d', args.date, '-r', json_cfg["id"], '-t', args.tenant]
 
     # Command to upload sync data to hdfs
     cmd_upload_sync = [os.path.join(
@@ -130,9 +127,7 @@ def main(args=None):
     log.info("Uploading sync data to hdfs...")
     run_cmd(cmd_upload_sync, log)
 
-    # Clean data from mongo
-    log.info("Cleaning data from mongodb...")
-    run_cmd(cmd_clean_mongo_ar, log)
+
 
     # Call pig
     log.info("Submitting pig compute a/r job:%s for tenant:%s and date:%s ...",

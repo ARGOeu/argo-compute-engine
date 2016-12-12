@@ -97,7 +97,35 @@ endpoint_data = FOREACH endpoint_aggr GENERATE $0 as report, $1 as date_integer,
 service_data = FOREACH service_aggr GENERATE $0 as report, $1 as date_integer, $2 as endpoint_group, $3 as service, FLATTEN($4) as (timestamp,status);
 endpoint_group_data = FOREACH endpoint_group_aggr GENERATE $0 as report, $1 as date_integer, $2 as endpoint_group, FLATTEN($3) as (timestamp,status);
 
-STORE status_unwrap INTO '$mongo_status_metrics' USING com.mongodb.hadoop.pig.MongoInsertStorage();
-STORE endpoint_data INTO '$mongo_status_endpoints' USING com.mongodb.hadoop.pig.MongoInsertStorage();
-STORE service_data INTO '$mongo_status_services' USING com.mongodb.hadoop.pig.MongoInsertStorage();
-STORE endpoint_group_data INTO '$mongo_status_endpoint_groups' USING com.mongodb.hadoop.pig.MongoInsertStorage();
+
+STORE status_unwrap INTO '$mongo_status_metrics'
+	 USING com.mongodb.hadoop.pig.MongoUpdateStorage(
+		  '{report:"\$report", date_integer:"\$date_integer", service:"\$service", host:"\$host", metric:"\$metric", timestamp:"\$timestamp" }',
+			'{report:"\$report", date_integer:"\$date_integer", endpoint_group:"\$endpoint_group", service:"\$service", host:"\$host", metric:"\$metric", timestamp:"\$timestamp", status:"\$status", summary:"\$summary", message:"\$message", previous_state:"\$previous_state", previous_timestamp:"\$previous_timestamp", time_integer:"\$time_integer" }',
+			'report: chararray,endpoint_group: chararray,service: chararray,host: chararray,metric: chararray,timestamp: chararray,status: chararray,summary: chararray,message: chararray,previous_state: chararray,previous_timestamp: chararray,date_integer: int,time_integer: int',
+			'{upsert:true}'
+		 );
+
+STORE endpoint_data INTO '$mongo_status_endpoints'
+	 USING com.mongodb.hadoop.pig.MongoUpdateStorage(
+		  '{report:"\$report", date_integer:"\$date_integer", endpoint_group:"\$endpoint_group", service:"\$service", host:"\$host", timestamp:"\$timestamp" }',
+			'{report:"\$report", date_integer:"\$date_integer", endpoint_group:"\$endpoint_group", service:"\$service", host:"\$host", timestamp:"\$timestamp", status:"\$status" }',
+			'report: chararray,date_integer: int,endpoint_group: chararray,service: chararray,host: chararray,timestamp: chararray,status: chararray',
+			'{upsert:true}'
+		 );
+
+STORE service_data INTO '$mongo_status_services'
+ 	 USING com.mongodb.hadoop.pig.MongoUpdateStorage(
+ 		  '{report:"\$report", date_integer:"\$date_integer", endpoint_group:"\$endpoint_group", service:"\$service", timestamp:"\$timestamp" }',
+ 			'{report:"\$report", date_integer:"\$date_integer", endpoint_group:"\$endpoint_group", service:"\$service", timestamp:"\$timestamp", status:"\$status" }',
+ 			'report: chararray,date_integer: int,endpoint_group: chararray,service: chararray,timestamp: chararray,status: chararray',
+ 			'{upsert:true}'
+ 		 );
+
+STORE endpoint_group_data INTO '$mongo_status_endpoint_groups'
+	 USING com.mongodb.hadoop.pig.MongoUpdateStorage(
+		  '{report:"\$report", date_integer:"\$date_integer", endpoint_group:"\$endpoint_group", timestamp:"\$timestamp" }',
+			'{report:"\$report", date_integer:"\$date_integer", endpoint_group:"\$endpoint_group", timestamp:"\$timestamp", status:"\$status" }',
+			'report: chararray,date_integer: int,endpoint_group: chararray,timestamp: chararray,status: chararray',
+			'{upsert:true}'
+		 );

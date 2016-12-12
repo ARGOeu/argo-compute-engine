@@ -55,7 +55,7 @@ def main(args=None):
             num_of_rows = col.find({"date": date_int}).count()
             log.info("Found %s entries for date %s", num_of_rows, args.date)
 
-        if num_of_rows > 0:
+        if num_of_rows > 0: #never happens
 
             if args.report:
                 log.info(
