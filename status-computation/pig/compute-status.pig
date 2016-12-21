@@ -100,7 +100,7 @@ endpoint_group_data = FOREACH endpoint_group_aggr GENERATE $0 as report, $1 as d
 
 STORE status_unwrap INTO '$mongo_status_metrics'
 	 USING com.mongodb.hadoop.pig.MongoUpdateStorage(
-		  '{report:"\$report", date_integer:"\$date_integer", service:"\$service", host:"\$host", metric:"\$metric", timestamp:"\$timestamp" }',
+		  '{report:"\$report", date_integer:"\$date_integer", endpoint_group:"\$endpoint_group", service:"\$service", host:"\$host", metric:"\$metric", timestamp:"\$timestamp" }',
 			'{report:"\$report", date_integer:"\$date_integer", endpoint_group:"\$endpoint_group", service:"\$service", host:"\$host", metric:"\$metric", timestamp:"\$timestamp", status:"\$status", summary:"\$summary", message:"\$message", previous_state:"\$previous_state", previous_timestamp:"\$previous_timestamp", time_integer:"\$time_integer" }',
 			'report: chararray,endpoint_group: chararray,service: chararray,host: chararray,metric: chararray,timestamp: chararray,status: chararray,summary: chararray,message: chararray,previous_state: chararray,previous_timestamp: chararray,date_integer: int,time_integer: int',
 			'{upsert:true}'
