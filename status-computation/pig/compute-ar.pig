@@ -108,14 +108,14 @@ endpoint_groups_data = FOREACH endpoint_groups_ar GENERATE FLATTEN(f_egroupDATA(
 STORE service_data INTO '$mongo_service'
 	 USING com.mongodb.hadoop.pig.MongoUpdateStorage(
 		  '{report:"\$report", date:"\$date", name:"\$name", supergroup:"\$supergroup" }',
-			'{report:"\$report", date:"\$date", name:"\$name", supergroup:"\$supergroup", availability:"\$availability", reliability:"\$reliability", up:"\$up", down:"\$down", unkown:"\$unknown" }',
+			'{report:"\$report", date:"\$date", name:"\$name", supergroup:"\$supergroup", availability:"\$availability", reliability:"\$reliability", up:"\$up", down:"\$down", unknown:"\$unknown" }',
 			'report: chararray,date: int,name: chararray,supergroup: chararray,availability: double,reliability: double,up: double,down: double,unknown: double',
 			'{upsert:true}'
 		 );
 STORE endpoint_groups_data INTO '$mongo_egroup'
 		USING com.mongodb.hadoop.pig.MongoUpdateStorage(
 		 '{report:"\$report", date:"\$date", name:"\$name", supergroup:"\$supergroup" }',
-		 '{report:"\$report", date:"\$date", name:"\$name", supergroup:"\$supergroup", weight:"\$weight", availability:"\$availability", reliability:"\$reliability", up:"\$up", down:"\$down", unkown:"\$unknown" }',
+		 '{report:"\$report", date:"\$date", name:"\$name", supergroup:"\$supergroup", weight:"\$weight", availability:"\$availability", reliability:"\$reliability", up:"\$up", down:"\$down", unknown:"\$unknown" }',
 		 'report: chararray,date: int,name: chararray,supergroup: chararray,weight: int,availability: double,reliability: double,up: double,down: double,unknown: double',
 		 '{upsert:true}'
 		);
