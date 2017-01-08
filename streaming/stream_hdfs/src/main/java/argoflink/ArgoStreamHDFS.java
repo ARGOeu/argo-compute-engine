@@ -67,7 +67,7 @@ public class ArgoStreamHDFS {
     // Intermediate Transformation
     // Map function: kafka msg in json -> extract data field -> base64 decode -> avro decode -> pure payload string
     messageStream.rebalance().map(new MapFunction<String, String>() {
-		private static final long serialVersionUID = -3841815159450875045L;
+		private static final long serialVersionUID = -1L;
 
 		@Override
 		public String map(String value) throws IOException {

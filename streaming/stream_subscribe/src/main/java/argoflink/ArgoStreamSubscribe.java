@@ -20,44 +20,39 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer09;
-import org.apache.flink.streaming.util.serialization.SimpleStringSchema;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
-
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+import com.esotericsoftware.minlog.Log;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 
-//Flink Job : Stream metric data from Kafka Broker to Hbase
+//Flink Job : Stream metric data from ARGO messaging to Hbase
 //job required cli parameters
-//--zookeeper.connect {comma separated list of Zookeeper servers}
-//--bootstrap.servers {comma separated list of Kafka servers}
-//--group.id {consumer group}
-//--schema {avro schema file to be used}
-//--topic {kafka topic to connect to}
+//--ams-endpoint      : ARGO messaging api endoint to connect to msg.example.com
+//--ams-port          : ARGO messaging api port 
+//--ams-token         : ARGO messaging api token
+//--ams-project       : ARGO messaging api project to connect to
+//--ams-sub           : ARGO messaging subscription to pull from
 //--hbase-master      : hbase endpoint
 //--hbase-master-port : hbase master port
 //--hbase-zk-quorum   : comma separated list of hbase zookeeper servers
 //--hbase-zk-port     : port used by hbase zookeeper servers
 //--hbase-namespace   : table namespace used (usually tenant name)
 //--hbase-table       : table name (usually metric_data)
-
-public class ArgoStreamHbase {
+public class ArgoStreamSubscribe {
 	// setup logger
-	static Logger LOG = LoggerFactory.getLogger(ArgoStreamHbase.class);
-
+	static Logger LOG = LoggerFactory.getLogger(ArgoStreamSubscribe.class);
 
 	public static void main(String[] args) throws Exception {
 
@@ -67,9 +62,13 @@ public class ArgoStreamHbase {
 		// Initialize cli parameter tool
 		final ParameterTool parameterTool = ParameterTool.fromArgs(args);
 
-		// Source: Kafka consumer - Listen to a (cli defined) topic name
-		DataStream<String> messageStream = see.addSource(new FlinkKafkaConsumer09<String>(
-				parameterTool.getRequired("topic"), new SimpleStringSchema(), parameterTool.getProperties()));
+		// Initialize Input Source : ARGO Messaging Source
+		String endpoint = parameterTool.getRequired("ams-endpoint");
+		String port = parameterTool.getRequired("ams-port");
+		String token = parameterTool.getRequired("ams-token");
+		String project = parameterTool.getRequired("ams-project");
+		String sub = parameterTool.getRequired("ams-sub");
+		DataStream<String> messageStream = see.addSource(new ArgoMessagingSource(endpoint, port, token, project, sub));
 
 		// Initialize Output : Hbase Output Format
 		HBaseOutputFormat hbf = new HBaseOutputFormat();
@@ -81,12 +80,11 @@ public class ArgoStreamHbase {
 		hbf.setTableName(parameterTool.getRequired("hbase-table"));
 
 		// Intermediate Transformation
-		// Map function: kafka msg in json -> extract data field -> base64
-		// decode -> avro decode -> pure payload string
+		// Map function: json msg -> payload -> base64decode -> avrodecode ->
+		// hbase
 		messageStream.rebalance().map(new MapFunction<String, String>() {
 
-
-			private static final long serialVersionUID = -1L;
+			private static final long serialVersionUID = 1L;
 
 			@Override
 			public String map(String value) throws IOException {
@@ -129,7 +127,7 @@ public class ArgoStreamHbase {
 		private String tname = null;
 		private Connection connection = null;
 		private Table ht = null;
-		private int num = 1;
+
 
 		private static final long serialVersionUID = 1L;
 
@@ -169,12 +167,12 @@ public class ArgoStreamHbase {
 			org.apache.hadoop.conf.Configuration config = HBaseConfiguration.create();
 			// Modify configuration to job needs
 			config.setInt("timeout", 120000);
-			if (masterPort != null && !masterPort.isEmpty()) {
+			if (masterPort != null &&  !masterPort.isEmpty()){
 				config.set("hbase.master", master + ":" + masterPort);
-			} else {
+			}else {
 				config.set("hbase.master", master + ":60000");
 			}
-
+			
 			config.set("hbase.zookeeper.quorum", zkQuorum);
 			config.set("hbase.zookeeper.property.clientPort", (zkPort));
 			// Create the connection
@@ -187,51 +185,55 @@ public class ArgoStreamHbase {
 
 		}
 
-		private String extractJson(String field, JsonObject root) {
+		private String extractJson(String field, JsonObject root){
 			JsonElement el = root.get(field);
-			if (el != null && !(el.isJsonNull())) {
-
+			if (el!=null && !(el.isJsonNull())){
+				
 				return el.getAsString();
-
+				
 			}
 			return "";
 		}
-
-		@Override
-		public void writeRecord(String record) throws IOException {
-
-			JsonParser jsonParser = new JsonParser();
-			// parse the json root object
-			JsonObject jRoot = jsonParser.parse(record).getAsJsonObject();
-			// Get fields
-
-			String ts = extractJson("timestamp", jRoot);
-			String host = extractJson("hostname", jRoot);
-			String service = extractJson("service", jRoot);
-			String metric = extractJson("metric", jRoot);
-			String mHost = extractJson("monitoring_host", jRoot);
-			String status = extractJson("status", jRoot);
-			String summary = extractJson("summary", jRoot);
-			String msg = extractJson("message", jRoot);
-			String tags = extractJson("tags",jRoot);
-
-			// Compile key
-			String key = host + "|" + service + "|" + metric + "|" + mHost + "|" + ts;
 		
-			// Prepare columns
-			Put put = new Put(Bytes.toBytes(key));
-			put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("timestamp"), Bytes.toBytes(ts));
-			put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("host"), Bytes.toBytes(host));
-			put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("service"), Bytes.toBytes(service));
-			put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("metric"), Bytes.toBytes(metric));
-			put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("monitoring_host"), Bytes.toBytes(mHost));
-			put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("status"), Bytes.toBytes(status));
-			put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("summary"), Bytes.toBytes(summary));
-			put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("msg"), Bytes.toBytes(msg));
-			put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("tags"), Bytes.toBytes(tags));
+		
+		@Override
+		public void writeRecord(String record) throws IOException  {
+				
+				JsonParser jsonParser = new JsonParser();
+				// parse the json root object
+				JsonObject jRoot = jsonParser.parse(record).getAsJsonObject();
+				// Get fields
+				String ts = extractJson("timestamp",jRoot);
+				String host = extractJson("hostname",jRoot);
+				String service = extractJson("service",jRoot);
+				String metric =extractJson("metric",jRoot);
+				String mHost = extractJson("monitoring_host",jRoot);
+				String status = extractJson("status",jRoot);
+				String summary = extractJson("summary",jRoot);
+				String msg = extractJson("message",jRoot);
+				String tags = extractJson("tags",jRoot);
 
-			// Insert row in hbase
-			ht.put(put);
+				// Compile key
+				String key =  host + "|" + service + "|" + metric + "|" + mHost + "|" + ts;
+
+				// Prepare columns
+				Put put = new Put(Bytes.toBytes(key));
+				put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("timestamp"), Bytes.toBytes(ts));
+				put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("host"), Bytes.toBytes(host));
+				put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("service"), Bytes.toBytes(service));
+				put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("metric"), Bytes.toBytes(metric));
+				put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("monitoring_host"), Bytes.toBytes(mHost));
+				put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("status"), Bytes.toBytes(status));
+				put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("summary"), Bytes.toBytes(summary));
+				put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("msg"), Bytes.toBytes(msg));
+				put.addColumn(Bytes.toBytes("data"), Bytes.toBytes("tags"), Bytes.toBytes(tags));
+
+				// Insert row in hbase
+				ht.put(put);
+				
+			
+			
+		
 
 		}
 
