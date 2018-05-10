@@ -83,7 +83,8 @@ mdata_final = UNION mdata_full, missing_final;
 
 
 endpoints =	FOREACH  (GROUP mdata_final BY (service,hostname)) {
-	GENERATE FLATTEN(f_EndpointTl(group.service, group.hostname, mdata_final.(metric,timestamp,status)));
+	t = ORDER mdata_final by timestamp ASC;
+	GENERATE FLATTEN(f_EndpointTl(group.service, group.hostname, t.(metric,timestamp,status)));
 };
 
 -- Add Group info (SITES)
@@ -94,6 +95,8 @@ endpoints_info_final = FOREACH endpoints_info GENERATE service,hostname,timeline
 service_flavors = FOREACH (GROUP endpoints_info_final BY (groupname,service)) {
 	GENERATE FLATTEN(f_ServiceTl(group.groupname, group.service , endpoints_info_final.(hostname,timeline))) as (groupname, service, timeline);
 }
+
+
 
 endpoint_groups = FOREACH (GROUP service_flavors BY (groupname)) {
 	GENERATE FLATTEN(f_EndpointGroupTl(group, service_flavors.(service,timeline))) as (groupname,timeline);
@@ -118,4 +121,5 @@ STORE endpoint_groups_data INTO '$mongo_egroup'
 		 '{report:"\$report", date:"\$date", name:"\$name", supergroup:"\$supergroup", weight:"\$weight", availability:"\$availability", reliability:"\$reliability", up:"\$up", down:"\$down", unknown:"\$unknown" }',
 		 'report: chararray,date: int,name: chararray,supergroup: chararray,weight: int,availability: double,reliability: double,up: double,down: double,unknown: double',
 		 '{upsert:true}'
-		);
+		); 
+
